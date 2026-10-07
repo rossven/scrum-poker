@@ -8,10 +8,13 @@
   background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--accent-strong);
 }
 .observer { background: var(--bg-soft); color: var(--text-soft); }
-.promote {
-  position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 2;
-  font-size: 12px; min-height: 28px; padding: 0 10px; background: var(--surface); border-color: var(--border);
-  box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 0.15s;
+.card { margin-bottom: 2px; min-height: 48px; display: flex; align-items: flex-end; }
+.actions {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 3;
+  display: flex; flex-direction: column; gap: 4px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
 }
-/* Moderatör eylemi yalnızca üzerine gelince/odaklanınca görünür; dokunmatik ekranda koltuğa dokununca. */
-.seat:hover .promote, .seat:focus-within .promote { opacity: 1; pointer-events: auto; }
+.actions :global(.btn) { font-size: 12px; min-height: 28px; padding: 0 10px; white-space: nowrap; }
+/* Moderatör eylemleri yalnızca üzerine gelince/odaklanınca görünür; dokunmatik ekranda koltuğa dokununca. */
+.seat:hover .actions, .seat:focus-within .actions { opacity: 1; pointer-events: auto; }

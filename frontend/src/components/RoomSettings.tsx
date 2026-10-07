@@ -1,21 +1,34 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { RoomState } from '../api/types';
 import { useRoomStore } from '../store/roomStore';
+import { DeckPicker, deckChoiceCards, deckChoiceValid, type DeckChoice } from './DeckPicker';
 import styles from './RoomSettings.module.css';
 
-/** Moderatör paneli: şifre değiştir/kaldır, odayı kapat. */
-export function RoomSettings({ onClose }: { onClose: () => void }) {
+/** Moderatör paneli: deste, şifre değiştir/kaldır, odayı kapat. */
+export function RoomSettings({ room, onClose }: { room: RoomState; onClose: () => void }) {
   const { t } = useTranslation();
   const setPassword = useRoomStore((s) => s.setPassword);
+  const setDeck = useRoomStore((s) => s.setDeck);
   const closeRoom = useRoomStore((s) => s.closeRoom);
   const toast = useRoomStore((s) => s.toast);
   const [password, setPw] = useState('');
+  const [deck, setDeckChoice] = useState<DeckChoice>({ deck: room.deck, customText: (room.customDeck ?? []).join(', ') });
 
   const save = (e: FormEvent) => {
     e.preventDefault();
     setPassword(password);
     setPw('');
     toast('room.passwordSaved');
+    onClose();
+  };
+
+  const applyDeck = (e: FormEvent) => {
+    e.preventDefault();
+    if (!deckChoiceValid(deck)) return;
+    const hasVotes = room.round.state === 'VOTING' && room.round.votedIds.length > 0;
+    if (hasVotes && !window.confirm(t('decks.changeConfirm'))) return;
+    setDeck(deck.deck, deckChoiceCards(deck));
     onClose();
   };
 
@@ -26,6 +39,14 @@ export function RoomSettings({ onClose }: { onClose: () => void }) {
   return (
     <div className={`card ${styles.panel}`}>
       <h2 className={styles.title}>{t('room.settings')}</h2>
+      <form onSubmit={applyDeck} className="field">
+        <label htmlFor="room-deck">{t('decks.title')}</label>
+        <DeckPicker id="room-deck" value={deck} onChange={setDeckChoice} />
+        <small>{t('decks.changeHint')}</small>
+        <div>
+          <button type="submit" className="btn" disabled={!deckChoiceValid(deck)}>{t('decks.apply')}</button>
+        </div>
+      </form>
       <form onSubmit={save} className="field">
         <label htmlFor="new-password">{t('room.newPassword')}</label>
         <div className={styles.row}>

@@ -30,7 +30,7 @@ test('iki tarayıcı aynı odaya girer, birbirini görür, yenileyince aynı kol
   await b.reload();
   await expect(b.getByText('(sen)')).toBeVisible();
   await expect(b.getByLabel('Takma ad')).toHaveCount(0);
-  await expect(a.getByText('2 kişi')).toBeVisible();
+  await expect(a.getByText(/· 2 kişi/)).toBeVisible();
 
   // Moderatör olmayan B'de ayarlar düğmesi yok
   await expect(b.getByRole('button', { name: /Oda ayarları/ })).toHaveCount(0);

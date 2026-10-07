@@ -5,6 +5,7 @@ import com.sprintmasasi.room.RoomViews.CreateRoomResult;
 import com.sprintmasasi.room.RoomViews.JoinResult;
 import com.sprintmasasi.room.RoomViews.RoomInfo;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/rooms")
 public class RoomController {
 
-    public record CreateRoomRequest(String name, String deck, String password) {}
+    public record CreateRoomRequest(String name, String deck, List<String> customDeck, String password) {}
 
     public record JoinRequest(String nickname, String avatar, boolean observer, String password, String token,
                               String claimToken) {}
@@ -32,7 +33,7 @@ public class RoomController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateRoomResult create(@RequestBody CreateRoomRequest body, HttpServletRequest request) {
-        return rooms.create(body.name(), body.deck(), body.password(), ClientIp.of(request));
+        return rooms.create(body.name(), body.deck(), body.customDeck(), body.password(), ClientIp.of(request));
     }
 
     @GetMapping("/{code}")

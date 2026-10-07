@@ -7,17 +7,17 @@ import styles from './TableView.module.css';
 interface Props {
   people: ParticipantView[];
   youId: string | null;
-  canPromote: boolean;
-  onPromote: (id: string) => void;
+  renderCard?: (p: ParticipantView) => ReactNode;
+  renderActions?: (p: ParticipantView) => ReactNode;
   center?: ReactNode;
 }
 
 /** Kalabalıkta avatarlar küçülür; 16 kişiden sonra iki sıra (iç/dış halka) kullanılır. */
 function avatarSize(n: number) {
-  if (n <= 8) return 60;
-  if (n <= 14) return 50;
-  if (n <= 24) return 42;
-  return 34;
+  if (n <= 8) return 56;
+  if (n <= 14) return 46;
+  if (n <= 24) return 38;
+  return 32;
 }
 
 function seatPosition(i: number, n: number) {
@@ -31,9 +31,9 @@ function seatPosition(i: number, n: number) {
 
 /**
  * Oval masa. Geniş ekranda koltuklar masanın etrafına dizilir,
- * dar ekranda (mobil) masa üstte, koltuklar altta liste olarak görünür.
+ * dar ekranda (mobil) masa üstte, koltuklar altta ızgara olarak görünür.
  */
-export function TableView({ people, youId, canPromote, onPromote, center }: Props) {
+export function TableView({ people, youId, renderCard, renderActions, center }: Props) {
   const size = avatarSize(people.length);
   return (
     <div className={styles.wrap}>
@@ -41,16 +41,12 @@ export function TableView({ people, youId, canPromote, onPromote, center }: Prop
         <div className={styles.table}>{center}</div>
         <ul className={styles.seats}>
           {people.map((p, i) => (
-            <motion.li
-              key={p.id}
-              layout
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={styles.seatSlot}
-              style={seatPosition(i, people.length)}
-            >
-              <Seat person={p} isYou={p.id === youId} size={size} canPromote={canPromote} onPromote={() => onPromote(p.id)} />
-            </motion.li>
+            // Konum düz <li> üzerinde: framer-motion'ın transform'u ortalama için gereken translate'i ezmesin.
+            <li key={p.id} className={styles.seatSlot} style={seatPosition(i, people.length)}>
+              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+                <Seat person={p} isYou={p.id === youId} size={size} card={renderCard?.(p)} actions={renderActions?.(p)} />
+              </motion.div>
+            </li>
           ))}
         </ul>
       </div>

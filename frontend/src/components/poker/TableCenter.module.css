@@ -1,0 +1,6 @@
+.center { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 340px; }
+.round { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; }
+.ticket { font-size: clamp(15px, 2vw, 19px); line-height: 1.25; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ticket a { color: inherit; }
+.status { font-size: 14px; }

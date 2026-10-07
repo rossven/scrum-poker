@@ -26,6 +26,10 @@ public class SecureIds {
         return randomBase64(9);
     }
 
+    public String ticketId() {
+        return randomBase64(9);
+    }
+
     public String token() {
         return randomBase64(32);
     }

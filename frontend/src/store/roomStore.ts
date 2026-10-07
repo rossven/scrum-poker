@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { RoomSocket, type SocketStatus } from '../api/socket';
-import type { RoomState, ServerEvent } from '../api/types';
+import type { DeckId, RoomState, ServerEvent, YourVote } from '../api/types';
 import { sessions, type StoredSession } from '../lib/session';
 
 export type GoneReason = 'not_found' | 'closed_by_moderator' | 'expired';
@@ -15,6 +15,8 @@ interface RoomStore {
   code: string | null;
   youId: string | null;
   room: RoomState | null;
+  /** Kendi oyum; yalnızca bana gelir. roundId güncel turla eşleşmiyorsa geçersizdir. */
+  yourVote: YourVote | null;
   status: SocketStatus;
   gone: GoneReason | null;
   /** Token geçersiz: kullanıcı katılma formuna döner. */
@@ -27,6 +29,21 @@ interface RoomStore {
   setPassword: (password: string) => void;
   leave: () => void;
   closeRoom: () => void;
+  vote: (card: string | null) => void;
+  reveal: () => void;
+  newRound: () => void;
+  finalize: (value: string) => void;
+  excludeVote: (participantId: string, excluded: boolean) => void;
+  setDeck: (deck: DeckId, cards?: string[]) => void;
+  addTickets: (tickets: { title: string; link?: string; note?: string }[]) => void;
+  updateTicket: (ticketId: string, ticket: { title: string; link?: string; note?: string }) => void;
+  removeTicket: (ticketId: string) => void;
+  moveTicket: (ticketId: string, toIndex: number) => void;
+  selectTicket: (ticketId: string) => void;
+  nextTicket: () => void;
+  startTimer: (seconds: number) => void;
+  stopTimer: () => void;
+  setObserver: (participantId: string | null, observer: boolean) => void;
   toast: (key: string, params?: Record<string, string>) => void;
   dismissToast: (id: number) => void;
 }
@@ -41,7 +58,13 @@ export const useRoomStore = create<RoomStore>((set, get) => {
         set({ room: event.data });
         break;
       case 'room.state_snapshot':
-        set({ room: event.data.room, youId: event.data.youId });
+        set({ room: event.data.room, youId: event.data.youId, yourVote: event.data.yourVote ?? null });
+        break;
+      case 'poker.your_vote':
+        set({ yourVote: event.data });
+        break;
+      case 'poker.deck_changed':
+        get().toast('poker.deckChangedToast', { deck: event.data.deck });
         break;
       case 'room.participant_joined':
         if (event.data.participantId !== get().youId) get().toast('room.joinedToast');
@@ -65,6 +88,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     code: null,
     youId: null,
     room: null,
+    yourVote: null,
     status: 'connecting',
     gone: null,
     needsJoin: false,
@@ -72,7 +96,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
 
     connect(code, session) {
       socket?.disconnect();
-      set({ code, youId: session.participantId, room: null, status: 'connecting', gone: null, needsJoin: false });
+      set({ code, youId: session.participantId, room: null, yourVote: null, status: 'connecting', gone: null, needsJoin: false });
       socket = new RoomSocket(code, session.token, {
         onEvent: handleEvent,
         onStatus: (status) => set({ status }),
@@ -98,6 +122,26 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     promote: (participantId) => socket?.send('room.promote', { participantId }),
     setPassword: (password) => socket?.send('room.set_password', { password }),
     closeRoom: () => socket?.send('room.close'),
+    vote(card) {
+      // İyimser güncelleme: kart anında masaya düşer, sunucu onayı (your_vote) aynısını getirir.
+      const round = get().room?.round;
+      if (round) set({ yourVote: { roundId: round.id, card: card ?? undefined } });
+      socket?.send('poker.vote', { card });
+    },
+    reveal: () => socket?.send('poker.reveal'),
+    newRound: () => socket?.send('poker.new_round'),
+    finalize: (value) => socket?.send('poker.finalize', { value }),
+    excludeVote: (participantId, excluded) => socket?.send('poker.exclude_vote', { participantId, excluded }),
+    setDeck: (deck, cards) => socket?.send('poker.set_deck', { deck, cards }),
+    addTickets: (tickets) => socket?.send('ticket.add', { tickets }),
+    updateTicket: (ticketId, t) => socket?.send('ticket.update', { ticketId, ...t }),
+    removeTicket: (ticketId) => socket?.send('ticket.remove', { ticketId }),
+    moveTicket: (ticketId, toIndex) => socket?.send('ticket.move', { ticketId, toIndex }),
+    selectTicket: (ticketId) => socket?.send('ticket.select', { ticketId }),
+    nextTicket: () => socket?.send('ticket.next'),
+    startTimer: (seconds) => socket?.send('timer.start', { seconds }),
+    stopTimer: () => socket?.send('timer.stop'),
+    setObserver: (participantId, observer) => socket?.send('participant.set_observer', { participantId, observer }),
 
     leave() {
       const { code } = get();
@@ -107,7 +151,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
       socket = null;
       setTimeout(() => s?.disconnect(), 200);
       if (code) sessions.clear(code);
-      set({ code: null, room: null, youId: null });
+      set({ code: null, room: null, youId: null, yourVote: null });
     },
 
     toast(key, params) {

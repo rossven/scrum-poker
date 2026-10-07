@@ -3,7 +3,7 @@
 Ekibin sprint planlamada kullandığı, hesapsız ve ücretsiz bir planning poker aracı.
 Linkle girilen oda, avatarlı masa, ve (sonraki adımlarda) poker + "kim alacak?" akışı.
 
-Durum: **M1 (iskelet ve oda)** tamam. M2 (poker masası) ve M3 (atama oyunları) sırada.
+Durum: **M1 (iskelet ve oda)** ve **M2 (planning poker masası)** tamam. M3 (atama oyunları) sırada.
 
 ## Hızlı başlangıç
 
@@ -43,7 +43,7 @@ java -jar build/libs/sprintmasasi-0.1.0.jar
 ## Testler
 
 ```bash
-cd backend && ./gradlew test          # birim + WebSocket entegrasyon (30 sahte istemci dahil)
+cd backend && ./gradlew test          # birim + WebSocket entegrasyon (30 sahte istemci, 4 istemcili oy sızıntı testi dahil)
 
 # uçtan uca (uygulama 8080'de çalışırken)
 cd e2e && npm install && npx playwright install chromium && npm test
@@ -96,9 +96,14 @@ e2e/       Playwright senaryoları
   WebSocket CONNECT'te bu token ile koltuk doğrulanır. Sayfa yenilenince aynı koltuğa dönülür.
 - **Şifre.** BCrypt ile hash'lenir; açık metin saklanmaz, loglanmaz, hiçbir yanıtta yer almaz.
 - **Gizlilik.** Loglara yalnızca oda kodu ve olay tipi yazılır. İstatistikler isim/avatar/başlık içermez.
+- **Açılmamış oylar.** Oylar yalnızca sunucuda tutulur. Kartlar açılana kadar odaya sadece kimlerin oy verdiği
+  yayınlanır; oy değeri yalnızca oy verene kişisel kuyruktan gider (`RoomService#roundView`).
+  `PokerServiceTest#unrevealedVotesNeverLeak` ve `RoomWebSocketIntegrationTest#fourClientsVoteAndNoVoteLeaksBeforeReveal`
+  bunu doğrular; bu testlerin geçmesi birleştirme koşuludur.
 - **Çeviri.** Tüm arayüz metinleri `frontend/src/i18n/locales/tr.json` içinde. Yeni dil için `en.json` ekleyip
   `i18n/index.ts`'e kaydetmek yeterli.
 
-Önemli sınıflar: `room/RoomService` (kurallar), `room/Room` (durum + kilit), `ws/StompAuthInterceptor`
+Önemli sınıflar: `room/RoomService` (oda kuralları), `room/PokerService` (oylama, ticket, deste, zamanlayıcı),
+`poker/VoteStatistics` (istatistik, saf hesap), `poker/Deck` (desteler, kart → sayı), `room/Room` (durum + kilit), `ws/StompAuthInterceptor`
 (CONNECT/SUBSCRIBE güvenliği), `ws/StompRoomEvents` (yayın), `frontend/src/store/roomStore.ts` (istemci durumu),
 `frontend/src/api/socket.ts` (yeniden bağlanan STOMP istemcisi).

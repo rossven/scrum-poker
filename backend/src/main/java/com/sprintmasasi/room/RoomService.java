@@ -1,12 +1,19 @@
 package com.sprintmasasi.room;
 
 import com.sprintmasasi.config.AppProperties;
+import com.sprintmasasi.poker.Deck;
+import com.sprintmasasi.poker.VoteStatistics;
 import com.sprintmasasi.room.RoomViews.CreateRoomResult;
 import com.sprintmasasi.room.RoomViews.JoinResult;
 import com.sprintmasasi.room.RoomViews.ParticipantView;
 import com.sprintmasasi.room.RoomViews.RoomInfo;
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
 import com.sprintmasasi.room.RoomViews.RoomState;
+import com.sprintmasasi.room.RoomViews.RoundView;
+import com.sprintmasasi.room.RoomViews.TicketView;
+import com.sprintmasasi.room.RoomViews.TimerView;
+import com.sprintmasasi.room.RoomViews.VoteView;
+import com.sprintmasasi.room.RoomViews.YourVote;
 import com.sprintmasasi.stats.UsageStats;
 import java.time.Clock;
 import java.time.Duration;
@@ -58,11 +65,16 @@ public class RoomService {
     // ---------------------------------------------------------------- REST tarafı
 
     public CreateRoomResult create(String rawName, String rawDeck, String rawPassword, String clientIp) {
+        return create(rawName, rawDeck, null, rawPassword, clientIp);
+    }
+
+    public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
+                                   String clientIp) {
         if (!roomCreation.tryAcquire(clientIp)) {
             throw new RoomException(ErrorCode.RATE_LIMITED);
         }
         String name = Validation.roomName(rawName);
-        String deck = Validation.deck(rawDeck);
+        Deck deck = Validation.deck(rawDeck, customCards);
         String password = Validation.password(rawPassword);
         String hash = password == null ? null : passwordEncoder.encode(password);
         String claim = ids.token();
@@ -161,6 +173,7 @@ public class RoomService {
                 // Moderatör uzun süredir yoksa (bekleme süresi dolmuş) bağlanan devralabilir.
                 room.handOverModeratorIfNeeded(graceCutoff());
                 stats.participantsOnline(room.code(), onlineCount(room));
+                stats.roomActivity(room.code(), clock.instant());
                 return true;
             }).orElse(false));
             if (changed) {
@@ -173,6 +186,7 @@ public class RoomService {
         repository.find(code).ifPresent(room -> {
             boolean moderatorLeft = room.withLock(() -> room.participant(participantId).map(p -> {
                 p.disconnect(clock.instant());
+                stats.roomActivity(room.code(), clock.instant());
                 room.touch(clock.instant());
                 return p.moderator() && !p.online() && !room.hasOnlineModerator();
             }).orElse(false));
@@ -196,8 +210,13 @@ public class RoomService {
 
     public void sync(String code, String participantId) {
         Room room = require(code);
-        RoomState state = room.withLock(() -> toState(room));
-        events.snapshot(room.code(), participantId, new RoomSnapshot(participantId, state));
+        RoomSnapshot snapshot = room.withLock(() -> {
+            PokerRound round = room.round();
+            PokerRound.Vote mine = round.votes().get(participantId);
+            YourVote yourVote = mine == null ? null : new YourVote(round.id(), mine.card());
+            return new RoomSnapshot(participantId, toState(room), yourVote);
+        });
+        events.snapshot(room.code(), participantId, snapshot);
     }
 
     public void promote(String code, String actorId, String targetId) {
@@ -267,7 +286,7 @@ public class RoomService {
 
     // ---------------------------------------------------------------- yardımcılar
 
-    private Room require(String code) {
+    Room require(String code) {
         Room room = repository.find(SecureIds.normalizeCode(code))
                 .orElseThrow(() -> new RoomException(ErrorCode.ROOM_NOT_FOUND));
         if (room.withLock(room::closed)) {
@@ -282,14 +301,14 @@ public class RoomService {
         }
     }
 
-    private static void requireModerator(Room room, String actorId) {
+    static void requireModerator(Room room, String actorId) {
         boolean ok = room.participant(actorId).map(Participant::moderator).orElse(false);
         if (!ok) {
             throw new RoomException(ErrorCode.FORBIDDEN);
         }
     }
 
-    private void broadcast(Room room) {
+    void broadcast(Room room) {
         RoomState state = room.withLock(() -> toState(room));
         events.state(room.code(), state);
     }
@@ -302,12 +321,58 @@ public class RoomService {
         return (int) room.participants().stream().filter(Participant::online).count();
     }
 
+    /** Oda kilidi altında çağrılır. */
     RoomState toState(Room room) {
         List<ParticipantView> people = room.participantList().stream()
                 .sorted(Comparator.comparingLong(Participant::joinOrder))
                 .map(p -> new ParticipantView(p.id(), p.nickname(), p.avatar(), p.moderator(), p.observer(), p.online()))
                 .toList();
-        return new RoomState(room.code(), room.name(), room.deckId(), room.passwordProtected(),
-                props.maxParticipants(), people);
+        List<TicketView> tickets = room.tickets().stream()
+                .map(t -> new TicketView(t.id(), t.title(), t.link(), t.note(), t.status().name(), t.finalEstimate(),
+                        List.copyOf(t.history())))
+                .toList();
+        Deck custom = room.customDeck();
+        return new RoomState(room.code(), room.name(), room.deckId(), room.deck().cards(),
+                custom == null ? null : custom.cards(), room.passwordProtected(), props.maxParticipants(), people,
+                tickets, room.currentTicketId(), roundView(room), timerView(room));
+    }
+
+    /**
+     * Turun istemciye giden hali. Gizlilik kuralı burada uygulanır:
+     * VOTING durumunda yalnızca kimlerin oy verdiği gider, oy değerleri ve istatistik asla.
+     */
+    private RoundView roundView(Room room) {
+        PokerRound round = room.round();
+        List<String> votedIds = List.copyOf(round.votes().keySet());
+        if (round.isVoting()) {
+            return new RoundView(round.id(), round.number(), round.ticketId(), round.state().name(), votedIds,
+                    null, null, null);
+        }
+        return new RoundView(round.id(), round.number(), round.ticketId(), round.state().name(), votedIds,
+                voteViews(room, round), statistics(room.deck(), round), round.finalEstimate());
+    }
+
+    /** Açılmış turun oyları (yalnızca REVEALED/FINALIZED için çağrılır). */
+    static List<VoteView> voteViews(Room room, PokerRound round) {
+        return round.votes().entrySet().stream()
+                .map(e -> new VoteView(e.getKey(), e.getValue().nickname(), e.getValue().avatar(), e.getValue().card(),
+                        round.excluded().contains(e.getKey()), room.participant(e.getKey()).isEmpty()))
+                .toList();
+    }
+
+    static VoteStatistics.Result statistics(Deck deck, PokerRound round) {
+        List<VoteStatistics.Vote> counted = round.votes().entrySet().stream()
+                .filter(e -> !round.excluded().contains(e.getKey()))
+                .map(e -> new VoteStatistics.Vote(e.getKey(), e.getValue().card()))
+                .toList();
+        return VoteStatistics.compute(deck, counted);
+    }
+
+    private TimerView timerView(Room room) {
+        if (room.timerEndsAt() == null) {
+            return null;
+        }
+        long remaining = Math.max(0, Duration.between(clock.instant(), room.timerEndsAt()).toMillis());
+        return new TimerView(room.timerSeconds(), remaining);
     }
 }

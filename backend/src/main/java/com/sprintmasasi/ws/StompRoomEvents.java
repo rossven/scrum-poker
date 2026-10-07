@@ -4,6 +4,7 @@ import com.sprintmasasi.room.ErrorCode;
 import com.sprintmasasi.room.RoomEvents;
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
 import com.sprintmasasi.room.RoomViews.RoomState;
+import com.sprintmasasi.room.RoomViews.YourVote;
 import java.util.Map;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,6 +27,17 @@ public class StompRoomEvents implements RoomEvents {
     @Override
     public void snapshot(String code, String participantId, RoomSnapshot snapshot) {
         toUser(code, participantId, Destinations.USER_ROOM_QUEUE, ServerEvent.of("room.state_snapshot", snapshot));
+    }
+
+    @Override
+    public void yourVote(String code, String participantId, YourVote vote) {
+        toUser(code, participantId, Destinations.USER_ROOM_QUEUE, ServerEvent.of("poker.your_vote", vote));
+    }
+
+    @Override
+    public void deckChanged(String code, String deckId) {
+        template.convertAndSend(Destinations.roomTopic(code),
+                ServerEvent.of("poker.deck_changed", Map.of("deck", deckId)));
     }
 
     @Override

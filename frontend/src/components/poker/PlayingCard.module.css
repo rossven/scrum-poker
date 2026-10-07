@@ -1,0 +1,28 @@
+.card { perspective: 600px; flex-shrink: 0; }
+.sm { width: 34px; height: 48px; font-size: 15px; }
+.md { width: 52px; height: 74px; font-size: 20px; }
+
+.inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.face {
+  position: absolute; inset: 0; border-radius: 6px; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 2px rgba(60, 40, 20, 0.18), 0 3px 8px rgba(60, 40, 20, 0.12);
+}
+/* Kartın sırtı: sade, mat çizgili desen. */
+.back {
+  background:
+    repeating-linear-gradient(45deg, transparent 0 4px, color-mix(in srgb, var(--accent-contrast) 22%, transparent) 4px 5px),
+    var(--accent);
+  border: 2px solid var(--surface);
+}
+.front {
+  transform: rotateY(180deg);
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+}
+.value { font-weight: 700; letter-spacing: -0.02em; }
+
+.empty { border: 2px dashed color-mix(in srgb, var(--table-edge) 55%, transparent); border-radius: 6px; }
+
+.low .front { border-color: #6f8fb0; box-shadow: 0 0 0 2px color-mix(in srgb, #6f8fb0 45%, transparent); }
+.high .front { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+.dimmed { opacity: 0.4; }

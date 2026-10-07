@@ -196,8 +196,32 @@ _Ürün adı, avatar kütüphanesi ve lisansı, CSS yaklaşımı, barındırma t
 - **Yeniden bağlanma:** İstemci üstel beklemeyle (1 sn → en fazla 15 sn) tekrar dener; her bağlanışta `room.sync` ile `room.state_snapshot` alır. Sunucu "oda yok" derse denemeyi bırakıp "Oda bulunamadı, yeni oda aç" ekranını gösterir.
 - **Mesaj sırası:** STOMP'ta hem gelen hem giden mesaj sırası korunuyor (`setPreserveReceiveOrder`, `setPreservePublishOrder`), eski bir durum yenisinin üstüne yazılmasın diye.
 - **Hareketsiz oda:** Son etkinlikten 7 gün geçmiş **ve** kimsenin bağlı olmadığı odalar 15 dakikada bir silinir.
-- **İstatistik (bölüm 8):** M1'de yalnızca oda sayısı ve en yüksek eşzamanlı katılımcı sayacı var; poker/atama sayaçları ilgili milestone'larda eklenecek. Günlük dosyaya yazma henüz yok, sadece bellek + `/admin/stats`.
+- **İstatistik (bölüm 8):** M1'de yalnızca oda sayısı ve en yüksek eşzamanlı katılımcı sayacı vardı; M2'de diğer sayaçlar eklendi (aşağıda). Günlük dosyaya yazma henüz yok, sadece bellek + `/admin/stats`.
 - **Masa görünümü M1'de geldi:** Lobi zaten oval masa etrafında oturma düzeniyle çizildi (M2'de kartlar bunun üstüne eklenecek). 8/14/24 kişi eşiklerinde avatarlar küçülüyor, 16 kişiden sonra iki sıra; 640 px altında masa üstte, koltuklar ızgarada.
-- **Sesler:** M1'de ses yok; açma/kapama düğmesi ses kullanılan ilk yerle (M2 zamanlayıcı) birlikte gelecek.
+- **Sesler:** M1'de ses yoktu; düğme M2'de geldi (aşağıda).
 - **Barındırma:** Tek Docker imajı, tek kopya. Durum bellekte olduğu için yatay ölçekleme yok.
 
+### M2
+
+- **Gizlilik nasıl sağlanıyor:** Oylar sunucuda `PokerRound` içinde `Map<participantId, Vote>`. İstemciye giden `RoundView`, tur `VOTING` iken yalnızca `votedIds` taşır; `votes` ve `stats` alanları JSON'a hiç yazılmaz (`@JsonInclude(NON_NULL)`, uygulama ayarından bağımsız). Kişinin kendi oyu yalnızca `/user/queue/room` ile ona gider (`poker.your_vote`, yeniden bağlanınca `room.state_snapshot.yourVote`). Birim testi (`PokerServiceTest#unrevealedVotesNeverLeak`) ve 4 gerçek STOMP istemcili entegrasyon testi (`RoomWebSocketIntegrationTest#fourClientsVoteAndNoVoteLeaksBeforeReveal`) her istemcinin aldığı tüm mesajları tarar. Uçtan uca testte de tarayıcının aldığı WebSocket çerçeveleri kontrol ediliyor.
+- **Tur kimliği:** Her yeni tur (tekrar oylama, ticket değişimi, deste değişimi) yeni bir `round.id` alır. İstemci kendi oyunu bu kimlikle eşleştirir; eski turun oyu yeni turda yanlışlıkla seçili görünmez.
+- **İstatistik:** Ortalama ve medyan yalnızca sayıya çevrilebilen kartlardan (`½`, `0.5`, `0,5`, `1/2` = 0.5). Mod, en düşük/en yüksek ve uzlaşı `?`/`☕` dışındaki tüm kartlarla, **deste sırasına** göre (T-shirt destesinde de çalışsın diye). Mod eşitliğinde hepsi gösterilir. Tek kişi oy verdiyse en düşük/en yüksek vurgusu yapılmaz.
+- **Uzlaşı göstergesi:** "Herkes aynı" = tek kart; "Yakın" = destede yan yana iki kart (aradaki `?`/`☕` sayılmaz); "Dağınık" = daha geniş. Sayılabilir oy yoksa "Sayılabilir oy yok".
+- **Final önerisi:** Medyana en yakın sayısal kart; eşitlikte büyük olan (iyimser tahmin vermemek için). Sayısal oy yoksa (T-shirt) deste sırasında ortadaki oy. Final `?`/`☕` olamaz ve destede olmalı.
+- **Final tahmin bir ticket gerektirir:** Ticket olmadan da oylanabilir ("Serbest tur"), ama final ancak masadaki ticket'a yazılır.
+- **Tur geçmişi:** Açılmış her tur, tur bitince (tekrar oylama, başka ticket, deste değişimi, final) o ticket'ın geçmişine yazılır. Ticket başına en fazla 20 tur saklanır. Açılmadan geçilen turun oyları atılır (hiç açılmadığı için kimse görmedi).
+- **Oy verip ayrılan:** Oy anındaki isim/avatar oyla birlikte saklanır, açılışta "odadan ayrıldı" notuyla görünür ve sayılır. Moderatör sonuç panelindeki "Sayıma dahil edilenler" listesinden herhangi bir oyu (ayrılan ya da değil) sayımdan çıkarabilir.
+- **Deste değişimi:** Turun oyları sıfırlanır (yeni tur kimliği), herkese `poker.deck_changed` ile bildirim (toast) gider. Tur açılmışsa önce geçmişe yazılır. Özel deste oda boyunca saklanır; hazır desteye geçip geri dönülebilir. Özel destede tekrar kontrolü büyük/küçük harf duyarsız ("xl" ve "XL" aynı sayılır).
+- **Ticket kuyruğu:** Başlık 1-120 karakter, link yalnızca `http(s)://` (arayüzde `javascript:` vb. link oluşamaz), not en fazla 500 karakter, oda başına en fazla 100 ticket. Toplu yapıştırmada her satır bir ticket; satırdaki link ticket'ın linki olur. Biri geçersizse hiçbiri eklenmez. Sıralama yukarı/aşağı düğmeleriyle (sürükle-bırak yok, bağımlılık eklememek ve klavyeyle de çalışması için). Masa boşken ticket eklenirse ilki masaya gelir. "Sıradaki ticket" tahmin edilmemiş bir sonrakine geçer.
+- **Zamanlayıcı:** Hazır süreler 1, 2, 5 dk (sunucu 10 sn-60 dk kabul eder). Sunucu kalan süreyi gönderir, istemci kendi saatiyle sayar (cihaz saatleri farklı olsa da herkeste aynı). Süre bitince masadaki sayaç yavaşça "nefes alır" (kırmızı alarm yok); ses açıksa yumuşak üç nota.
+- **Ses:** Başlıktaki "Ses" düğmesi, varsayılan kapalı, tercih tarayıcıda saklanır. Ses dosyası yok; Web Audio ile kısa sinüs tonları (kartlar açılınca ve süre bitince).
+- **Klavye:** ←/→ kart işaretler, sayı tuşları doğrudan karta gider ("1" sonra "3" = 13; `.` ya da `,` = ½), Enter onaylar, Esc oyu geri çeker. Yazı alanındayken devre dışı.
+- **Oy değiştirme:** Seçili karta tekrar tıklamak oyu geri çeker, başka karta tıklamak değiştirir. Açılınca el kilitlenir.
+- **Gözlemci geçişi:** Kişi kendisi ya da moderatör yapar. Açık turda oy vermiş biri izleyiciye geçemez (önce oyunu geri almalı); böylece "oyu sayılır mı" belirsizliği olmaz.
+- **"Aç" vurgusu:** Bağlı (çevrimiçi) tüm katılımcılar oy verdiyse düğme vurgulanır; çevrimdışı koltuklar beklenmez. Açmak her zaman serbest.
+- **Kart çevirme:** Tüm kartlar aynı `room.state` mesajıyla açıldığı için aynı karede çevrilir. `prefers-reduced-motion` açıksa animasyon anında biter.
+- **Mobil:** 640 px altında masa üstte, koltuklar ızgarada; kart eli altta yapışık, yatay kaydırılır. 390 px genişlikte uçtan uca test var.
+- **Toast'lar:** Kart eliyle çakışmasın diye ekranın üstüne taşındı.
+- **Ölçüm (bölüm 8):** Yeni sayaçlar: açılan poker turu (`pokerRoundsRevealed`), final onaylanan ticket (`ticketsFinalized`), atama oyunu (`assignmentGamesStarted`, oyun tipine göre; M3'te dolacak), ortalama oturum süresi (`averageSessionMinutes`: odada ilk bağlantıdan son bağlantı hareketine kadar). Oy değeri, isim ya da başlık yazılmaz.
+- **Hata işleme:** STOMP hata işleyicisi tüm denetleyiciler için ortak (`SocketErrorAdvice`); poker niyetleri ayrı denetleyicide (`PokerSocketController`).
+- **M1 düzeltmesi:** `/yeni` adresi doğrudan açılınca (ya da sayfa yenilenince) 404 veriyordu; artık uygulamaya yönleniyor. Koltuklar M1'de framer-motion'ın `transform`'u yüzünden tam ortalanmıyordu; konum ve animasyon ayrı öğelere alındı.

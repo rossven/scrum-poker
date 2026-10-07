@@ -7,11 +7,18 @@ public enum ErrorCode {
     INVALID_NICKNAME(400),
     INVALID_AVATAR(400),
     INVALID_PASSWORD(400),
+    INVALID_DECK(400),
+    INVALID_TICKET(400),
     PASSWORD_REQUIRED(401),
     WRONG_PASSWORD(401),
     INVALID_TOKEN(401),
     FORBIDDEN(403),
     ROOM_FULL(409),
+    /** Niyet turun şu anki durumunda geçersiz (ör. açılmış turda oy vermek). */
+    WRONG_PHASE(409),
+    /** Oy vermiş kişi tur bitmeden gözlemciye geçemez. */
+    ALREADY_VOTED(409),
+    TICKET_LIMIT(409),
     TOO_MANY_ATTEMPTS(429),
     RATE_LIMITED(429);
 

@@ -1,5 +1,6 @@
 package com.sprintmasasi.room;
 
+import com.sprintmasasi.poker.Deck;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -25,17 +26,27 @@ public class Room {
     private final Instant createdAt;
     private final Map<String, Participant> participants = new LinkedHashMap<>();
     private String name;
-    private String deckId;
+    private Deck deck;
+    /** Moderatörün oluşturduğu özel deste; başka desteye geçilse de oda boyunca saklanır. */
+    private Deck customDeck;
+    private final List<Ticket> tickets = new ArrayList<>();
+    private String currentTicketId;
+    private PokerRound round;
+    private long roundCounter;
+    private Instant timerEndsAt;
+    private int timerSeconds;
     private String passwordHash;
     private String creatorClaimToken;
     private Instant lastActivity;
     private long joinCounter;
     private boolean closed;
 
-    public Room(String code, String name, String deckId, String passwordHash, String creatorClaimToken, Instant now) {
+    public Room(String code, String name, Deck deck, String passwordHash, String creatorClaimToken, Instant now) {
         this.code = code;
         this.name = name;
-        this.deckId = deckId;
+        this.deck = deck;
+        this.customDeck = Deck.CUSTOM.equals(deck.id()) ? deck : null;
+        this.round = new PokerRound(++roundCounter, 1, null);
         this.passwordHash = passwordHash;
         this.creatorClaimToken = creatorClaimToken;
         this.createdAt = now;
@@ -61,7 +72,46 @@ public class Room {
     public String code() { return code; }
     public Instant createdAt() { return createdAt; }
     public String name() { return name; }
-    public String deckId() { return deckId; }
+    public String deckId() { return deck.id(); }
+    Deck deck() { return deck; }
+    Deck customDeck() { return customDeck; }
+    List<Ticket> tickets() { return tickets; }
+    String currentTicketId() { return currentTicketId; }
+    PokerRound round() { return round; }
+    Instant timerEndsAt() { return timerEndsAt; }
+    int timerSeconds() { return timerSeconds; }
+
+    void setDeck(Deck deck) {
+        this.deck = deck;
+        if (Deck.CUSTOM.equals(deck.id())) {
+            this.customDeck = deck;
+        }
+    }
+
+    Optional<Ticket> ticket(String id) {
+        return tickets.stream().filter(t -> t.id().equals(id)).findFirst();
+    }
+
+    Optional<Ticket> currentTicket() {
+        return currentTicketId == null ? Optional.empty() : ticket(currentTicketId);
+    }
+
+    /** Yeni oylama turu başlatır; önceki tur artık geçersizdir (oyları istemciye hiç gitmeyecek). */
+    PokerRound startRound(String ticketId, int number) {
+        this.currentTicketId = ticketId;
+        this.round = new PokerRound(++roundCounter, number, ticketId);
+        return round;
+    }
+
+    void startTimer(int seconds, Instant now) {
+        this.timerSeconds = seconds;
+        this.timerEndsAt = now.plusSeconds(seconds);
+    }
+
+    void stopTimer() {
+        this.timerSeconds = 0;
+        this.timerEndsAt = null;
+    }
     String passwordHash() { return passwordHash; }
     public boolean passwordProtected() { return passwordHash != null; }
     public Instant lastActivity() { return lastActivity; }

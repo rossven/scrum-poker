@@ -1,6 +1,7 @@
 // Sunucu şemaları: docs/events.md ile aynı tutulmalı.
 
-export type DeckId = 'modified-fibonacci' | 'fibonacci' | 'tshirt';
+export type DeckId = 'modified-fibonacci' | 'fibonacci' | 'tshirt' | 'custom';
+export const PRESET_DECKS: DeckId[] = ['modified-fibonacci', 'fibonacci', 'tshirt'];
 
 export interface ParticipantView {
   id: string;
@@ -11,18 +12,92 @@ export interface ParticipantView {
   online: boolean;
 }
 
+export type Consensus = 'NONE' | 'UNANIMOUS' | 'CLOSE' | 'SPREAD';
+
+export interface VoteStats {
+  voteCount: number;
+  countedCount: number;
+  average?: number;
+  median?: number;
+  modes: string[];
+  distribution: { card: string; count: number; participantIds: string[] }[];
+  lowestIds: string[];
+  highestIds: string[];
+  consensus: Consensus;
+  suggested?: string;
+}
+
+export interface VoteView {
+  participantId: string;
+  nickname: string;
+  avatar: string;
+  card: string;
+  excluded: boolean;
+  /** Oy verdikten sonra odadan ayrıldı. */
+  left: boolean;
+}
+
+export type RoundState = 'VOTING' | 'REVEALED' | 'FINALIZED';
+
+/** VOTING durumunda votes ve stats hiç gelmez: sunucu açılmamış oyları göndermez. */
+export interface RoundView {
+  id: number;
+  number: number;
+  ticketId?: string;
+  state: RoundState;
+  votedIds: string[];
+  votes?: VoteView[];
+  stats?: VoteStats;
+  finalEstimate?: string;
+}
+
+export interface RoundRecord {
+  number: number;
+  votes: VoteView[];
+  stats: VoteStats;
+  finalEstimate?: string;
+}
+
+export interface TicketView {
+  id: string;
+  title: string;
+  link?: string;
+  note?: string;
+  status: 'PENDING' | 'ESTIMATED';
+  finalEstimate?: string;
+  history: RoundRecord[];
+}
+
+export interface TimerView {
+  durationSeconds: number;
+  remainingMs: number;
+}
+
 export interface RoomState {
   code: string;
   name?: string;
   deck: DeckId;
+  deckCards: string[];
+  customDeck?: string[];
   passwordProtected: boolean;
   maxParticipants: number;
   participants: ParticipantView[];
+  tickets: TicketView[];
+  currentTicketId?: string;
+  round: RoundView;
+  timer?: TimerView;
+}
+
+/** Kişinin kendi oyu; yalnızca ona gelir. card yoksa oy geri çekildi. */
+export interface YourVote {
+  roundId: number;
+  card?: string;
 }
 
 export interface RoomSnapshot {
   youId: string;
   room: RoomState;
+  yourVote?: YourVote;
 }
 
 export interface RoomInfo {
@@ -49,5 +124,7 @@ export type ServerEvent =
   | { type: 'room.state_snapshot'; v: number; data: RoomSnapshot }
   | { type: 'room.participant_joined'; v: number; data: { participantId: string } }
   | { type: 'room.participant_left'; v: number; data: { participantId: string } }
+  | { type: 'poker.your_vote'; v: number; data: YourVote }
+  | { type: 'poker.deck_changed'; v: number; data: { deck: DeckId } }
   | { type: 'room.closed'; v: number; data: { reason: 'closed_by_moderator' | 'expired' } }
   | { type: 'error'; v: number; data: { code: string } };

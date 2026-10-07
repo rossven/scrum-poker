@@ -109,6 +109,86 @@ class RoomWebSocketIntegrationTest {
         });
     }
 
+    /**
+     * Kabul kriteri: 4 istemci oy verir; kartlar açılana kadar hiçbir istemciye başkasının oyu ulaşmaz.
+     * Her istemcinin aldığı ham mesajlar (konu + kişisel kuyruk) taranır.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void fourClientsVoteAndNoVoteLeaksBeforeReveal() throws Exception {
+        var body = new HashMap<String, Object>();
+        body.put("deck", "custom");
+        body.put("customDeck", List.of("ALFA", "BETA", "GAMA", "DELTA"));
+        Map<String, Object> room = http.postForObject("/api/rooms", body, Map.class);
+        String code = (String) room.get("code");
+        List<String> cards = List.of("ALFA", "BETA", "GAMA", "DELTA");
+        List<TestStompClient> players = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            var extra = i == 0 ? Map.<String, Object>of("claimToken", room.get("claimToken")) : Map.<String, Object>of();
+            var res = join(code, "Oyuncu " + i, extra).getBody();
+            players.add(connect(code, (String) res.get("token")));
+        }
+        for (int i = 0; i < 4; i++) {
+            players.get(i).send("poker.vote", Map.of("card", cards.get(i)));
+        }
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+            for (TestStompClient c : players) {
+                var state = c.lastOfType("room.state");
+                var round = (Map<String, Object>) state.get("round");
+                assertThat((List<Object>) round.get("votedIds")).hasSize(4);
+                assertThat(round).doesNotContainKeys("votes", "stats");
+            }
+        });
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (int i = 0; i < 4; i++) {
+            for (var msg : players.get(i).received) {
+                var copy = new HashMap<>(msg);
+                if (copy.get("data") instanceof Map<?, ?> data) {
+                    var d = new HashMap<>((Map<String, Object>) data);
+                    d.remove("deckCards");
+                    d.remove("customDeck");
+                    if (d.get("room") instanceof Map<?, ?> r) {
+                        var rr = new HashMap<>((Map<String, Object>) r);
+                        rr.remove("deckCards");
+                        rr.remove("customDeck");
+                        d.put("room", rr);
+                    }
+                    copy.put("data", d);
+                }
+                String json = mapper.writeValueAsString(copy);
+                for (int j = 0; j < 4; j++) {
+                    if (j != i) {
+                        assertThat(json).as("istemci %d, mesaj %s", i, msg.get("type")).doesNotContain(cards.get(j));
+                    }
+                }
+            }
+        }
+        // Kişi kendi oyunu görür
+        assertThat(players.get(2).lastOfType("poker.your_vote")).containsEntry("card", "GAMA");
+
+        players.get(0).send("poker.reveal", null);
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+            var round = (Map<String, Object>) players.get(3).lastOfType("room.state").get("round");
+            assertThat(round.get("state")).isEqualTo("REVEALED");
+            assertThat((List<Map<String, Object>>) round.get("votes")).extracting(v -> v.get("card"))
+                    .containsExactlyInAnyOrderElementsOf(cards);
+        });
+    }
+
+    @Test
+    void nonModeratorRevealIsRejectedOverWebSocket() throws Exception {
+        var room = createRoom(null);
+        String code = (String) room.get("code");
+        join(code, "Moderatör", Map.of("claimToken", room.get("claimToken")));
+        var ali = join(code, "Ali", Map.of()).getBody();
+        var aliClient = connect(code, (String) ali.get("token"));
+
+        aliClient.send("poker.reveal", null);
+
+        await().atMost(Duration.ofSeconds(5)).until(() -> aliClient.lastOfType("error") != null);
+        assertThat(aliClient.lastOfType("error")).containsEntry("code", "FORBIDDEN");
+    }
+
     @Test
     void connectingWithInvalidTokenFails() {
         var room = createRoom(null);

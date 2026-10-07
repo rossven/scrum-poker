@@ -24,7 +24,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // SPA: oda linkleri (/r/KOD) index.html'e yönlenir.
+        // SPA: oda linkleri (/r/KOD) ve oda oluşturma sayfası (/yeni) index.html'e yönlenir.
         registry.addViewController("/r/{code}").setViewName("forward:/index.html");
+        registry.addViewController("/yeni").setViewName("forward:/index.html");
     }
 }
