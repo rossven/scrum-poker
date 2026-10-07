@@ -1,0 +1,6 @@
+.form { width: min(100%, 520px); margin: 0 auto; padding: clamp(18px, 4vw, 28px); display: flex; flex-direction: column; gap: 18px; }
+.title { font-size: 24px; }
+.subtitle { margin: -10px 0 0; color: var(--text-soft); }
+.buttons { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.checkbox { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.checkbox input { width: 18px; height: 18px; accent-color: var(--accent); }

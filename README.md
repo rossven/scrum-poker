@@ -1,0 +1,104 @@
+# SprintMasası
+
+Ekibin sprint planlamada kullandığı, hesapsız ve ücretsiz bir planning poker aracı.
+Linkle girilen oda, avatarlı masa, ve (sonraki adımlarda) poker + "kim alacak?" akışı.
+
+Durum: **M1 (iskelet ve oda)** tamam. M2 (poker masası) ve M3 (atama oyunları) sırada.
+
+## Hızlı başlangıç
+
+### Docker ile (tek komut)
+
+```bash
+docker compose up --build
+```
+
+Sonra http://localhost:8080 adresini aç.
+
+### Geliştirme
+
+Gerekenler: Java 21, Node 20+ (Gradle wrapper repoda, ayrıca Gradle kurmaya gerek yok).
+
+```bash
+# 1. terminal: backend (http://localhost:8080)
+cd backend && ./gradlew bootRun
+
+# 2. terminal: frontend, anlık yenilemeli (http://localhost:5173)
+cd frontend && npm install && npm run dev
+```
+
+Vite, `/api` ve `/ws` isteklerini 8080'e yönlendirir. Aynı odayı farklı kullanıcılar gibi denemek için
+ikinci pencereyi gizli pencere ya da başka bir tarayıcı olarak aç (oturum token'ı tarayıcıda saklanır).
+
+### Tek JAR
+
+```bash
+cd frontend && npm ci && npm run build
+cd ../backend && ./gradlew bootJar
+java -jar build/libs/sprintmasasi-0.1.0.jar
+```
+
+`bootJar`, `frontend/dist` varsa onu JAR'ın içine gömer.
+
+## Testler
+
+```bash
+cd backend && ./gradlew test          # birim + WebSocket entegrasyon (30 sahte istemci dahil)
+
+# uçtan uca (uygulama 8080'de çalışırken)
+cd e2e && npm install && npx playwright install chromium && npm test
+```
+
+## Ortam değişkenleri
+
+| Değişken | Varsayılan | Açıklama |
+|---|---|---|
+| `PORT` | `8080` | HTTP portu |
+| `SM_MAX_PARTICIPANTS` | `100` | Oda başına koltuk tavanı (güvenlik sınırı) |
+| `SM_IDLE_EXPIRY_DAYS` | `7` | Hareketsiz oda temizliği |
+| `SM_MODERATOR_GRACE_SECONDS` | `20` | Moderatör kopunca devirden önce bekleme |
+| `SM_ALLOWED_ORIGINS` | boş | Virgülle ayrılmış izinli origin'ler. Boşsa yalnızca aynı origin (önerilen: frontend ve backend aynı adreste). |
+| `SM_PASSWORD_MAX_ATTEMPTS` | `5` | IP + oda başına yanlış şifre sınırı |
+| `SM_PASSWORD_WINDOW_SECONDS` | `300` | Yanlış şifre sayacının penceresi |
+| `SM_CREATE_ROOMS_PER_MINUTE` | `10` | IP başına oda oluşturma sınırı |
+| `SM_MESSAGES_PER_SECOND` | `20` | Katılımcı başına WebSocket mesaj sınırı |
+| `SM_ADMIN_TOKEN` | boş | Tanımlıysa `GET /admin/stats` bu token ile açılır (`Authorization: Bearer ...`) |
+
+Ters vekil (nginx, Caddy, PaaS) arkasında çalışırken gerçek istemci IP'si için
+`SERVER_FORWARD_HEADERS_STRATEGY=native` ekle; vekilin WebSocket yükseltmesini (`Upgrade` başlığı) geçirdiğinden emin ol.
+
+## Dağıtım
+
+Tek servis, veritabanı yok. Küçük bir VPS veya Docker çalıştıran herhangi bir PaaS yeterli:
+
+```bash
+docker build -t sprintmasasi .
+docker run -p 8080:8080 -e SM_ADMIN_TOKEN=... sprintmasasi
+```
+
+Oda durumu bellekte tutulur; sunucu yeniden başlarsa açık odalar kaybolur (bu sürümde kabul edildi),
+istemci "Oda bulunamadı, yeni oda aç" mesajı gösterir. Bu yüzden **tek kopya** çalıştır (yatay ölçekleme yok).
+
+## Mimari özet
+
+```
+frontend/  React + TypeScript (Vite), Zustand, Framer Motion, react-i18next, CSS Modules
+backend/   Java 21, Spring Boot 3.5, STOMP WebSocket, Gradle
+docs/      events.md: olay ve API şemaları
+e2e/       Playwright senaryoları
+```
+
+- **Sunucu otoriter.** İstemci niyet gönderir (`/app/room.promote` vb.), `RoomService` yetkiyi ve kuralları
+  kontrol eder, sonra `room.state` yayınlar.
+- **Oda başına kilit.** Her `Room` kendi `ReentrantLock`'ı altında değişir; yarış durumları oda içinde sıralanır.
+- **`RoomRepository` arayüzü.** Şimdilik `InMemoryRoomRepository`; kalıcı depo eklemek bu arayüzü uygulamaktan ibaret.
+- **Kimlik.** Hesap yok. Katılınca rastgele bir token verilir, tarayıcıda (`localStorage`) saklanır;
+  WebSocket CONNECT'te bu token ile koltuk doğrulanır. Sayfa yenilenince aynı koltuğa dönülür.
+- **Şifre.** BCrypt ile hash'lenir; açık metin saklanmaz, loglanmaz, hiçbir yanıtta yer almaz.
+- **Gizlilik.** Loglara yalnızca oda kodu ve olay tipi yazılır. İstatistikler isim/avatar/başlık içermez.
+- **Çeviri.** Tüm arayüz metinleri `frontend/src/i18n/locales/tr.json` içinde. Yeni dil için `en.json` ekleyip
+  `i18n/index.ts`'e kaydetmek yeterli.
+
+Önemli sınıflar: `room/RoomService` (kurallar), `room/Room` (durum + kilit), `ws/StompAuthInterceptor`
+(CONNECT/SUBSCRIBE güvenliği), `ws/StompRoomEvents` (yayın), `frontend/src/store/roomStore.ts` (istemci durumu),
+`frontend/src/api/socket.ts` (yeniden bağlanan STOMP istemcisi).

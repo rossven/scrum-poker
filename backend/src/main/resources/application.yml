@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: sprintmasasi
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${PORT:8080}
+
+sprintmasasi:
+  # Oda başına en fazla bağlı kişi (güvenlik tavanı)
+  max-participants: ${SM_MAX_PARTICIPANTS:100}
+  # Hareketsiz odalar bu süre sonra silinir (gün)
+  idle-expiry-days: ${SM_IDLE_EXPIRY_DAYS:7}
+  # Moderatör kopunca devir için bekleme (saniye)
+  moderator-grace-seconds: ${SM_MODERATOR_GRACE_SECONDS:20}
+  # Virgülle ayrılmış izinli origin'ler. Boşsa yalnızca aynı origin.
+  allowed-origins: ${SM_ALLOWED_ORIGINS:}
+  # Yanlış şifre denemesi sınırı (IP + oda başına, pencere içinde)
+  password-max-attempts: ${SM_PASSWORD_MAX_ATTEMPTS:5}
+  password-window-seconds: ${SM_PASSWORD_WINDOW_SECONDS:300}
+  # Oda oluşturma hız sınırı (IP başına, dakikada)
+  create-rooms-per-minute: ${SM_CREATE_ROOMS_PER_MINUTE:10}
+  # WebSocket mesaj hız sınırı (katılımcı başına, saniyede)
+  messages-per-second: ${SM_MESSAGES_PER_SECOND:20}

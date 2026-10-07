@@ -1,0 +1,107 @@
+{
+  "app": {
+    "name": "SprintMasası",
+    "tagline": "Ekibinle sakin ve adil sprint planlama. Hesap yok, link yeter."
+  },
+  "common": {
+    "back": "Geri",
+    "cancel": "Vazgeç",
+    "save": "Kaydet",
+    "loading": "Yükleniyor…",
+    "optional": "opsiyonel"
+  },
+  "home": {
+    "create": "Oda oluştur",
+    "joinTitle": "Bir odaya katıl",
+    "codePlaceholder": "Oda kodu",
+    "join": "Katıl",
+    "or": "ya da"
+  },
+  "create": {
+    "title": "Yeni oda",
+    "name": "Oda adı",
+    "namePlaceholder": "ör. Sprint 42 planlama",
+    "deck": "Başlangıç destesi",
+    "password": "Şifre",
+    "passwordHint": "Boş bırakırsan link olan herkes girebilir.",
+    "submit": "Odayı oluştur"
+  },
+  "decks": {
+    "modified-fibonacci": "Modifiye Fibonacci",
+    "fibonacci": "Fibonacci",
+    "tshirt": "T-shirt"
+  },
+  "join": {
+    "title": "Odaya katıl",
+    "nickname": "Takma ad",
+    "nicknamePlaceholder": "Ekip arkadaşların seni nasıl görsün?",
+    "avatar": "Avatar",
+    "shuffle": "Başka öneriler",
+    "observer": "Gözlemci olarak katıl (oy vermeden izle)",
+    "password": "Oda şifresi",
+    "submit": "Masaya otur",
+    "renamed": "Bu isim odada vardı, sen “{{name}}” olarak katıldın."
+  },
+  "room": {
+    "code": "Oda kodu",
+    "copyLink": "Linki kopyala",
+    "copied": "Kopyalandı",
+    "participants": "Katılımcılar",
+    "observers": "İzleyiciler",
+    "you": "sen",
+    "moderator": "Moderatör",
+    "observer": "Gözlemci",
+    "participant": "Katılımcı",
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı",
+    "makeModerator": "Moderatör yap",
+    "leave": "Odadan çık",
+    "settings": "Oda ayarları",
+    "changePassword": "Şifreyi değiştir",
+    "newPassword": "Yeni şifre (boş = şifresiz)",
+    "passwordSaved": "Oda şifresi güncellendi.",
+    "passwordProtected": "Şifreli oda",
+    "closeRoom": "Odayı kapat",
+    "closeConfirm": "Oda herkes için kapatılacak ve silinecek. Emin misin?",
+    "waitingTitle": "Masa hazırlanıyor",
+    "waitingBody": "Planning poker masası bir sonraki adımda gelecek. Şimdilik linki paylaş, ekibin toplansın.",
+    "count": "{{count}} kişi",
+    "joinedToast": "Biri odaya katıldı",
+    "leftToast": "Biri odadan ayrıldı"
+  },
+  "status": {
+    "connecting": "Bağlanıyor…",
+    "reconnecting": "Bağlantı koptu, yeniden bağlanılıyor…",
+    "online": "Bağlı"
+  },
+  "gone": {
+    "notFoundTitle": "Oda bulunamadı",
+    "notFoundBody": "Bu oda kapatılmış, süresi dolmuş ya da sunucu yeniden başlamış olabilir.",
+    "closedTitle": "Oda kapatıldı",
+    "closedBody": "Moderatör odayı kapattı.",
+    "expiredBody": "Oda uzun süre kullanılmadığı için kapatıldı.",
+    "newRoom": "Yeni oda aç"
+  },
+  "theme": {
+    "label": "Tema",
+    "system": "Sistem",
+    "light": "Açık",
+    "dark": "Koyu"
+  },
+  "errors": {
+    "ROOM_NOT_FOUND": "Oda bulunamadı.",
+    "INVALID_INPUT": "Girilen bilgiler geçersiz.",
+    "INVALID_NICKNAME": "Takma ad 1-24 karakter olmalı.",
+    "INVALID_AVATAR": "Lütfen bir avatar seç.",
+    "INVALID_PASSWORD": "Şifre en fazla 64 karakter olabilir.",
+    "PASSWORD_REQUIRED": "Bu oda şifreli, lütfen şifreyi gir.",
+    "WRONG_PASSWORD": "Şifre yanlış.",
+    "INVALID_TOKEN": "Oturumun geçersiz, lütfen tekrar katıl.",
+    "FORBIDDEN": "Bunu yalnızca moderatör yapabilir.",
+    "ROOM_FULL": "Oda dolu.",
+    "TOO_MANY_ATTEMPTS": "Çok fazla yanlış deneme. Biraz bekleyip tekrar dene.",
+    "RATE_LIMITED": "Çok hızlı gidiyorsun, biraz bekle.",
+    "NETWORK": "Sunucuya ulaşılamadı.",
+    "UNKNOWN": "Bir şeyler ters gitti."
+  }
+}

@@ -1,0 +1,19 @@
+.wrap { width: 100%; }
+.arena { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 70vh; margin: 24px auto 56px; }
+.table {
+  position: absolute; inset: 24% 20%; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--table) 80%, white) 0%, var(--table) 72%);
+  box-shadow: inset 0 0 0 10px var(--table-edge), inset 0 8px 30px rgba(0, 0, 0, 0.12), var(--shadow);
+  display: flex; align-items: center; justify-content: center; text-align: center; padding: 6%;
+  color: var(--table-text);
+}
+.seats { list-style: none; margin: 0; padding: 0; }
+.seatSlot { position: absolute; transform: translate(-50%, -50%); }
+
+/* Mobil: masa küçülür, koltuklar akan bir ızgaraya geçer. */
+@media (max-width: 640px) {
+  .arena { aspect-ratio: auto; max-height: none; margin: 0; display: flex; flex-direction: column; gap: 18px; }
+  .table { position: relative; inset: auto; width: 100%; aspect-ratio: 2.2 / 1; }
+  .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px 8px; }
+  .seatSlot { position: static; transform: none !important; display: flex; justify-content: center; }
+}

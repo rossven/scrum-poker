@@ -1,0 +1,10 @@
+.banner {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 8px 14px; margin-bottom: 16px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--text); font-size: 14px;
+}
+.spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--accent); border-right-color: transparent; animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

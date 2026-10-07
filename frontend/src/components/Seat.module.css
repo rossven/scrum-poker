@@ -1,0 +1,17 @@
+.seat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; max-width: 120px; }
+.away { opacity: 0.55; }
+.name { font-weight: 600; font-size: 14px; line-height: 1.2; overflow-wrap: anywhere; }
+.you { font-weight: 400; color: var(--text-soft); }
+.badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; min-height: 0; }
+.badge {
+  font-size: 11px; padding: 1px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--accent-strong);
+}
+.observer { background: var(--bg-soft); color: var(--text-soft); }
+.promote {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 2;
+  font-size: 12px; min-height: 28px; padding: 0 10px; background: var(--surface); border-color: var(--border);
+  box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+/* Moderatör eylemi yalnızca üzerine gelince/odaklanınca görünür; dokunmatik ekranda koltuğa dokununca. */
+.seat:hover .promote, .seat:focus-within .promote { opacity: 1; pointer-events: auto; }
