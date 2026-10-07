@@ -1,6 +1,6 @@
 # SprintMasası — M1-M3 Uygulama Dökümanı
 
-> Bu döküman Claude Code içindir. Önce tamamını oku. Sonra **M1 → M2 → M3** sırasıyla ilerle. Her milestone sonunda dur, çalışan halini ve nasıl denendiğini kısaca özetle, onay iste. Belirsiz yerlerde makul bir varsayım yap, sonunda "Varsayımlar" bölümüne yaz. Gereksiz soru sorma.
+> Bu döküman Claude Code içindir. Önce tamamını oku. Sonra **M1 → M2 → M2.5 → M3** sırasıyla ilerle. Her milestone sonunda dur, çalışan halini ve nasıl denendiğini kısaca özetle, onay iste. Belirsiz yerlerde makul bir varsayım yap, sonunda "Varsayımlar" bölümüne yaz. Gereksiz soru sorma.
 
 ## 1. Bu sürümün amacı
 
@@ -8,7 +8,7 @@ Proje sahibinin **kendi yazılım ekibinde sprint planlamada kullanacağı**, ü
 
 Üç şey yapacak:
 1. Linkle girilen bir **oturum odası** (M1).
-2. Avatarlı, masa etrafında oturulan **Planning Poker** (M2).
+2. Avatarlı, masa etrafında oturulan **Planning Poker** (M2), poker masası teması ve isteğe bağlı ticket listesiyle (M2.5).
 3. Poker sonrası işi kimin alacağına karar veren **gönüllü + mini oyun** akışı (M3).
 
 ### Bu sürümde YOK (yapma)
@@ -18,7 +18,7 @@ Retro, rapor/PDF dışa aktarım, hesap/giriş, ödeme, Jira/Slack entegrasyonu,
 
 | Rol | Yetki |
 |---|---|
-| **Moderatör** | Odayı açan kişi. Ticket girer/değiştirir, kartları açar, tekrar oylama başlatır, final tahmini onaylar, atama oyununu başlatır, başka birini moderatör yapabilir. |
+| **Moderatör** (arayüzde **Krupiye**, M2.5) | Odayı açan kişi. Ticket girer/değiştirir, kartları açar, tekrar oylama başlatır, final tahmini onaylar, atama oyununu başlatır, başka birini moderatör yapabilir. |
 | **Katılımcı** | Oy verir, gönüllü olur, oyunlara katılır. |
 | **Gözlemci** | Sadece izler, oy vermez. Katılırken seçilir. |
 
@@ -35,13 +35,15 @@ Kimlik: takma ad + avatar. Tarayıcıda saklanan rastgele bir token ile aynı ki
 
 ## 4. Tasarım yönü
 
-- Ton: sıcak, sakin, kumar/casino hissi **yok**. Neon, kırmızı-siyah, "poker chip" estetiğinden kaçın.
-- Masa: yumuşak, mat bir yüzey (örn. sıcak ahşap veya soluk nötr tonlar), oval/yuvarlak. Katılımcılar masanın etrafında avatar ve isimleriyle oturur.
-- Kartlar: iskambil kağıdı hissi (yuvarlatılmış köşe, hafif gölge), sade tipografi. Elde yelpaze gibi dizilir, seçilen kart yukarı kalkar, açılırken çevrilir (flip).
-- Açık ve koyu tema (sistem tercihine uyar, elle değiştirilebilir).
+> M2.5 ile proje sahibinin isteği üzerine güncellendi: ilk yön "sakin, kahve tonları, casino hissi yok" idi; yeni yön **eğlenceli poker masası**.
+
+- Ton: eğlenceli, sıcak, oyunlu. Poker masası benzetmesi bilerek kullanılır (yeşil çuha, krupiye, iskambil kartları). Ama **para/bahis yok**: fiş üstünde para değeri, rulet, slot makinesi, neon ışık yok. Kumar değil, masa oyunu hissi.
+- Masa: yeşil çuha yüzey (hafif doku ve ortadan aydınlanan degrade), koyu ahşap ya da bordo deri kenar (rail), ince altın detaylar. Oval/yuvarlak. Katılımcılar masanın etrafında avatar ve isimleriyle oturur.
+- Kartlar: gerçek iskambil kağıdı gibi. Değer ve küçük bir sembol sol üst ve sağ alt köşede (sağ alttaki ters), ortada uygulamanın logosu, desenli arka yüz. `?` = **Joker**, `☕` = **Mola** kartı. Elde yan yana dizilir, sığmazsa alt satıra geçer (kaydırma yok), seçilen kart yukarı kalkar, açılırken çevrilir (flip).
+- Açık ve koyu tema (sistem tercihine uyar, elle değiştirilebilir). İkisinde de masa yeşil kalır; değişen zemin ve paneller.
 - Animasyonlar `prefers-reduced-motion` ayarına saygı gösterir. Sesler varsayılan **kapalı**, tek tuşla açılır.
-- Mobil tarayıcıda kullanılabilir olmalı: dar ekranda masa yerine yarım daire/liste yerleşimi, kartlar alt çubukta kaydırılabilir.
-- Avatarlar: lisansı uygun, üretici tabanlı SVG avatar kütüphanesi seç (lisansı Varsayımlar'a yaz). Seçim ekranında birkaç rastgele öneri + yenile butonu.
+- Mobil tarayıcıda kullanılabilir olmalı: dar ekranda masa yerine yarım daire/liste yerleşimi, kart eli satırlara bölünür.
+- Avatarlar: insan gibi görünen, karakterli (şapka, gözlük, bıyık vb. seçilebilir) avatarlar; lisansı uygun olmalı (lisansı Varsayımlar'a yaz). Seçim ekranında birkaç rastgele öneri + yenile butonu + elle özelleştirme.
 
 ---
 
@@ -92,7 +94,7 @@ Kimlik: takma ad + avatar. Tarayıcıda saklanan rastgele bir token ile aynı ki
   - Sayısal istatistik için kartlar sayıya çevrilir: `½`, `0.5` ve `1/2` hepsi 0.5 sayılır. Sayıya çevrilemeyen kartlar (`?`, `☕`, T-shirt harfleri, serbest metin) ortalama/medyana girmez ama dağılımda gösterilir.
 - **Oy verme:** Alt kısımdaki kart elinden bir kart seç, tekrar tıklayarak/başka kartı seçerek değiştir (açılana kadar). Seçilen kart masaya kapalı düşer.
 - **Gizlilik (kritik):** Açılmadan önce hiçbir istemciye diğerlerinin oy değerleri **gönderilmez**. Sadece "X oy verdi" bilgisi gider. Kişi kendi oyunu görebilir.
-- **Ticket:** Moderatör bir başlık (zorunlu) ve opsiyonel link/not girer. Çoklu ticket kuyruğu: ekle, sırala, sil, sıradakine geç. Ticket'ları toplu yapıştırarak (satır başına bir ticket) ekleme desteği.
+- **Ticket:** (M2.5 ile **isteğe bağlı**, varsayılan kapalı; bkz. 6.5) Moderatör bir başlık (zorunlu) ve opsiyonel link/not girer. Çoklu ticket kuyruğu: ekle, sırala, sil, sıradakine geç. Ticket'ları toplu yapıştırarak (satır başına bir ticket) ekleme desteği.
 - **Kartları aç:** Moderatör "Kartları aç" der. Tüm kartlar aynı anda çevrilir (flip animasyonu). Herkes oy verdiyse "Aç" vurgulanır ama zorunlu değildir.
 - **Sonuç analizi:** Ortalama (sayısal destede), medyan, en sık seçilen değer, dağılım (kaç kişi hangi kartı seçti), en düşük ve en yüksek oyu verenlerin vurgusu, uzlaşı göstergesi (herkes aynı / yakın / dağınık). `?` ve `☕` hesaba katılmaz ama sayılır ve gösterilir.
 - **Tekrar oylama:** Moderatör aynı ticket için yeni tur başlatır. Önceki turların oyları ticket geçmişinde saklanır.
@@ -113,6 +115,61 @@ Kimlik: takma ad + avatar. Tarayıcıda saklanan rastgele bir token ile aynı ki
 - Özel deste doğrulaması: 20 karttan fazla, 8 karakterden uzun veya tekrar eden kart reddedilir; deste değişince tur oyları sıfırlanır ve bu herkese bildirilir (otomatik test).
 - Tekrar oylama sonrası önceki tur geçmişte durur, final tahmin ticket'a yazılır.
 - Mobil genişlikte (≈ 390 px) kart seçmek ve oy vermek rahat çalışır.
+
+---
+
+## 6.5 M2.5 — Poker masası teması ve isteğe bağlı ticket
+
+**Amaç:** Uygulamayı daha eğlenceli hale getirmek (proje sahibinin M2 denemesinden sonraki geri bildirimi) ve ticket listesini zorunlu olmaktan çıkarmak. Yeni oyun mantığı yok; poker kuralları ve gizlilik M2'deki gibi kalır.
+
+### A. Ticket listesi isteğe bağlı
+- Odanın `ticketsEnabled` ayarı, **varsayılan kapalı**. Oda açılırken ("Ticket listesi kullan" kutusu) ve odada krupiye ayarlarından açılıp kapatılır. Durum `room.state` içinde herkese gider.
+- Kapalıyken ticket paneli görünmez, masa ekranı ortalanır. Oylama "serbest tur" olarak işler: oy ver, aç, tekrar oyla, final.
+- Kapalıyken krupiye masanın ortasına isteğe bağlı kısa bir **konu** yazabilir ("Ne oylanıyor?", en fazla 120 karakter). Konu ve final değeri **oturum geçmişine** yazılır (odadaki son 20 serbest tur, tur geçmişiyle birlikte).
+- Kapalıyken `ticket.*` niyetleri `FEATURE_DISABLED` hatası döner.
+- Kapatınca mevcut ticket'lar silinmez, gizlenir; tekrar açınca geri gelir. Masadaki ticket varsa açık tur geçmişe yazılır ve yeni serbest tur başlar.
+- M2'deki "final tahmin bir ticket gerektirir" kuralı kalkar: ticket kapalıyken final tura (ve oturum geçmişine) yazılır.
+- M3'teki "Kim alacak?" adımı ticket kapalıyken masadaki tur (konusu) için çalışır.
+- Ölçüm: ticket özelliği açılan oda sayısı (`ticketsEnabledRooms`). Konu metni yazılmaz.
+
+### B. Poker masası teması
+- Kahve/ahşap paleti kaldırılır. Yeşil çuha masa, koyu ahşap ya da bordo deri kenar, altın vurgu rengi.
+- Açık tema: açık zemin, yeşil masa. Koyu tema: koyu yeşil-siyah zemin, aynı masa.
+- Tüm metinlerde kontrast WCAG AA (4.5:1) korunur. Altın renk yalnızca vurgu için, okunması gereken küçük metin için kullanılmaz.
+
+### C. İskambil kartları
+- Ön yüz: değer + küçük sembol sol üst ve sağ alt köşede (sağ alttaki 180° döner), ortada logo. Sembol (♠ ♥ ♦ ♣) deste sırasına göre dönüşümlü verilir; ♥ ♦ kırmızı.
+- `?` kartı **Joker** (şapkalı joker çizimi), `☕` kartı **Mola** (fincan çizimi). İkisi M2'deki gibi sayıma girmez.
+- Arka yüz: desenli (logo tekrarlı ya da çizgili), masadaki kapalı kartlar bu yüzle görünür.
+- 390 px genişlikte köşe değerleri okunur kalır; gerekirse kartlar biraz büyür. T-shirt ve özel destelerde de (8 karaktere kadar) köşe yazısı sığar.
+- Logo: basit bir SVG amblem (ürün adı değişirse güncellenir). Sayfa başlığında ve favicon'da da kullanılır.
+
+### D. Karakter avatarları
+- Mevcut "uzaylı gibi" avatar yerine daha insan gibi bir taban ve üstüne **seçilebilir aksesuarlar**: şapka (kovboy, dedektif/fötr, silindir, krupiye vizörü), gözlük (normal, güneş, monokl), bıyık/sakal, kıyafet rengi.
+- Seçim ekranı: rastgele öneriler + yenile + her aksesuar için önceki/sonraki seçimi.
+- Avatar sunucuda yine kısa, doğrulanmış bir metin olarak saklanır (taban tohumu + aksesuar kodları); görsel tarayıcıda üretilir. Bilinmeyen kod reddedilir.
+- Lisans: taban stil CC0 ya da benzeri serbest lisans; aksesuarlar bizim çizdiğimiz SVG'ler. Karar Varsayımlar'a yazılır.
+
+### E. Krupiye
+- Arayüzde "Moderatör" yerine **"Krupiye"** (kod ve olay adlarında `moderator` kalır). Devir mesajları da buna göre ("Krupiye artık Ayşe").
+- Krupiyenin koltuğunda poker masasındaki gibi **"D" (dealer) düğmesi** ve avatarında yelek/papyon.
+- Yeni turda kartlar krupiyeden ellere **dağıtılır** (kısa animasyon); "Kartları aç" anında krupiyeden masaya doğru küçük bir hareket. `prefers-reduced-motion` açıksa yok.
+
+### F. Eğlenceli dokunuşlar (proje sahibinin onayına göre)
+1. Herkes aynı kartı seçtiyse açılışta konfeti ve "Royal Flush!" yazısı.
+2. Oyların çoğu `☕` ise "Mola zamanı?" önerisi.
+3. Krupiye oy vermeyenleri "dürt"ebilir (koltuklarında kısa titreşim; kişi başına 30 sn'de bir).
+4. Masaya emoji fırlatma (👍 🎉 🤔 vb., kişi başına hız sınırlı).
+5. Kart karıştırma ve fiş sesleri (ses yine varsayılan kapalı).
+
+### Kabul kriterleri
+- Yeni odada ticket paneli yok; serbest turda oy ver → aç → final çalışır, oturum geçmişinde görünür (uçtan uca test).
+- Krupiye ticket listesini açınca panel gelir, kapatınca ticket'lar korunur; kapalıyken `ticket.*` niyetleri reddedilir (otomatik test).
+- M2'nin tüm sızıntı testleri ve uçtan uca testleri geçmeye devam eder.
+- Kart köşeleri masaüstünde ve 390 px'te okunur; Joker ve Mola kartları ayırt edilir; açılış aynı anda çevrilir.
+- Açık ve koyu temada ekran görüntüleriyle kontrol; metin kontrastı AA.
+- Avatar seçiminde aksesuarlar önizlenir, geçersiz avatar dizesi sunucuda reddedilir (otomatik test).
+- Animasyonlar ve konfeti `prefers-reduced-motion` açıkken çalışmaz.
 
 ---
 
@@ -168,7 +225,7 @@ Kişisel veri içermeyen, oda/kullanım sayaçları tut (bellekte + günlük dos
 
 ## 10. Çalışma şekli (Claude Code için)
 
-1. M1'i bitir, çalıştır, test et, kısa özet ver ve **dur**. Onay gelmeden M2'ye geçme. Aynısı M2 → M3 için.
+1. M1'i bitir, çalıştır, test et, kısa özet ver ve **dur**. Onay gelmeden M2'ye geçme. Aynısı M2 → M2.5 ve M2.5 → M3 için.
 2. Her milestone sonunda: nasıl denenir (komutlar), neler yapıldı, bilinen eksikler.
 3. Mimariyi gereksiz karmaşıklaştırma: tek servis, veritabanı yok, minimum bağımlılık.
 4. Proje sahibi Java'ya, frontend'e de hâkim; kod okunabilir, bileşenler küçük, karmaşık yerlerde kısa yorum olsun.
@@ -208,7 +265,7 @@ _Ürün adı, avatar kütüphanesi ve lisansı, CSS yaklaşımı, barındırma t
 - **İstatistik:** Ortalama ve medyan yalnızca sayıya çevrilebilen kartlardan (`½`, `0.5`, `0,5`, `1/2` = 0.5). Mod, en düşük/en yüksek ve uzlaşı `?`/`☕` dışındaki tüm kartlarla, **deste sırasına** göre (T-shirt destesinde de çalışsın diye). Mod eşitliğinde hepsi gösterilir. Tek kişi oy verdiyse en düşük/en yüksek vurgusu yapılmaz.
 - **Uzlaşı göstergesi:** "Herkes aynı" = tek kart; "Yakın" = destede yan yana iki kart (aradaki `?`/`☕` sayılmaz); "Dağınık" = daha geniş. Sayılabilir oy yoksa "Sayılabilir oy yok".
 - **Final önerisi:** Medyana en yakın sayısal kart; eşitlikte büyük olan (iyimser tahmin vermemek için). Sayısal oy yoksa (T-shirt) deste sırasında ortadaki oy. Final `?`/`☕` olamaz ve destede olmalı.
-- **Final tahmin bir ticket gerektirir:** Ticket olmadan da oylanabilir ("Serbest tur"), ama final ancak masadaki ticket'a yazılır.
+- **Final tahmin bir ticket gerektirir** (M2.5'te değişiyor, bkz. 6.5): Ticket olmadan da oylanabilir ("Serbest tur"), ama final ancak masadaki ticket'a yazılır.
 - **Tur geçmişi:** Açılmış her tur, tur bitince (tekrar oylama, başka ticket, deste değişimi, final) o ticket'ın geçmişine yazılır. Ticket başına en fazla 20 tur saklanır. Açılmadan geçilen turun oyları atılır (hiç açılmadığı için kimse görmedi).
 - **Oy verip ayrılan:** Oy anındaki isim/avatar oyla birlikte saklanır, açılışta "odadan ayrıldı" notuyla görünür ve sayılır. Moderatör sonuç panelindeki "Sayıma dahil edilenler" listesinden herhangi bir oyu (ayrılan ya da değil) sayımdan çıkarabilir.
 - **Deste değişimi:** Turun oyları sıfırlanır (yeni tur kimliği), herkese `poker.deck_changed` ile bildirim (toast) gider. Tur açılmışsa önce geçmişe yazılır. Özel deste oda boyunca saklanır; hazır desteye geçip geri dönülebilir. Özel destede tekrar kontrolü büyük/küçük harf duyarsız ("xl" ve "XL" aynı sayılır).
