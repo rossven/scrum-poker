@@ -47,7 +47,8 @@ class PokerServiceTest {
         rooms = new RoomService(new InMemoryRoomRepository(clock), events, ids, new BCryptPasswordEncoder(4), props,
                 clock, mock(TaskScheduler.class), stats);
         poker = new PokerService(rooms, events, ids, clock, stats);
-        room = rooms.create("Sprint", null, null, IP);
+        // M2 ticket testleri: ticket listesi açık oda. (Ticket'sız oda: FreeRoundTest)
+        room = rooms.create("Sprint", null, null, null, true, IP);
         code = room.code();
         mod = rooms.join(code, "Ayşe", "s", false, null, null, room.claimToken(), IP);
         ali = rooms.join(code, "Ali", "s", false, null, null, null, IP);
@@ -237,9 +238,8 @@ class PokerServiceTest {
     }
 
     @Test
-    void finalizeNeedsRevealedRoundTicketAndRealCard() {
-        poker.reveal(code, mod.participantId());
-        // Ticket yok
+    void finalizeNeedsRevealedRoundAndRealCard() {
+        // Açılmamış tur
         assertThatThrownBy(() -> poker.finalizeEstimate(code, mod.participantId(), "5")).extracting("code")
                 .isEqualTo(ErrorCode.WRONG_PHASE);
         addTicket("İş");

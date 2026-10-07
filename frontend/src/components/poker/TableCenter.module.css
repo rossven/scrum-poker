@@ -1,6 +1,15 @@
-.center { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 340px; }
-.round { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; }
+.center { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 340px; position: relative; z-index: 1; }
+.round { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.85; }
 .ticket { font-size: clamp(15px, 2vw, 19px); line-height: 1.25; overflow-wrap: anywhere;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .ticket a { color: inherit; }
 .status { font-size: 14px; }
+.topicButton {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px dashed transparent; background: none;
+  color: inherit; cursor: pointer; padding: 2px 8px; border-radius: 8px;
+}
+.topicButton:hover, .topicButton:focus-visible { border-color: color-mix(in srgb, var(--table-text) 50%, transparent); }
+.placeholder .ticket { opacity: 0.8; font-weight: 600; }
+.pen { opacity: 0.75; font-size: 14px; }
+.topicForm { display: flex; gap: 6px; width: min(300px, 100%); }
+.topicInput { flex: 1; min-width: 0; min-height: 34px; color: var(--text); }

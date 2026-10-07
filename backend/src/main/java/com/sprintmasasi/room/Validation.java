@@ -2,6 +2,7 @@ package com.sprintmasasi.room;
 
 import com.sprintmasasi.poker.Deck;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /** Kullanıcı girdisi kuralları. Tüm metinler arayüzde ayrıca kaçışlanarak gösterilir. */
@@ -15,7 +16,17 @@ public final class Validation {
     public static final int TICKET_NOTE_MAX = 500;
     public static final int TICKET_LINK_MAX = 500;
 
-    private static final Pattern AVATAR = Pattern.compile("[A-Za-z0-9_-]{1,32}");
+    public static final int TOPIC_MAX = 120;
+
+    /**
+     * Avatar: taban tohumu + isteğe bağlı aksesuar kodları ("tohum.HGBK").
+     * H şapka 0-4, G gözlük 0-3, B bıyık/sakal 0-3, K kıyafet rengi 0-7. Yalnız tohum (M1/M2 avatarları) da geçerli.
+     * Görsel tarayıcıda üretilir (frontend/src/lib/avatar.ts); bilinmeyen kod reddedilir.
+     */
+    private static final Pattern AVATAR = Pattern.compile("[A-Za-z0-9_-]{1,32}(\\.[0-4][0-3][0-3][0-7])?");
+
+    /** Masaya fırlatılabilen emojiler (arayüzdeki listeyle aynı). */
+    public static final Set<String> TABLE_EMOJIS = Set.of("👍", "🎉", "🤔", "😂", "😮", "👏", "🔥", "☕");
     private static final Pattern CONTROL = Pattern.compile("[\\p{Cc}\\p{Cf}&&[^\\u200D]]");
     /** Notta satır sonu ve sekme serbest. */
     private static final Pattern CONTROL_EXCEPT_NEWLINE = Pattern.compile("[\\p{Cc}\\p{Cf}&&[^\\u200D\\n\\r\\t]]");
@@ -93,6 +104,25 @@ public final class Validation {
             throw new RoomException(ErrorCode.INVALID_TICKET);
         }
         return v;
+    }
+
+    /** Ticket'sız turun konusu: boş = konu yok. */
+    public static String topic(String raw) {
+        String v = raw == null ? "" : raw.strip();
+        if (v.isEmpty()) {
+            return null;
+        }
+        if (v.codePointCount(0, v.length()) > TOPIC_MAX || CONTROL.matcher(v).find()) {
+            throw new RoomException(ErrorCode.INVALID_INPUT);
+        }
+        return v;
+    }
+
+    public static String tableEmoji(String raw) {
+        if (raw == null || !TABLE_EMOJIS.contains(raw)) {
+            throw new RoomException(ErrorCode.INVALID_INPUT);
+        }
+        return raw;
     }
 
     /** Boş/null şifre "şifre yok" demektir. */

@@ -9,14 +9,14 @@ test('iki tarayıcı aynı odaya girer, birbirini görür, yenileyince aynı kol
   const a = await (await browser.newContext()).newPage();
   const b = await (await browser.newContext()).newPage();
 
-  // A odayı açar ve moderatör olur
+  // A odayı açar ve krupiye olur
   await a.goto('/');
   await a.getByRole('button', { name: 'Oda oluştur' }).click();
   await a.getByLabel(/Oda adı/).fill('Sprint 42');
   await a.getByRole('button', { name: 'Odayı oluştur' }).click();
   await joinAs(a, 'Ayşe');
   await expect(a.getByRole('heading', { name: 'Sprint 42' })).toBeVisible();
-  await expect(a.getByText('★ Moderatör')).toBeVisible();
+  await expect(a.getByText('Krupiye', { exact: true })).toBeVisible();
 
   // B linkle girer
   await b.goto(a.url());
@@ -32,7 +32,7 @@ test('iki tarayıcı aynı odaya girer, birbirini görür, yenileyince aynı kol
   await expect(b.getByLabel('Takma ad')).toHaveCount(0);
   await expect(a.getByText(/· 2 kişi/)).toBeVisible();
 
-  // Moderatör olmayan B'de ayarlar düğmesi yok
+  // Krupiye olmayan B'de ayarlar düğmesi yok
   await expect(b.getByRole('button', { name: /Oda ayarları/ })).toHaveCount(0);
 
   // A odayı kapatır, B bilgilendirilir

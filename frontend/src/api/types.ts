@@ -44,6 +44,8 @@ export interface RoundView {
   id: number;
   number: number;
   ticketId?: string;
+  /** Ticket'sız turun konusu ("Ne oylanıyor?"). */
+  topic?: string;
   state: RoundState;
   votedIds: string[];
   votes?: VoteView[];
@@ -52,6 +54,15 @@ export interface RoundView {
 }
 
 export interface RoundRecord {
+  number: number;
+  votes: VoteView[];
+  stats: VoteStats;
+  finalEstimate?: string;
+}
+
+/** Oturum geçmişindeki ticket'sız (serbest) tur. */
+export interface SessionRound {
+  topic?: string;
   number: number;
   votes: VoteView[];
   stats: VoteStats;
@@ -82,10 +93,13 @@ export interface RoomState {
   passwordProtected: boolean;
   maxParticipants: number;
   participants: ParticipantView[];
+  /** Ticket listesi isteğe bağlı; kapalıyken tickets boş gelir. */
+  ticketsEnabled: boolean;
   tickets: TicketView[];
   currentTicketId?: string;
   round: RoundView;
   timer?: TimerView;
+  sessionHistory: SessionRound[];
 }
 
 /** Kişinin kendi oyu; yalnızca ona gelir. card yoksa oy geri çekildi. */
@@ -126,5 +140,7 @@ export type ServerEvent =
   | { type: 'room.participant_left'; v: number; data: { participantId: string } }
   | { type: 'poker.your_vote'; v: number; data: YourVote }
   | { type: 'poker.deck_changed'; v: number; data: { deck: DeckId } }
+  | { type: 'poker.nudged'; v: number; data: { participantId: string } }
+  | { type: 'table.emoji'; v: number; data: { participantId: string; emoji: string } }
   | { type: 'room.closed'; v: number; data: { reason: 'closed_by_moderator' | 'expired' } }
   | { type: 'error'; v: number; data: { code: string } };

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shell } from '../components/Shell';
+import { CardFace } from '../components/poker/CardFace';
 import { navigate, roomPath } from '../lib/router';
 import styles from './HomePage.module.css';
 
@@ -20,9 +21,9 @@ export function HomePage() {
       <section className={styles.hero}>
         <div className={styles.table} aria-hidden>
           <div className={styles.tableTop}>
-            {['3', '5', '8'].map((v, i) => (
-              <span key={v} className={styles.card} style={{ rotate: `${(i - 1) * 9}deg` }}>
-                {v}
+            {['?', '5', '8'].map((v, i) => (
+              <span key={v} className={styles.card} style={{ rotate: `${(i - 1) * 10}deg` }}>
+                <CardFace value={v} index={i} />
               </span>
             ))}
           </div>

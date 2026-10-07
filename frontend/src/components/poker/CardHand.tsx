@@ -1,5 +1,7 @@
+import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CardFace } from './CardFace';
 import styles from './CardHand.module.css';
 
 interface Props {
@@ -7,6 +9,8 @@ interface Props {
   selected: string | null;
   disabled: boolean;
   onVote: (card: string | null) => void;
+  /** Değişince (yeni tur) kartlar krupiyeden ele yeniden dağıtılır. */
+  dealKey?: number;
 }
 
 const isTyping = (el: Element | null) =>
@@ -16,8 +20,12 @@ const isTyping = (el: Element | null) =>
  * Alt kısımdaki kart eli. Tıkla: oy ver; seçili karta tekrar tıkla: oyu geri çek.
  * Klavye: ←/→ ya da sayı tuşları kartı işaretler, Enter onaylar, Esc oyu geri çeker.
  */
-export function CardHand({ cards, selected, disabled, onVote }: Props) {
+export function CardHand({ cards, selected, disabled, onVote, dealKey }: Props) {
   const { t } = useTranslation();
+  const reduceMotion = useReducedMotion();
+  // İlk açılışta dağıtma yok; yalnızca sonraki turlarda.
+  const firstDeal = useRef(dealKey);
+  const animateDeal = !reduceMotion && dealKey !== firstDeal.current;
   const [cursor, setCursor] = useState<number>(-1);
   const typed = useRef({ text: '', at: 0 });
 
@@ -60,21 +68,29 @@ export function CardHand({ cards, selected, disabled, onVote }: Props) {
   return (
     <div className={styles.dock}>
       <p className={styles.hint}>{disabled ? t('poker.handLocked') : t('poker.handHint')}</p>
-      <div className={styles.hand} role="group" aria-label={t('poker.yourCards')}>
+      <div className={styles.hand} role="group" aria-label={t('poker.yourCards')} key={dealKey}>
         {cards.map((card, i) => {
           const isSelected = card === selected;
           return (
-            <button
+            // Dağıtma animasyonu dış sarmalayıcıda; seçilince kalkma (transform) düğmenin kendisinde.
+            <motion.span
               key={card}
-              type="button"
-              className={`${styles.card} ${isSelected ? styles.selected : ''} ${i === cursor ? styles.cursor : ''}`}
-              disabled={disabled}
-              aria-pressed={isSelected}
-              aria-label={t('poker.cardLabel', { card })}
-              onClick={() => onVote(isSelected ? null : card)}
+              className={styles.slot}
+              initial={animateDeal ? { opacity: 0, y: -60, rotate: -12 } : false}
+              animate={{ opacity: 1, y: 0, rotate: 0 }}
+              transition={{ delay: animateDeal ? i * 0.035 : 0, duration: 0.32, ease: 'easeOut' }}
             >
-              {card}
-            </button>
+              <button
+                type="button"
+                className={`${styles.card} ${isSelected ? styles.selected : ''} ${i === cursor ? styles.cursor : ''}`}
+                disabled={disabled}
+                aria-pressed={isSelected}
+                aria-label={t('poker.cardLabel', { card })}
+                onClick={() => onVote(isSelected ? null : card)}
+              >
+                <CardFace value={card} index={i} />
+              </button>
+            </motion.span>
           );
         })}
       </div>

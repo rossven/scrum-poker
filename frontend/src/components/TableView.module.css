@@ -1,19 +1,49 @@
 .wrap { width: 100%; }
 .arena { position: relative; width: 100%; aspect-ratio: 16 / 11; min-height: 420px; max-height: 78vh; margin: 70px auto 90px; }
+
+/* Masa: koyu ahşap kenar (rail), ince altın çizgi, ortadan aydınlanan yeşil çuha. */
 .table {
   position: absolute; inset: 22% 19%; border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--table) 80%, white) 0%, var(--table) 72%);
-  box-shadow: inset 0 0 0 10px var(--table-edge), inset 0 8px 30px rgba(0, 0, 0, 0.12), var(--shadow);
+  padding: 14px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--rail) 80%, #a0603a), var(--rail) 45%, var(--rail-dark));
+  box-shadow: 0 0 0 2px var(--rail-dark), 0 18px 40px rgba(0, 0, 0, 0.32), inset 0 2px 3px rgba(255, 255, 255, 0.12);
+}
+.felt {
+  position: relative; width: 100%; height: 100%; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; text-align: center; padding: 6%;
   color: var(--table-text);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at 50% 40%, var(--felt-light) 0%, var(--felt) 55%, var(--felt-dark) 100%);
+  box-shadow: inset 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+/* Çuhanın kenarında ince altın çizgi */
+.felt::before {
+  content: ''; position: absolute; inset: 9px; border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 60%, transparent);
+  pointer-events: none;
 }
 .seats { list-style: none; margin: 0; padding: 0; }
 .seatSlot { position: absolute; transform: translate(-50%, -50%); }
 
+.fx { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.flyingCard {
+  position: absolute; width: 18px; height: 26px; margin: -13px 0 0 -9px; border-radius: 3px;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 2px, rgba(201, 162, 74, 0.6) 2px 3px),
+    var(--card-back);
+  border: 2px solid var(--card-face); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.emoji {
+  position: absolute; font-size: 34px; line-height: 1;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
+}
+
 /* Mobil: masa küçülür, koltuklar akan bir ızgaraya geçer. */
 @media (max-width: 640px) {
   .arena { aspect-ratio: auto; max-height: none; margin: 0; display: flex; flex-direction: column; gap: 18px; }
-  .table { position: relative; inset: auto; width: 100%; aspect-ratio: 2.2 / 1; }
+  .table { position: relative; inset: auto; width: 100%; aspect-ratio: 2.1 / 1; padding: 10px; }
   .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px 8px; }
   .seatSlot { position: static; transform: none !important; display: flex; justify-content: center; }
+  .fx { inset: 0 0 auto 0; aspect-ratio: 2.1 / 1; }
 }

@@ -4,8 +4,16 @@
 .you { font-weight: 400; color: var(--text-soft); }
 .badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; min-height: 0; }
 .badge {
-  font-size: 11px; padding: 1px 8px; border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--accent-strong);
+  font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-strong);
+}
+.avatar { position: relative; display: inline-flex; }
+/* Poker masasındaki dağıtıcı düğmesi */
+.dealerButton {
+  position: absolute; right: -10px; top: -4px; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #1b1b1b; background: #fffdf7;
+  border: 2px solid var(--gold); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 .observer { background: var(--bg-soft); color: var(--text-soft); }
 .card { margin-bottom: 2px; min-height: 48px; display: flex; align-items: flex-end; }

@@ -3,7 +3,7 @@
 Ekibin sprint planlamada kullandığı, hesapsız ve ücretsiz bir planning poker aracı.
 Linkle girilen oda, avatarlı masa, ve (sonraki adımlarda) poker + "kim alacak?" akışı.
 
-Durum: **M1 (iskelet ve oda)** ve **M2 (planning poker masası)** tamam. M3 (atama oyunları) sırada.
+Durum: **M1 (iskelet ve oda)**, **M2 (planning poker masası)** ve **M2.5 (poker masası teması, isteğe bağlı ticket)** tamam. M3 (atama oyunları) sırada.
 
 ## Hızlı başlangıç
 
@@ -100,10 +100,13 @@ e2e/       Playwright senaryoları
   yayınlanır; oy değeri yalnızca oy verene kişisel kuyruktan gider (`RoomService#roundView`).
   `PokerServiceTest#unrevealedVotesNeverLeak` ve `RoomWebSocketIntegrationTest#fourClientsVoteAndNoVoteLeaksBeforeReveal`
   bunu doğrular; bu testlerin geçmesi birleştirme koşuludur.
+- **Tema ve görseller (M2.5).** Yeşil çuha masa, ahşap kenar, altın detay. İskambil kartları, logo ve karakter
+  avatarları bizim çizdiğimiz SVG'ler (`components/poker/CardFace.tsx`, `components/brand/Logo.tsx`, `lib/avatar.ts`);
+  dış görsel kütüphanesi ya da lisanslı varlık yok. Sesler Web Audio ile üretilir, varsayılan kapalı.
 - **Çeviri.** Tüm arayüz metinleri `frontend/src/i18n/locales/tr.json` içinde. Yeni dil için `en.json` ekleyip
   `i18n/index.ts`'e kaydetmek yeterli.
 
-Önemli sınıflar: `room/RoomService` (oda kuralları), `room/PokerService` (oylama, ticket, deste, zamanlayıcı),
+Önemli sınıflar: `room/RoomService` (oda kuralları), `room/PokerService` (oylama, ticket, serbest tur, deste, zamanlayıcı, dürtme, emoji),
 `poker/VoteStatistics` (istatistik, saf hesap), `poker/Deck` (desteler, kart → sayı), `room/Room` (durum + kilit), `ws/StompAuthInterceptor`
 (CONNECT/SUBSCRIBE güvenliği), `ws/StompRoomEvents` (yayın), `frontend/src/store/roomStore.ts` (istemci durumu),
 `frontend/src/api/socket.ts` (yeniden bağlanan STOMP istemcisi).

@@ -34,6 +34,16 @@ class RecordingEvents implements RoomEvents {
     }
 
     @Override
+    public synchronized void nudged(String code, String participantId) {
+        events.add(new Event("poker.nudged", code, participantId, null));
+    }
+
+    @Override
+    public synchronized void emoji(String code, String participantId, String emoji) {
+        events.add(new Event("table.emoji", code, participantId, emoji));
+    }
+
+    @Override
     public synchronized void participantJoined(String code, String participantId) {
         events.add(new Event("room.participant_joined", code, participantId, null));
     }

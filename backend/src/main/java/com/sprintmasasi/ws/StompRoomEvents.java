@@ -41,6 +41,18 @@ public class StompRoomEvents implements RoomEvents {
     }
 
     @Override
+    public void nudged(String code, String participantId) {
+        template.convertAndSend(Destinations.roomTopic(code),
+                ServerEvent.of("poker.nudged", Map.of("participantId", participantId)));
+    }
+
+    @Override
+    public void emoji(String code, String participantId, String emoji) {
+        template.convertAndSend(Destinations.roomTopic(code),
+                ServerEvent.of("table.emoji", Map.of("participantId", participantId, "emoji", emoji)));
+    }
+
+    @Override
     public void participantJoined(String code, String participantId) {
         template.convertAndSend(Destinations.roomTopic(code),
                 ServerEvent.of("room.participant_joined", Map.of("participantId", participantId)));

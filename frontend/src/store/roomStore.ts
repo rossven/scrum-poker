@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { RoomSocket, type SocketStatus } from '../api/socket';
 import type { DeckId, RoomState, ServerEvent, YourVote } from '../api/types';
 import { sessions, type StoredSession } from '../lib/session';
+import { play } from '../lib/sound';
 
 export type GoneReason = 'not_found' | 'closed_by_moderator' | 'expired';
 
@@ -9,6 +10,13 @@ export interface Toast {
   id: number;
   key: string; // çeviri anahtarı
   params?: Record<string, string>;
+}
+
+/** Masaya fırlatılmış, ekranda uçan bir emoji (kısa süre sonra silinir). */
+export interface FlyingEmoji {
+  id: number;
+  participantId: string;
+  emoji: string;
 }
 
 interface RoomStore {
@@ -22,6 +30,9 @@ interface RoomStore {
   /** Token geçersiz: kullanıcı katılma formuna döner. */
   needsJoin: boolean;
   toasts: Toast[];
+  flyingEmojis: FlyingEmoji[];
+  /** Dürtülen koltuklar: katılımcı → sayaç (her dürtmede artar, koltuk titrer). */
+  nudges: Record<string, number>;
 
   connect: (code: string, session: StoredSession) => void;
   disconnect: () => void;
@@ -44,19 +55,39 @@ interface RoomStore {
   startTimer: (seconds: number) => void;
   stopTimer: () => void;
   setObserver: (participantId: string | null, observer: boolean) => void;
+  setTicketsEnabled: (enabled: boolean) => void;
+  setTopic: (topic: string) => void;
+  nudge: (participantId: string) => void;
+  throwEmoji: (emoji: string) => void;
   toast: (key: string, params?: Record<string, string>) => void;
   dismissToast: (id: number) => void;
 }
 
 let socket: RoomSocket | null = null;
 let toastSeq = 0;
+let emojiSeq = 0;
+
+/** Krupiye değişti mi? Değiştiyse yeni krupiyenin adı (ilk durumda ve değişmediyse null). */
+function newDealer(prev: RoomState | null, next: RoomState): string | null {
+  if (!prev) return null;
+  const before = new Set(prev.participants.filter((p) => p.moderator).map((p) => p.id));
+  const fresh = next.participants.find((p) => p.moderator && !before.has(p.id));
+  return fresh ? fresh.id : null;
+}
 
 export const useRoomStore = create<RoomStore>((set, get) => {
   const handleEvent = (event: ServerEvent) => {
     switch (event.type) {
-      case 'room.state':
+      case 'room.state': {
+        const dealerId = newDealer(get().room, event.data);
         set({ room: event.data });
+        if (dealerId) {
+          const name = event.data.participants.find((p) => p.id === dealerId)?.nickname ?? '';
+          if (dealerId === get().youId) get().toast('room.dealerNowYou');
+          else get().toast('room.dealerNow', { name });
+        }
         break;
+      }
       case 'room.state_snapshot':
         set({ room: event.data.room, youId: event.data.youId, yourVote: event.data.yourVote ?? null });
         break;
@@ -66,6 +97,22 @@ export const useRoomStore = create<RoomStore>((set, get) => {
       case 'poker.deck_changed':
         get().toast('poker.deckChangedToast', { deck: event.data.deck });
         break;
+      case 'poker.nudged': {
+        const id = event.data.participantId;
+        set((s) => ({ nudges: { ...s.nudges, [id]: (s.nudges[id] ?? 0) + 1 } }));
+        if (id === get().youId) {
+          get().toast('poker.nudgedYou');
+          play('nudge');
+        }
+        break;
+      }
+      case 'table.emoji': {
+        const item = { id: ++emojiSeq, ...event.data };
+        set((s) => ({ flyingEmojis: [...s.flyingEmojis.slice(-19), item] }));
+        play('pop');
+        setTimeout(() => set((s) => ({ flyingEmojis: s.flyingEmojis.filter((e) => e.id !== item.id) })), 2000);
+        break;
+      }
       case 'room.participant_joined':
         if (event.data.participantId !== get().youId) get().toast('room.joinedToast');
         break;
@@ -93,10 +140,13 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     gone: null,
     needsJoin: false,
     toasts: [],
+    flyingEmojis: [],
+    nudges: {},
 
     connect(code, session) {
       socket?.disconnect();
-      set({ code, youId: session.participantId, room: null, yourVote: null, status: 'connecting', gone: null, needsJoin: false });
+      set({ code, youId: session.participantId, room: null, yourVote: null, status: 'connecting', gone: null,
+        needsJoin: false, flyingEmojis: [], nudges: {} });
       socket = new RoomSocket(code, session.token, {
         onEvent: handleEvent,
         onStatus: (status) => set({ status }),
@@ -126,6 +176,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
       // İyimser güncelleme: kart anında masaya düşer, sunucu onayı (your_vote) aynısını getirir.
       const round = get().room?.round;
       if (round) set({ yourVote: { roundId: round.id, card: card ?? undefined } });
+      if (card) play('chip');
       socket?.send('poker.vote', { card });
     },
     reveal: () => socket?.send('poker.reveal'),
@@ -142,6 +193,10 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     startTimer: (seconds) => socket?.send('timer.start', { seconds }),
     stopTimer: () => socket?.send('timer.stop'),
     setObserver: (participantId, observer) => socket?.send('participant.set_observer', { participantId, observer }),
+    setTicketsEnabled: (enabled) => socket?.send('room.set_tickets_enabled', { enabled }),
+    setTopic: (topic) => socket?.send('poker.set_topic', { topic }),
+    nudge: (participantId) => socket?.send('poker.nudge', { participantId }),
+    throwEmoji: (emoji) => socket?.send('table.emoji', { emoji }),
 
     leave() {
       const { code } = get();

@@ -3,3 +3,5 @@
 .row { display: flex; gap: 8px; }
 .row input { flex: 1; min-width: 0; }
 .footer { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }

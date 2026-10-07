@@ -21,9 +21,14 @@ public final class RoomViews {
      * @param deckCards   etkin destenin kartları (sırasıyla)
      * @param customDeck  odada kaydedilmiş özel deste (başka desteye geçilse de saklanır)
      */
+    /**
+     * @param ticketsEnabled ticket listesi açık mı; kapalıyken tickets boş gider (ticket'lar sunucuda saklanır)
+     * @param sessionHistory ticket'sız (serbest) turların kaydı, en eskiden yeniye
+     */
     public record RoomState(String code, String name, String deck, List<String> deckCards, List<String> customDeck,
                             boolean passwordProtected, int maxParticipants, List<ParticipantView> participants,
-                            List<TicketView> tickets, String currentTicketId, RoundView round, TimerView timer) {}
+                            boolean ticketsEnabled, List<TicketView> tickets, String currentTicketId, RoundView round,
+                            TimerView timer, List<SessionRoundView> sessionHistory) {}
 
     /** Kişiye özel tam durum: yeniden bağlanınca gönderilir. yourVote yalnızca bu kişinin oyu. */
     public record RoomSnapshot(String youId, RoomState room, YourVote yourVote) {}
@@ -35,7 +40,7 @@ public final class RoomViews {
      * Etkin tur. votes ve stats yalnızca REVEALED/FINALIZED durumunda dolu; VOTING'de null (JSON'a hiç yazılmaz).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public record RoundView(long id, int number, String ticketId, String state, List<String> votedIds,
+    public record RoundView(long id, int number, String ticketId, String topic, String state, List<String> votedIds,
                             List<VoteView> votes, VoteStatistics.Result stats, String finalEstimate) {}
 
     /** Açılmış bir oy. left: oy verdikten sonra odadan çıktı. excluded: moderatör sayımdan çıkardı. */
@@ -44,6 +49,10 @@ public final class RoomViews {
 
     public record RoundRecordView(int number, List<VoteView> votes, VoteStatistics.Result stats,
                                   String finalEstimate) {}
+
+    /** Oturum geçmişindeki ticket'sız bir tur. topic boş olabilir. */
+    public record SessionRoundView(String topic, int number, List<VoteView> votes, VoteStatistics.Result stats,
+                                   String finalEstimate) {}
 
     public record TicketView(String id, String title, String link, String note, String status, String finalEstimate,
                              List<RoundRecordView> history) {}

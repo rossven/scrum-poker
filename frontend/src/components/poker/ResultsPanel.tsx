@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { RoomState, RoundView } from '../../api/types';
 import { formatNumber, isSpecialCard } from '../../lib/deck';
 import { useRoomStore } from '../../store/roomStore';
+import { isBreakTime, isRoyalFlush } from './FunFx';
 import styles from './ResultsPanel.module.css';
 
 interface Props {
@@ -27,7 +28,8 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
     if (stats.suggested) setChoice(stats.suggested);
   }, [stats.suggested]);
 
-  const canFinalize = isModerator && round.state === 'REVEALED' && !!room.currentTicketId && finalOptions.length > 0;
+  // Ticket'sız turda da final verilebilir (oturum geçmişine yazılır).
+  const canFinalize = isModerator && round.state === 'REVEALED' && finalOptions.length > 0;
 
   return (
     <section className={`card ${styles.panel}`} aria-label={t('poker.results')}>
@@ -37,6 +39,17 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
           {t(`poker.consensus.${stats.consensus}`)}
         </span>
       </div>
+
+      {isRoyalFlush(stats) && (
+        <p className={`${styles.callout} ${styles.flush}`}>
+          <strong>{t('poker.royalFlush')}</strong> {t('poker.royalFlushSub')}
+        </p>
+      )}
+      {isBreakTime(stats) && (
+        <p className={`${styles.callout} ${styles.breakTime}`}>
+          <strong>{t('poker.breakTime')}</strong> {t('poker.breakTimeSub')}
+        </p>
+      )}
 
       <dl className={styles.numbers}>
         {stats.average !== undefined && (
@@ -118,9 +131,6 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
           </select>
           <button type="submit" className="btn btn-primary">{t('poker.finalize')}</button>
         </form>
-      )}
-      {isModerator && round.state === 'REVEALED' && !room.currentTicketId && (
-        <p className="muted">{t('poker.finalNeedsTicket')}</p>
       )}
     </section>
   );

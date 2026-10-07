@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,6 +27,8 @@ public class UsageStats {
     private final AtomicLong ticketsFinalized = new AtomicLong();
     private final ConcurrentMap<String, AtomicLong> assignmentGamesByType = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Session> sessionsByRoom = new ConcurrentHashMap<>();
+    /** Ticket listesini en az bir kez açan odalar (yalnızca oda kodu; ticket içeriği yazılmaz). */
+    private final Set<String> ticketsEnabledRooms = ConcurrentHashMap.newKeySet();
 
     public void roomCreated() {
         roomsCreated.incrementAndGet();
@@ -51,6 +54,11 @@ public class UsageStats {
         ticketsFinalized.incrementAndGet();
     }
 
+    /** Odada ticket listesi açıldı (oda açılırken ya da sonradan). */
+    public void ticketsEnabled(String roomCode) {
+        ticketsEnabledRooms.add(roomCode);
+    }
+
     /** Atama oyunu başladı (M3). type: oyun tipi kimliği, ör. "wheel". */
     public void assignmentGameStarted(String type) {
         assignmentGamesByType.computeIfAbsent(type, k -> new AtomicLong()).incrementAndGet();
@@ -64,6 +72,7 @@ public class UsageStats {
         out.put("averagePeakParticipants", peakOnlineByRoom.values().stream().mapToInt(i -> i).average().orElse(0));
         out.put("pokerRoundsRevealed", pokerRoundsRevealed.get());
         out.put("ticketsFinalized", ticketsFinalized.get());
+        out.put("ticketsEnabledRooms", ticketsEnabledRooms.size());
         var games = new LinkedHashMap<String, Long>();
         assignmentGamesByType.forEach((k, v) -> games.put(k, v.get()));
         out.put("assignmentGamesStarted", games);

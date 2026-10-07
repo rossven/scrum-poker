@@ -12,6 +12,7 @@ export function CreateRoomPage() {
   const [name, setName] = useState('');
   const [deck, setDeck] = useState<DeckChoice>({ deck: 'modified-fibonacci', customText: '' });
   const [password, setPassword] = useState('');
+  const [ticketsEnabled, setTicketsEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -26,6 +27,7 @@ export function CreateRoomPage() {
         deck: deck.deck,
         customDeck: deckChoiceCards(deck),
         password: password || undefined,
+        ticketsEnabled,
       });
       sessions.setClaim(room.code, room.claimToken);
       navigate(roomPath(room.code));
@@ -60,6 +62,14 @@ export function CreateRoomPage() {
           <input id="password" className="input" type="password" maxLength={64} autoComplete="new-password"
             value={password} onChange={(e) => setPassword(e.target.value)} />
           <small>{t('create.passwordHint')}</small>
+        </div>
+
+        <div className="field">
+          <label className={styles.checkbox}>
+            <input type="checkbox" checked={ticketsEnabled} onChange={(e) => setTicketsEnabled(e.target.checked)} />
+            <span>{t('tickets.enable')}</span>
+          </label>
+          <small>{t('create.ticketsHint')}</small>
         </div>
 
         {error && <p className="error-text">{t(`errors.${error}`)}</p>}

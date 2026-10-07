@@ -1,21 +1,36 @@
-/* Renk ve ölçü değişkenleri. Sıcak, mat, sakin: casino/neon yok. */
+/*
+ * Renk ve ölçü değişkenleri. Yön: eğlenceli poker masası (yeşil çuha, ahşap kenar, altın detay).
+ * Para/bahis, neon yok. Altın (--gold) yalnızca süs/vurgu içindir, okunacak küçük metinde kullanılmaz.
+ * Masa ve kart yüzleri iki temada da aynı kalır; değişen zemin ve paneller.
+ */
 :root {
-  --bg: #f6f1ea;
-  --bg-soft: #efe7dc;
-  --surface: #fffcf7;
-  --surface-2: #f8f2e9;
-  --border: #e3d7c6;
-  --text: #2f2a24;
-  --text-soft: #6f655a;
-  --accent: #b5794a;        /* sıcak ahşap/terrakota */
-  --accent-strong: #9a6238;
-  --accent-contrast: #fffaf3;
-  --sage: #7f9a7a;          /* çevrimiçi */
-  --danger: #b4574b;
-  --table: #c9a27c;
-  --table-edge: #a87f5b;
-  --table-text: #3b2a1c;
-  --shadow: 0 1px 2px rgba(60, 40, 20, 0.06), 0 6px 18px rgba(60, 40, 20, 0.08);
+  --bg: #f3f1ea;
+  --bg-soft: #e8e5da;
+  --surface: #ffffff;
+  --surface-2: #f6f4ee;
+  --border: #d6d1c2;
+  --text: #1c2520;
+  --text-soft: #535e57;
+  --accent: #1d6a47;        /* çuha yeşili: birincil düğmeler */
+  --accent-strong: #145236; /* link ve rozet metni */
+  --accent-contrast: #ffffff;
+  --gold: #c9a24a;
+  --gold-soft: #e6cf8a;
+  --sage: #2f9a58;          /* çevrimiçi */
+  --danger: #a8212e;
+  --felt: #1c6b46;
+  --felt-light: #237850; /* çuhanın aydınlık ortası; üstündeki metinle kontrast ≥ 4.5 */
+  --felt-dark: #0e4a2f;
+  --rail: #5b2e1d;          /* koyu ahşap kenar */
+  --rail-dark: #3a1b10;
+  --table: var(--felt);
+  --table-edge: var(--rail);
+  --table-text: #f5f0e1;
+  --card-face: #fffdf7;
+  --card-ink: #1b1b1b;
+  --card-red: #b3202e;
+  --card-back: #7a1f2b;     /* bordo sırt */
+  --shadow: 0 1px 2px rgba(15, 30, 20, 0.08), 0 6px 18px rgba(15, 30, 20, 0.1);
   --radius: 14px;
   --radius-sm: 10px;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -24,43 +39,41 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #1d1a17;
-    --bg-soft: #24201c;
-    --surface: #2a2521;
-    --surface-2: #322c27;
-    --border: #3e3630;
-    --text: #efe7dd;
-    --text-soft: #b3a797;
-    --accent: #d39a6a;
-    --accent-strong: #e0ad80;
-    --accent-contrast: #21180f;
-    --sage: #95b08f;
-    --danger: #d47a6d;
-    --table: #6b5442;
-    --table-edge: #54412f;
-    --table-text: #f1e4d3;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+    --bg: #0e1612;
+    --bg-soft: #16211b;
+    --surface: #1a2620;
+    --surface-2: #213029;
+    --border: #2e4036;
+    --text: #eceee8;
+    --text-soft: #a8b4ad;
+    --accent: #5cc28e;
+    --accent-strong: #86d8ad;
+    --accent-contrast: #0b1a12;
+    --gold: #d4ae55;
+    --gold-soft: #b8974a;
+    --sage: #5cc28e;
+    --danger: #ef7d86;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #1d1a17;
-  --bg-soft: #24201c;
-  --surface: #2a2521;
-  --surface-2: #322c27;
-  --border: #3e3630;
-  --text: #efe7dd;
-  --text-soft: #b3a797;
-  --accent: #d39a6a;
-  --accent-strong: #e0ad80;
-  --accent-contrast: #21180f;
-  --sage: #95b08f;
-  --danger: #d47a6d;
-  --table: #6b5442;
-  --table-edge: #54412f;
-  --table-text: #f1e4d3;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --bg: #0e1612;
+  --bg-soft: #16211b;
+  --surface: #1a2620;
+  --surface-2: #213029;
+  --border: #2e4036;
+  --text: #eceee8;
+  --text-soft: #a8b4ad;
+  --accent: #5cc28e;
+  --accent-strong: #86d8ad;
+  --accent-contrast: #0b1a12;
+  --gold: #d4ae55;
+  --gold-soft: #b8974a;
+  --sage: #5cc28e;
+  --danger: #ef7d86;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 
@@ -70,7 +83,9 @@ html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--felt) 10%, transparent), transparent 70%),
+    var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 16px;
