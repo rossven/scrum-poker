@@ -220,7 +220,8 @@ _Ürün adı, avatar kütüphanesi ve lisansı, CSS yaklaşımı, barındırma t
 - **Gözlemci geçişi:** Kişi kendisi ya da moderatör yapar. Açık turda oy vermiş biri izleyiciye geçemez (önce oyunu geri almalı); böylece "oyu sayılır mı" belirsizliği olmaz.
 - **"Aç" vurgusu:** Bağlı (çevrimiçi) tüm katılımcılar oy verdiyse düğme vurgulanır; çevrimdışı koltuklar beklenmez. Açmak her zaman serbest.
 - **Kart çevirme:** Tüm kartlar aynı `room.state` mesajıyla açıldığı için aynı karede çevrilir. `prefers-reduced-motion` açıksa animasyon anında biter.
-- **Mobil:** 640 px altında masa üstte, koltuklar ızgarada; kart eli altta yapışık, yatay kaydırılır. 390 px genişlikte uçtan uca test var.
+- **Kart eli (proje sahibinin geri bildirimiyle):** Kaydırma yok. Kartlar yan yana dizilir, sığmazsa alt satıra geçer (dökümandaki "yelpaze" ve "alt çubukta kaydırma" yerine). El masanın altında sabit durur, ekrana yapışmaz; böylece masadaki koltukları örtmez. Seçilen kart yukarı kalkar. Masaüstünde 13 kartlık deste tek satıra sığar.
+- **Mobil:** 640 px altında masa üstte, koltuklar ızgarada; kart eli satırlara bölünür. 390 px genişlikte uçtan uca test var (kart elinde kaydırma olmadığı da test ediliyor).
 - **Toast'lar:** Kart eliyle çakışmasın diye ekranın üstüne taşındı.
 - **Ölçüm (bölüm 8):** Yeni sayaçlar: açılan poker turu (`pokerRoundsRevealed`), final onaylanan ticket (`ticketsFinalized`), atama oyunu (`assignmentGamesStarted`, oyun tipine göre; M3'te dolacak), ortalama oturum süresi (`averageSessionMinutes`: odada ilk bağlantıdan son bağlantı hareketine kadar). Oy değeri, isim ya da başlık yazılmaz.
 - **Hata işleme:** STOMP hata işleyicisi tüm denetleyiciler için ortak (`SocketErrorAdvice`); poker niyetleri ayrı denetleyicide (`PokerSocketController`).

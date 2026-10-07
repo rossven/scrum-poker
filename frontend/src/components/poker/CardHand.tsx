@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './CardHand.module.css';
 
@@ -20,7 +20,6 @@ export function CardHand({ cards, selected, disabled, onVote }: Props) {
   const { t } = useTranslation();
   const [cursor, setCursor] = useState<number>(-1);
   const typed = useRef({ text: '', at: 0 });
-  const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Seçim değişince (ör. yeni tur) imleç seçili karta gelsin.
   useEffect(() => {
@@ -33,11 +32,9 @@ export function CardHand({ cards, selected, disabled, onVote }: Props) {
       if (e.metaKey || e.ctrlKey || e.altKey || isTyping(document.activeElement)) return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault();
-        setCursor((c) => {
-          const next = e.key === 'ArrowRight' ? Math.min(cards.length - 1, c + 1) : Math.max(0, c < 0 ? 0 : c - 1);
-          refs.current[next]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-          return next;
-        });
+        setCursor((c) =>
+          e.key === 'ArrowRight' ? Math.min(cards.length - 1, c + 1) : Math.max(0, c < 0 ? 0 : c - 1),
+        );
       } else if (e.key === 'Enter') {
         // Odak bir düğmedeyse tarayıcı zaten tıklatır.
         if (document.activeElement?.tagName === 'BUTTON') return;
@@ -60,23 +57,17 @@ export function CardHand({ cards, selected, disabled, onVote }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [cards, cursor, disabled, onVote, selected]);
 
-  const mid = (cards.length - 1) / 2;
   return (
-    <div className={`${styles.dock} ${disabled ? styles.idle : ''}`}>
+    <div className={styles.dock}>
       <p className={styles.hint}>{disabled ? t('poker.handLocked') : t('poker.handHint')}</p>
       <div className={styles.hand} role="group" aria-label={t('poker.yourCards')}>
         {cards.map((card, i) => {
           const isSelected = card === selected;
-          const offset = i - mid;
           return (
             <button
               key={card}
-              ref={(el) => {
-                refs.current[i] = el;
-              }}
               type="button"
               className={`${styles.card} ${isSelected ? styles.selected : ''} ${i === cursor ? styles.cursor : ''}`}
-              style={{ '--rot': `${offset * 2.2}deg`, '--drop': `${Math.abs(offset) * Math.abs(offset) * 0.6}px` } as CSSProperties}
               disabled={disabled}
               aria-pressed={isSelected}
               aria-label={t('poker.cardLabel', { card })}

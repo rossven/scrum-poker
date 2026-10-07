@@ -70,4 +70,30 @@ test('mobil genişlikte kart seçip oy verilebilir', async ({ browser }) => {
   // Yatay sayfa kaydırması yok
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
+  await expectHandNotScrollable(page);
+});
+
+/** Kart eli kaydırılmaz: kartlar satıra sığmazsa alt satıra geçer. */
+async function expectHandNotScrollable(page: Page) {
+  const hand = page.getByRole('group', { name: 'Kartların' });
+  const box = await hand.evaluate((el) => ({
+    overflowX: el.scrollWidth - el.clientWidth,
+    overflowY: el.scrollHeight - el.clientHeight,
+    style: getComputedStyle(el).overflow,
+  }));
+  expect(box.overflowX).toBeLessThanOrEqual(0);
+  expect(box.overflowY).toBeLessThanOrEqual(0);
+  expect(box.style).toBe('visible');
+}
+
+test('masaüstünde kart eli kaydırılmaz, tüm kartlar görünür', async ({ browser }) => {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+  await page.goto('/yeni');
+  await page.getByRole('button', { name: 'Odayı oluştur' }).click();
+  await joinAs(page, 'Masaüstü');
+  await page.getByRole('button', { name: 'Kart 13', exact: true }).click();
+  for (const card of ['0', '½', '55', '?', '☕']) {
+    await expect(page.getByRole('button', { name: `Kart ${card}`, exact: true })).toBeInViewport();
+  }
+  await expectHandNotScrollable(page);
 });
