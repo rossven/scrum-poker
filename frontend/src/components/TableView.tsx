@@ -34,9 +34,10 @@ function ellipsePoint(i: number, n: number, narrow: boolean) {
   const twoRows = n > 16;
   const angle = Math.PI / 2 + (i / n) * Math.PI * 2;
   const outer = !twoRows || i % 2 === 0;
-  const rx = (outer ? 42 : 32) - (narrow ? 6 : 0);
-  const ry = outer ? 39 : 28;
-  return { x: 50 + rx * Math.cos(angle), y: 45 + ry * Math.sin(angle) };
+  const few = n <= 5;
+  const rx = (outer ? (few ? 34 : 42) : 32) - (narrow ? 6 : 0);
+  const ry = outer ? 40 : 28;
+  return { x: 50 + rx * Math.cos(angle), y: 45.5 + ry * Math.sin(angle) };
 }
 
 /**
@@ -54,7 +55,7 @@ function stadiumPoints(n: number, narrow: boolean) {
   };
   const bottomRow = row(bottom, 84);
   const topRow = row(top, 6);
-  const sideX = narrow ? 9 : 12;
+  const sideX = narrow ? 10 : 15;
   const half = (bottom - 1) / 2;
   const left = bottomRow.slice(0, half + 1).reverse(); // ortadan sola
   const right = bottomRow.slice(half + 1).reverse(); // sağ uçtan ortaya

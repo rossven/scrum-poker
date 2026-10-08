@@ -16,15 +16,33 @@
 .more { align-self: center; padding-left: 14px; font-size: 12.5px; font-weight: 700; color: var(--text-soft); }
 
 @media (max-width: 1000px) {
-  .stack { display: none; }
+  .stackWrap { display: none; }
 }
 @media (max-width: 720px) {
   .header { min-height: 64px; padding: 0 12px; gap: 10px; }
   .back, .share { display: inline-grid; }
   .phoneOnly { display: contents; }
-  .brand, .sep, .invite, .stack, .desk, .deck { display: none; }
+  .brand, .sep, .invite, .stackWrap, .desk, .deck { display: none; }
   .back { border: 0; }
   .title { flex: 1; }
   .title h1 { font-size: 15.5px; max-width: none; }
   .grow { display: none; }
 }
+
+/* Avatar grubunun üstüne gelince (ya da odaklanınca) kişi listesi açılır. */
+.people { position: relative; padding: 6px 4px; border-radius: 12px; outline: none; cursor: default; }
+.people:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+.pop {
+  display: none; position: absolute; right: 0; top: 100%; z-index: 30; width: 280px; max-height: 60vh; overflow-y: auto; padding: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-lg);
+  flex-direction: column; gap: 4px;
+}
+.people:hover .pop, .people:focus-within .pop { display: flex; }
+.popTitle { font: 700 13px/1.2 var(--font-display); color: var(--text-soft); padding: 2px 4px 6px; }
+.person { display: flex; align-items: center; gap: 10px; padding: 4px; border-radius: 10px; font-size: 14px; }
+.person:hover { background: var(--surface-2); }
+.pname { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.you { color: var(--text-soft); font-weight: 500; }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-strong); }
+.offline { font-size: 11px; color: var(--text-soft); }
+.away { opacity: 0.6; }

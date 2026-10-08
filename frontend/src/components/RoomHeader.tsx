@@ -63,12 +63,26 @@ export function RoomHeader({ room, me, isModerator, waiting, voting, hasSidebar,
       </div>
       <div className={styles.invite}><InvitePill code={room.code} /></div>
       <span className={styles.grow} />
-      <ul className={styles.stack} aria-label={t('room.participants')}>
-        {shown.map((p) => (
-          <li key={p.id}><Avatar seed={p.avatar} size={32} online={p.online} alt={p.nickname} dealer={p.moderator} /></li>
-        ))}
-        {extra > 0 && <li className={styles.more}>+{extra}</li>}
-      </ul>
+      <div className={`${styles.people} ${styles.stackWrap}`} tabIndex={0} aria-label={t('room.participants')}>
+        <ul className={styles.stack}>
+          {shown.map((p) => (
+            <li key={p.id}><Avatar seed={p.avatar} size={32} online={p.online} alt="" dealer={p.moderator} /></li>
+          ))}
+          {extra > 0 && <li className={styles.more}>+{extra}</li>}
+        </ul>
+        <div className={styles.pop} role="list">
+          <b className={styles.popTitle}>{t('room.participants')} · {people.length}</b>
+          {people.map((p) => (
+            <div key={p.id} className={`${styles.person} ${p.online ? '' : styles.away}`} role="listitem">
+              <Avatar seed={p.avatar} size={30} online={p.online} alt="" dealer={p.moderator} />
+              <span className={styles.pname}>{p.nickname}{p.id === me?.id && <span className={styles.you}> {t('room.you')}</span>}</span>
+              {p.moderator && <span className={styles.badge}>{t('room.moderator')}</span>}
+              {p.observer && <span className={styles.badge}>{t('room.observer')}</span>}
+              {!p.online && <span className={styles.offline}>{t('room.offline')}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
       <span className={styles.share}><ShareButton code={room.code} /></span>
       <span className={styles.desk}><SoundToggle /></span>
       <span className={styles.desk}><ThemeToggle /></span>

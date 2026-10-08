@@ -23,12 +23,12 @@ test('iki tarayıcı aynı odaya girer, birbirini görür, yenileyince aynı kol
   await joinAs(b, 'Mehmet');
 
   // İkisi de birbirini 1 sn içinde görür
-  await expect(a.getByText('Mehmet', { exact: true })).toBeVisible({ timeout: 1000 });
-  await expect(b.getByText('Ayşe', { exact: true })).toBeVisible({ timeout: 1000 });
+  await expect(a.getByRole('main').getByText('Mehmet', { exact: true })).toBeVisible({ timeout: 1000 });
+  await expect(b.getByRole('main').getByText('Ayşe', { exact: true })).toBeVisible({ timeout: 1000 });
 
   // B yeniler: form yok, aynı koltuk, A'da hâlâ 2 kişi
   await b.reload();
-  await expect(b.getByText('sen', { exact: true })).toBeVisible();
+  await expect(b.getByRole('main').getByText('sen', { exact: true })).toBeVisible();
   await expect(b.getByLabel('Takma ad')).toHaveCount(0);
   await expect(a.getByText(/· 2 kişi/)).toBeVisible();
 

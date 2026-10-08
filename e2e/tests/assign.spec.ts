@@ -82,7 +82,7 @@ test('krupiye birini masadan atar; atılan kişi mesajı görür ve eski oturuml
   await joinAs(a, 'Ayşe');
   await b.goto(a.url());
   await joinAs(b, 'Mehmet');
-  await expect(a.getByText('Mehmet', { exact: true })).toBeVisible();
+  await expect(a.getByRole('main').getByText('Mehmet', { exact: true })).toBeVisible();
 
   a.once('dialog', (d) => d.accept());
   await a.getByTitle(/Mehmet/).hover();
@@ -90,12 +90,12 @@ test('krupiye birini masadan atar; atılan kişi mesajı görür ve eski oturuml
 
   await expect(b.getByText('Masadan çıkarıldın')).toBeVisible();
   await expect(a.getByText('Mehmet masadan çıkarıldı')).toBeVisible();
-  await expect(a.getByText('Mehmet', { exact: true })).toHaveCount(0);
+  await expect(a.getByRole('main').getByText('Mehmet', { exact: true })).toHaveCount(0);
 
   // Link ile yeniden katılabilir (yeni koltuk).
   await b.getByRole('button', { name: 'Yeniden katıl' }).click();
   await joinAs(b, 'Mehmet');
-  await expect(a.getByText('Mehmet', { exact: true })).toBeVisible();
+  await expect(a.getByRole('main').getByText('Mehmet', { exact: true })).toBeVisible();
 });
 
 test('aynı isimle başka tarayıcıdan dönen kişi çevrimdışı koltuğunu devralır', async ({ browser }) => {

@@ -25,7 +25,7 @@ test('iki tarayıcı: ticket ekle, oy ver, aç, final tahmini yaz', async ({ bro
   await joinAs(a, 'Ayşe');
   await b.goto(a.url());
   await joinAs(b, 'Mehmet');
-  await expect(a.getByText('Mehmet', { exact: true })).toBeVisible();
+  await expect(a.getByRole('main').getByText('Mehmet', { exact: true })).toBeVisible();
 
   // Krupiye ticket ekler; ilk ticket masaya gelir
   await a.getByRole('button', { name: /Ekle ya da yapıştır/ }).click();
@@ -68,7 +68,7 @@ test('ticket listesi kapalı: serbest turda konu yaz, oy ver, aç, final oturum 
   await joinAs(a, 'Ayşe');
   await b.goto(a.url());
   await joinAs(b, 'Mehmet');
-  await expect(a.getByText('Mehmet', { exact: true })).toBeVisible();
+  await expect(a.getByRole('main').getByText('Mehmet', { exact: true })).toBeVisible();
 
   // Yeni odada ticket paneli yok
   await expect(a.getByText("Ticket'lar", { exact: true })).toHaveCount(0);
