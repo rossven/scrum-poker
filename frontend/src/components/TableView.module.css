@@ -1,10 +1,10 @@
 /* Arena: masa + etrafındaki koltuklar. Koltuk konumları TableView.tsx'te elips üzerinde yüzde olarak hesaplanır. */
 .wrap { width: 100%; padding: 74px 0 40px; }
-.arena { position: relative; width: min(100%, 1120px); height: clamp(340px, 44vh, 460px); margin: 0 auto; }
+.arena { position: relative; width: min(100%, 940px); height: clamp(340px, 44vh, 460px); margin: 0 auto; }
 
 /* Masa: düz çuha (ortadan hafif aydınlık), ince koyu halka. Ahşap doku ve dikiş çizgisi yok. */
 .table {
-  position: absolute; inset: 17% 12% 33%; border-radius: 999px;
+  position: absolute; inset: 15% 20.2% 27%; border-radius: 999px;
   background: radial-gradient(ellipse at 50% 35%, var(--felt-light), var(--felt-dark) 78%);
   box-shadow: 0 0 0 7px var(--ring), 0 0 0 8px rgba(255, 255, 255, 0.05), 0 24px 50px rgba(8, 40, 25, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.12);
 }
@@ -51,7 +51,7 @@
 /* Masaüstü: masa, ekranda kalan yüksekliğe sığar; sayfa kaymaz. */
 @media (min-width: 961px) {
   .wrap { flex: 1 0 auto; display: flex; flex-direction: column; }
-  .arena { flex: 1 1 auto; height: auto; min-height: 340px; max-height: 480px; width: min(100%, 1120px); }
+  .arena { flex: 1 1 auto; height: auto; min-height: 340px; max-height: 480px; width: min(100%, 940px); }
 }
 @media (min-width: 961px) and (max-height: 820px) {
   .wrap { padding: 58px 0 24px; }

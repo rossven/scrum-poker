@@ -35,8 +35,8 @@ function seatPoint(i: number, n: number, narrow: boolean) {
   const angle = Math.PI / 2 + (i / n) * Math.PI * 2;
   const outer = !twoRows || i % 2 === 0;
   const rx = (outer ? 46 : 35) - (narrow ? 8 : 0);
-  const ry = outer ? 40 : 29;
-  return { x: 50 + rx * Math.cos(angle), y: 44 + ry * Math.sin(angle) };
+  const ry = outer ? 43 : 31;
+  return { x: 50 + rx * Math.cos(angle), y: 45 + ry * Math.sin(angle) };
 }
 
 const pct = (p: { x: number; y: number }) => ({ left: `${p.x}%`, top: `${p.y}%` });
