@@ -7,7 +7,10 @@ async function joinAs(page: Page, nickname: string) {
 
 async function newRoom(page: Page, tickets = false) {
   await page.goto('/yeni');
-  if (tickets) await page.getByRole('switch', { name: /Ticket listesi kullan/ }).click();
+  if (tickets) {
+    await page.getByRole('button', { name: /Gelişmiş/ }).click();
+    await page.getByRole('switch', { name: /Ticket listesi kullan/ }).click();
+  }
   await page.getByRole('button', { name: 'Odayı oluştur' }).click();
 }
 

@@ -5,3 +5,10 @@
 }
 .button:hover:not(:disabled) { transform: translateY(-2px) scale(1.1); background: var(--surface-2); }
 .button:disabled { opacity: 0.5; cursor: default; }
+
+/* Araç çubuğundaki öteki düğmelerle aynı boy. */
+.trigger {
+  min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; border-radius: 11px;
+  background: var(--surface); border: 1px solid var(--border); font-size: 13.5px; font-weight: 600; cursor: pointer; color: inherit;
+}
+.trigger:hover { background: var(--surface-2); }

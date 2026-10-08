@@ -59,23 +59,25 @@ export function CreateRoomPage() {
           <DeckPicker id="deck" value={deck} onChange={setDeck} />
         </div>
 
-        <div className={styles.switches}>
-          <SwitchRow title={t('settings.autoReveal')} hint={t('settings.autoRevealHint')} on={autoReveal} onChange={setAutoReveal} />
-          <SwitchRow title={t('tickets.enable')} hint={t('create.ticketsHint')} on={ticketsEnabled} onChange={setTicketsEnabled} />
-        </div>
-
         <button type="button" className={styles.advancedToggle} aria-expanded={advanced} onClick={() => setAdvanced((v) => !v)}>
-          {t('create.advanced')}
+          <b>{t('create.advanced')}</b>
+          <span>{t('create.advancedHint')}</span>
         </button>
         {advanced && (
-          <div className="field">
-            <label htmlFor="password">
-              {t('create.password')} <span className="muted">({t('common.optional')})</span>
-            </label>
-            <input id="password" className="input" type="password" maxLength={64} autoComplete="new-password"
-              value={password} onChange={(e) => setPassword(e.target.value)} />
-            <small>{t('create.passwordHint')}</small>
-          </div>
+          <>
+            <div className={styles.switches}>
+              <SwitchRow title={t('settings.autoReveal')} hint={t('settings.autoRevealHint')} on={autoReveal} onChange={setAutoReveal} />
+              <SwitchRow title={t('tickets.enable')} hint={t('create.ticketsHint')} on={ticketsEnabled} onChange={setTicketsEnabled} />
+            </div>
+            <div className="field">
+              <label htmlFor="password">
+                {t('create.password')} <span className="muted">({t('common.optional')})</span>
+              </label>
+              <input id="password" className="input" type="password" maxLength={64} autoComplete="new-password"
+                value={password} onChange={(e) => setPassword(e.target.value)} />
+              <small>{t('create.passwordHint')}</small>
+            </div>
+          </>
         )}
 
         {error && <p className="error-text">{t(`errors.${error}`)}</p>}

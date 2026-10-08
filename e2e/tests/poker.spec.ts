@@ -19,6 +19,7 @@ test('iki tarayıcı: ticket ekle, oy ver, aç, final tahmini yaz', async ({ bro
 
   await a.goto('/yeni');
   await a.getByLabel(/Oda adı/).fill('Poker');
+  await a.getByRole('button', { name: /Gelişmiş/ }).click();
   await a.getByRole('switch', { name: /Ticket listesi kullan/ }).click();
   await a.getByRole('button', { name: 'Odayı oluştur' }).click();
   await joinAs(a, 'Ayşe');

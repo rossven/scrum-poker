@@ -42,7 +42,8 @@
     "passwordHint": "Boş bırakırsan link olan herkes girebilir.",
     "submit": "Odayı oluştur",
     "ticketsHint": "Kapalıyken masada serbest tur oynanır; krupiye istediği an ayarlardan açabilir.",
-    "advanced": "Gelişmiş: şifre"
+    "advanced": "Gelişmiş",
+    "advancedHint": "Otomatik aç, ticket listesi, şifre"
   },
   "decks": {
     "modified-fibonacci": "Modifiye Fibonacci",

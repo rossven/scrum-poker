@@ -25,7 +25,7 @@ export function EmojiBar({ iconOnly }: { iconOnly?: boolean }) {
   };
 
   return (
-    <Menu label={t('emoji.title')} up align="end" triggerClassName="btn btn-small"
+    <Menu label={t('emoji.title')} up align="end" triggerClassName={styles.trigger}
       trigger={<><Icon name="smile" size={16} />{!iconOnly && <span>{t('emoji.react')}</span>}</>}>
       <div className={styles.grid} role="group" aria-label={t('emoji.title')}>
         {TABLE_EMOJIS.map((e) => (
