@@ -37,3 +37,13 @@
 .callout { margin: 0; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 15px; }
 .flush { background: color-mix(in srgb, var(--gold) 22%, var(--surface)); border: 1px solid var(--gold); }
 .breakTime { background: color-mix(in srgb, #8a6b52 16%, var(--surface)); border: 1px solid color-mix(in srgb, #8a6b52 50%, var(--border)); }
+.whoVoted { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.voter { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--surface-2); }
+.voterName { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.voterCard {
+  flex-shrink: 0; min-width: 34px; padding: 2px 8px; text-align: center; font-size: 18px; font-weight: 800;
+  border-radius: 6px; background: var(--card-face); color: var(--card-ink); border: 1.5px solid #d9d3c3;
+}
+.voterLow { border-color: #4f86c6; box-shadow: 0 0 0 1.5px #4f86c6; }
+.voterHigh { border-color: var(--gold); box-shadow: 0 0 0 1.5px var(--gold); }
+.excludedVoter { opacity: 0.45; }

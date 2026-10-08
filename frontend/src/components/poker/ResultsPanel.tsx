@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { RoomState, RoundView } from '../../api/types';
 import { formatNumber, isSpecialCard } from '../../lib/deck';
 import { useRoomStore } from '../../store/roomStore';
+import { Avatar } from '../Avatar';
 import { isBreakTime, isRoyalFlush } from './FunFx';
 import styles from './ResultsPanel.module.css';
 
@@ -50,6 +51,21 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
           <strong>{t('poker.breakTime')}</strong> {t('poker.breakTimeSub')}
         </p>
       )}
+
+      {/* Kim kaç verdi: deste sırasına göre, en düşük/en yüksek vurgulu */}
+      <ul className={styles.whoVoted} aria-label={t('poker.whoVoted')}>
+        {[...votes]
+          .sort((a, b) => room.deckCards.indexOf(a.card) - room.deckCards.indexOf(b.card))
+          .map((v) => (
+            <li key={v.participantId} className={`${styles.voter} ${v.excluded ? styles.excludedVoter : ''}`}>
+              <Avatar seed={v.avatar} size={30} alt="" />
+              <span className={styles.voterName}>{v.nickname}</span>
+              <span className={`${styles.voterCard} ${stats.lowestIds.includes(v.participantId) ? styles.voterLow : ''} ${stats.highestIds.includes(v.participantId) ? styles.voterHigh : ''}`}>
+                {v.card}
+              </span>
+            </li>
+          ))}
+      </ul>
 
       <dl className={styles.numbers}>
         {stats.average !== undefined && (

@@ -159,6 +159,7 @@
     "minutes_one": "{{count}} dk",
     "minutes_other": "{{count}} dk",
     "results": "Sonuç",
+    "whoVoted": "Kim kaç verdi",
     "average": "Ortalama",
     "median": "Medyan",
     "mode": "En sık",

@@ -74,7 +74,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
     const v = votesById.get(p.id);
     if (!v) return <EmptyCardSlot />;
     const highlight = stats?.lowestIds.includes(p.id) ? 'low' : stats?.highestIds.includes(p.id) ? 'high' : undefined;
-    return <PlayingCard faceUp value={v.card} index={room.deckCards.indexOf(v.card)} highlight={highlight} dimmed={v.excluded} />;
+    return <PlayingCard faceUp size="md" value={v.card} index={room.deckCards.indexOf(v.card)} highlight={highlight} dimmed={v.excluded} />;
   };
 
   const renderActions = (p: ParticipantView) => {
@@ -181,13 +181,13 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
             nudges={nudges}
           />
 
-          {!voting && stats && <ResultsPanel room={room} round={round} isModerator={isModerator} />}
-
           {me && !me.observer && (
             <CardHand cards={room.deckCards} selected={myCard} disabled={!voting} onVote={vote} dealKey={round.id} />
           )}
           {me?.observer && <p className={`muted ${styles.observerNote}`}>{t('poker.observerNote')}</p>}
           {me && <EmojiBar />}
+
+          {!voting && stats && <ResultsPanel room={room} round={round} isModerator={isModerator} />}
 
           {!room.ticketsEnabled && (
             <>

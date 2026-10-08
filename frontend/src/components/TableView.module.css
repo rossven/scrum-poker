@@ -1,5 +1,6 @@
 .wrap { width: 100%; }
-.arena { position: relative; width: 100%; aspect-ratio: 16 / 11; min-height: 420px; max-height: 78vh; margin: 70px auto 90px; }
+/* Üst/alt boşluk yalnızca koltukların masadan taşan yarısı kadar: kart eli masanın hemen altında kalsın. */
+.arena { position: relative; width: 100%; aspect-ratio: 16 / 10; min-height: 400px; max-height: 72vh; margin: 56px auto 52px; }
 
 /* Masa: koyu ahşap kenar (rail), ince altın çizgi, ortadan aydınlanan yeşil çuha. */
 .table {
