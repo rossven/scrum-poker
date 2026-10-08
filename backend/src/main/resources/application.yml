@@ -6,6 +6,9 @@ spring:
 
 server:
   port: ${PORT:8080}
+  # Ters vekil (Render vb.) arkasında gerçek istemci IP'si için "native".
+  # Varsayılan kapalı: doğrudan erişimde X-Forwarded-For sahte olabilir.
+  forward-headers-strategy: ${SM_FORWARD_HEADERS:none}
 
 sprintmasasi:
   # Oda başına en fazla bağlı kişi (güvenlik tavanı)
