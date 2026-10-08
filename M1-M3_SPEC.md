@@ -18,7 +18,7 @@ Retro, rapor/PDF dışa aktarım, hesap/giriş, ödeme, Jira/Slack entegrasyonu,
 
 | Rol | Yetki |
 |---|---|
-| **Moderatör** (arayüzde **Krupiye**, M2.5) | Odayı açan kişi. Ticket girer/değiştirir, kartları açar, tekrar oylama başlatır, final tahmini onaylar, atama oyununu başlatır, başka birini moderatör yapabilir. |
+| **Moderatör** (arayüzde **Krupiye**, M2.5) | Odayı açan kişi. Ticket girer/değiştirir, kartları açar, tekrar oylama başlatır, final tahmini onaylar, atama oyununu başlatır, başka birini moderatör yapabilir, oturumdaki kişileri masadan atabilir (M3). |
 | **Katılımcı** | Oy verir, gönüllü olur, oyunlara katılır. |
 | **Gözlemci** | Sadece izler, oy vermez. Katılırken seçilir. |
 
@@ -196,7 +196,15 @@ Oyun mimarisi: her oyun, ortak bir `TieBreakerGame` arayüzünü gerçekleştirs
 - **Ağırlık ayarı (varsayılan eşit):** "Dönüşümlü adalet" seçeneği: bu oturumda daha önce kazananların ağırlığı azaltılır (örn. her kazanımda yarıya iner). Moderatör açıp kapatabilir. Ağırlıklar çarkta dilim genişliği, yarışta başlangıç hızı yerine yalnızca **seçim olasılığı** olarak uygulanır; görsel olarak eşit görünür, bilgi çubuğunda "ağırlıklı mod açık" notu çıkar.
 - Aynı odadaki herkes aynı sonucu aynı anda görür (sunucu zaman damgasıyla senkron başlatır).
 
+### Masadan atma (moderatör yetkisi)
+- Moderatör (krupiye), oturuma katılan herhangi bir kişiyi (katılımcı veya gözlemci) masadan **atabilir**. Kendini atamaz. Koltuk menüsünde ve izleyiciler listesinde "Masadan at" seçeneği çıkar; yanlışlıkla basılmasın diye onay sorulur.
+- Yetki kontrolü sunucuda yapılır: moderatör olmayan birinin atma isteği reddedilir.
+- Atılan kişinin oturum token'ı geçersiz olur, bağlantısı kapanır ve ekranında "Krupiye seni masadan çıkardı" mesajı görünür. Odadaki herkes "X masadan çıkarıldı" bildirimini görür.
+- Atılan kişinin açılmamış oyu turdan silinir. Aday listesindeyse veya gönüllüyse oradan da çıkarılır. Daha önce yapılmış atamalar ve geçmiş değişmez.
+- Atılan kişi oda linkiyle yeniden katılabilir (kalıcı engelleme bu milestone'da yok). Atılan kişi moderatörse ve başka moderatör kalmazsa M1'deki devretme kuralı uygulanır.
+
 ### Kabul kriterleri
+- Moderatör bir kişiyi attığında o kişinin bağlantısı kapanır, eski token'ı ile yeniden bağlanamaz ve masadan/aday listesinden kalkar. Moderatör olmayanın atma isteği reddedilir (otomatik testler).
 - Tek gönüllü varsa oyun çalışmadan atama yapılır.
 - Aday çıkarma ve gönüllü kuralları doğru çalışır (otomatik testler).
 - 10.000 deneme simülasyonunda (birim test) eşit ağırlıkta her adayın kazanma oranı beklenen aralıkta; ağırlıklı modda oranlar ağırlıklarla uyumlu.
