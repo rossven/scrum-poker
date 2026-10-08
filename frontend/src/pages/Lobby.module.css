@@ -43,3 +43,8 @@
 @media (max-width: 720px) {
   .stage { padding-top: 8px; }
 }
+
+@media (min-width: 961px) and (max-height: 820px) {
+  .heading { min-height: 34px; }
+  .stage { gap: 6px; padding-top: 8px; }
+}
