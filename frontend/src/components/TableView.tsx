@@ -27,9 +27,10 @@ function avatarSize(n: number) {
   return 32;
 }
 
+/** i = 0 masanın altında (kart elinin hemen üstü), diğerleri saat yönünde dizilir. */
 function seatPoint(i: number, n: number) {
   const twoRows = n > 16;
-  const angle = -Math.PI / 2 + (i / n) * Math.PI * 2;
+  const angle = Math.PI / 2 + (i / n) * Math.PI * 2;
   const outer = !twoRows || i % 2 === 0;
   const rx = outer ? 47 : 36;
   const ry = outer ? 42 : 29;
@@ -64,8 +65,11 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
   const reduceMotion = useReducedMotion();
   const narrow = useNarrow();
   const [fx, setFx] = useState<Fx[]>([]);
+  // Sen her zaman masanın altında, kendi kart elinin yanında oturursun.
+  const youIndex = Math.max(0, people.findIndex((p) => p.id === youId));
+  const seatAt = (i: number) => seatPoint((i - youIndex + people.length) % people.length, people.length);
   const dealerIndex = people.findIndex((p) => p.moderator);
-  const dealerPoint = dealerIndex >= 0 && !narrow ? seatPoint(dealerIndex, people.length) : { x: 50, y: 50 };
+  const dealerPoint = dealerIndex >= 0 && !narrow ? seatAt(dealerIndex) : { x: 50, y: 50 };
 
   const addFx = (kind: Fx['kind']) => {
     const item = { id: ++fxSeq, kind };
@@ -91,7 +95,7 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
   const emojiStart = (participantId: string) => {
     const i = people.findIndex((p) => p.id === participantId);
     if (i < 0 || narrow) return { x: 50, y: 92 };
-    return seatPoint(i, people.length);
+    return seatAt(i);
   };
 
   return (
@@ -103,7 +107,7 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
         <ul className={styles.seats}>
           {people.map((p, i) => (
             // Konum düz <li> üzerinde: framer-motion'ın transform'u ortalama için gereken translate'i ezmesin.
-            <li key={p.id} className={styles.seatSlot} style={pct(seatPoint(i, people.length))}>
+            <li key={p.id} className={styles.seatSlot} style={pct(seatAt(i))}>
               <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
                 <Seat person={p} isYou={p.id === youId} size={size} card={renderCard?.(p)} actions={renderActions?.(p)}
                   nudge={nudges[p.id] ?? 0} />
@@ -121,7 +125,7 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
                       key={`${f.id}-${p.id}`}
                       className={styles.flyingCard}
                       initial={{ ...pct(dealerPoint), opacity: 0, rotate: -30 }}
-                      animate={{ ...pct(seatPoint(i, people.length)), opacity: [0, 1, 1, 0], rotate: 0 }}
+                      animate={{ ...pct(seatAt(i)), opacity: [0, 1, 1, 0], rotate: 0 }}
                       transition={{ delay: i * 0.05, duration: 0.6, ease: 'easeOut' }}
                     />
                   ),
