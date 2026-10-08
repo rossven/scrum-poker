@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { RoomState } from '../../api/types';
 import { useRoomStore } from '../../store/roomStore';
 import { Icon } from '../Icon';
+import { TopicField } from './TopicField';
 import styles from './RoundControls.module.css';
 
 const TIMER_PRESETS = [60, 120, 300];
@@ -12,7 +13,7 @@ const NUDGE_INTERVAL_MS = 30_000;
 export function RoundControls({ room, allVoted, youId }: { room: RoomState; allVoted: boolean; youId: string | null }) {
   const { t } = useTranslation();
   const { reveal, newRound, nextTicket, startTimer, stopTimer, nudge, startAssignment } = useRoomStore();
-  const [volunteerSeconds, setVolunteerSeconds] = useState(20);
+  const [volunteerSeconds, setVolunteerSeconds] = useState(10);
   const round = room.round;
   const voting = round.state === 'VOTING';
   const freeFinalized = round.state === 'FINALIZED' && !round.ticketId;
@@ -64,13 +65,13 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
         )}
         {!room.assignment && (
           <span className={styles.assign}>
-            <button type="button" className={`btn ${voting ? 'btn-ghost' : 'btn-primary'}`}
+            <button type="button" className={`btn ${voting ? '' : 'btn-primary'} ${styles.assignButton}`}
               onClick={() => startAssignment(volunteerSeconds)}>
               <Icon name="hand" /> {t('assign.startButton')}
             </button>
-            <select className={`input ${styles.assignSelect}`} aria-label={t('assign.volunteerTime')}
+            <select className={styles.assignSelect} aria-label={t('assign.volunteerTime')}
               value={volunteerSeconds} onChange={(e) => setVolunteerSeconds(Number(e.target.value))}>
-              {[20, 30, 60, 0].map((s) => (
+              {[10, 20, 30, 60, 0].map((s) => (
                 <option key={s} value={s}>{s ? t('assign.seconds', { count: s }) : t('assign.noLimit')}</option>
               ))}
             </select>
@@ -82,6 +83,7 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
           </button>
         )}
       </div>
+      {!round.ticketId && <TopicField topic={round.topic} />}
       <div className={`${styles.group} ${styles.timer}`} aria-label={t('poker.timer')}>
         {room.timer ? (
           <button type="button" className="btn btn-ghost btn-small" onClick={stopTimer}><Icon name="timer" size={16} /> {t('poker.timerStop')}</button>

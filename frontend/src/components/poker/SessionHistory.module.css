@@ -6,6 +6,6 @@
 .topic { font-weight: 600; overflow-wrap: anywhere; }
 .final {
   flex-shrink: 0; min-width: 30px; text-align: center; font-family: var(--font-card); font-weight: 800; padding: 2px 8px; border-radius: 6px;
-  background: var(--card-face); color: var(--card-ink); border: 1.5px solid var(--gold);
+  background: var(--card-face); color: var(--card-ink); border: 1.5px solid var(--border);
 }
 .votes { margin: 4px 0 0; font-size: 13px; color: var(--text-soft); }

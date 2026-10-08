@@ -16,5 +16,5 @@
 .runner { position: absolute; top: 50%; transform: translate(-100%, -50%); display: flex; align-items: center; gap: 2px; white-space: nowrap; }
 .horse { font-size: 24px; transform: scaleX(-1); display: inline-block; }
 .place { font-weight: 800; text-align: right; }
-.winner .name, .winner .place { color: var(--gold-soft); }
-.winner .runner { filter: drop-shadow(0 0 6px var(--gold)); }
+.winner .name, .winner .place { color: #ffe08a; }
+.winner .runner { filter: drop-shadow(0 0 6px #ffe08a); }

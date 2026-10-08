@@ -9,7 +9,7 @@ interface Props {
   done: boolean;
 }
 
-const COLORS = ['#1d6a47', '#7a1f2b', '#c9a24a', '#2b4f7a', '#5b2e1d', '#2b8a5b', '#8a4b8f', '#b85c1e'];
+const COLORS = ['#12775a', '#2f6fe0', '#7b5cd6', '#d93a3a', '#e08a1e', '#0e8fa3', '#c2408a', '#4a6b2f'];
 const SIZE = 260;
 const R = SIZE / 2 - 6;
 
@@ -53,7 +53,7 @@ export function Wheel({ result, animation, progress, done }: Props) {
                 <path
                   d={`M ${SIZE / 2} ${SIZE / 2} L ${p0.x} ${p0.y} A ${R} ${R} 0 ${large} 1 ${p1.x} ${p1.y} Z`}
                   fill={COLORS[i % COLORS.length]}
-                  stroke={highlight ? '#fff7d6' : '#f5f0e1'}
+                  stroke={highlight ? '#ffffff' : 'rgba(255,255,255,0.85)'}
                   strokeWidth={highlight ? 4 : 1.5}
                 />
                 <text
@@ -69,8 +69,8 @@ export function Wheel({ result, animation, progress, done }: Props) {
               </g>
             );
           })}
-          <circle cx={SIZE / 2} cy={SIZE / 2} r={R} fill="none" stroke="#c9a24a" strokeWidth={5} />
-          <circle cx={SIZE / 2} cy={SIZE / 2} r={16} fill="#5b2e1d" stroke="#c9a24a" strokeWidth={3} />
+          <circle cx={SIZE / 2} cy={SIZE / 2} r={R} fill="none" stroke="#ffffff" strokeWidth={5} />
+          <circle cx={SIZE / 2} cy={SIZE / 2} r={16} fill="#17211c" stroke="#ffffff" strokeWidth={3} />
         </g>
       </svg>
     </div>

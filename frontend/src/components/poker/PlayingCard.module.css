@@ -1,7 +1,7 @@
-.card { perspective: 600px; flex-shrink: 0; border-radius: 6px; }
+.card { perspective: 600px; flex-shrink: 0; border-radius: 8px; }
 /* sm: masadaki kart (390 px'te de köşeler okunur kalsın diye M2'den biraz büyük) */
-.sm { width: 42px; height: 60px; --corner: 13px; }
-.md { width: 58px; height: 84px; --corner: 17px; }
+.sm { width: 46px; height: 64px; --corner: 14px; }
+.md { width: 62px; height: 88px; --corner: 18px; }
 
 .inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; border-radius: inherit; }
 .side {
@@ -11,10 +11,10 @@
 .frontSide { transform: rotateY(180deg); background: var(--card-face); }
 
 .empty {
-  border: 2px dashed color-mix(in srgb, var(--gold) 55%, transparent);
-  background: color-mix(in srgb, var(--felt) 8%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--text-soft) 40%, transparent);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
 }
 
-.low .frontSide { box-shadow: 0 0 0 3px #4f86c6, 0 4px 10px rgba(0, 0, 0, 0.18); }
-.high .frontSide { box-shadow: 0 0 0 3px var(--gold), 0 4px 10px rgba(0, 0, 0, 0.18); }
+.low .frontSide { box-shadow: 0 0 0 3px var(--tone-low), 0 4px 10px rgba(0, 0, 0, 0.18); }
+.high .frontSide { box-shadow: 0 0 0 3px var(--tone-high), 0 4px 10px rgba(0, 0, 0, 0.18); }
 .dimmed { opacity: 0.4; }

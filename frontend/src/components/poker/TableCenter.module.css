@@ -1,15 +1,10 @@
-.center { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 340px; position: relative; z-index: 1; }
-.round { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--gold-soft); }
-.ticket { font-family: var(--font-display); font-weight: 700; font-size: clamp(17px, 2.3vw, 23px); line-height: 1.2; overflow-wrap: anywhere;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.ticket a { color: inherit; }
-.status { font-size: 14px; padding: 2px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.18); }
-.topicButton {
-  display: inline-flex; align-items: center; gap: 6px; border: 1px dashed transparent; background: none;
-  color: inherit; cursor: pointer; padding: 2px 8px; border-radius: 8px;
+.center { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 360px; position: relative; z-index: 1; }
+.ticket {
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(17px, 2.2vw, 22px); line-height: 1.2; letter-spacing: -0.01em;
+  overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
-.topicButton:hover, .topicButton:focus-visible { border-color: color-mix(in srgb, var(--table-text) 50%, transparent); }
-.placeholder .ticket { opacity: 0.8; font-weight: 600; }
-.pen { opacity: 0.75; font-size: 14px; }
-.topicForm { display: flex; gap: 6px; width: min(300px, 100%); }
-.topicInput { flex: 1; min-width: 0; min-height: 34px; color: var(--text); }
+.ticket a { color: inherit; }
+.status {
+  font-size: 15px; font-weight: 600; padding: 4px 14px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(2px);
+}

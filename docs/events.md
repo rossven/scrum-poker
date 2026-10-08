@@ -86,7 +86,7 @@ Başka bir odanın konusuna abone olma isteği reddedilir.
 | `room.leave` | `{}` | herkes | Koltuk silinir. Moderatör kalmazsa en eski bağlı kişiye devredilir. |
 | `room.close` | `{}` | moderatör | Herkese `room.closed`, oda silinir |
 | `room.kick` | `{ participantId }` | moderatör (kendini atamaz) | Kişi masadan atılır: koltuğu silinir, token'ı geçersiz olur, açılmamış oyu silinir, gönüllü/aday listesinden düşer; geçmiş değişmez. Kişiye `room.kicked`, ardından bağlantıları kapatılır; odaya `room.participant_kicked`. Linkle yeniden katılabilir |
-| `assign.start` | `{ seconds? }` | moderatör | "Kim alacak?" başlar (masadaki ticket ya da serbest turun konusu için). Gönüllü turu süresi 5-300 sn, varsayılan 20; `0` = süresiz (krupiye kapatır). Süren akış varsa yerine geçer |
+| `assign.start` | `{ seconds? }` | moderatör | "Kim alacak?" başlar (masadaki ticket ya da serbest turun konusu için). Gönüllü turu süresi 10-300 sn, varsayılan 10; `0` = süresiz (krupiye kapatır). Süren akış varsa yerine geçer |
 | `assign.volunteer` | `{ volunteer }` | katılımcı (gözlemci değil) | "Ben alırım" / vazgeç. Yalnızca gönüllü turunda |
 | `assign.close_volunteering` | `{}` | moderatör | Gönüllü turunu erken kapatır (süre dolunca sunucu kendisi kapatır). Tek gönüllü → doğrudan atanır (`game: "volunteer"`); birden çok → adaylar gönüllüler; hiç yok → adaylar bu turda oy verenler (kimse oy vermediyse tüm katılımcılar) |
 | `assign.set_candidate` | `{ participantId, candidate }` | moderatör | Aday ayarında kişiyi çıkar/ekle (gözlemci eklenemez) |

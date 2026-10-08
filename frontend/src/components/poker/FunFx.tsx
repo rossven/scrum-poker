@@ -16,7 +16,7 @@ export function isBreakTime(stats?: VoteStats) {
   return !!stats && stats.voteCount > 0 && coffee * 2 > stats.voteCount;
 }
 
-const COLORS = ['#c9a24a', '#e6cf8a', '#1d6a47', '#2b8a5b', '#b3202e', '#fffdf7', '#7a1f2b'];
+const COLORS = ['#2f6fe0', '#7b5cd6', '#12775a', '#3fcf96', '#d93a3a', '#f0b94a', '#ffffff'];
 
 /**
  * Royal Flush kutlaması: ekranın üstünden düşen konfeti ve ortada büyük yazı.

@@ -2,26 +2,24 @@
 .away { opacity: 0.55; }
 .name {
   font-weight: 600; font-size: 13.5px; line-height: 1.2; overflow-wrap: anywhere;
-  padding: 3px 10px; border-radius: 999px; color: var(--plate-text);
-  background: linear-gradient(180deg, #3a2016, var(--plate));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent), 0 2px 5px rgba(0, 0, 0, 0.25);
+  padding: 4px 10px; border-radius: 999px; color: var(--plate-text); background: var(--plate);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 .you { font-weight: 400; color: color-mix(in srgb, var(--plate-text) 75%, transparent); }
 .badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; min-height: 0; }
 .badge {
-  font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; letter-spacing: 0.02em;
-  background: color-mix(in srgb, var(--gold) 22%, var(--surface)); color: var(--text);
-  border: 1px solid color-mix(in srgb, var(--gold) 70%, transparent);
+  font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent-strong);
 }
 .avatar { position: relative; display: inline-flex; }
 /* Poker masasındaki dağıtıcı düğmesi */
 .dealerButton {
   position: absolute; right: -10px; top: -4px; width: 22px; height: 22px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-card); font-size: 12px; font-weight: 800; color: #1b1b1b; background: #fffdf7;
-  border: 2px solid var(--gold); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-card); font-size: 12px; font-weight: 800; color: var(--accent-contrast); background: var(--accent);
+  border: 2px solid var(--surface); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
-.observer { background: var(--bg-soft); color: var(--text-soft); border-color: var(--border); }
+.observer { background: var(--bg-soft); color: var(--text-soft); }
 .card { margin-bottom: 2px; min-height: 48px; display: flex; align-items: flex-end; }
 .actions {
   position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 3;

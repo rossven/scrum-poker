@@ -72,8 +72,7 @@ test('ticket listesi kapalı: serbest turda konu yaz, oy ver, aç, final oturum 
   await expect(a.getByRole('region', { name: "Ticket'lar" })).toHaveCount(0);
   await expect(a.getByLabel('Ticket ekle')).toHaveCount(0);
 
-  // Krupiye masanın ortasına konu yazar
-  await a.getByRole('button', { name: /Ne oylanıyor\?/ }).click();
+  // Krupiye tepsideki isteğe bağlı konu alanına yazar; herkes başlık satırında görür
   await a.getByLabel('Konu').fill('Giriş sayfası');
   await a.getByRole('button', { name: 'Kaydet' }).click();
   await expect(b.getByText('Giriş sayfası').first()).toBeVisible();

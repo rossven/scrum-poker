@@ -7,7 +7,7 @@
 .spread { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--text); }
 
 .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0; }
-.numbers div { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 12px; border-left: 3px solid color-mix(in srgb, var(--gold) 70%, transparent); }
+.numbers div { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 12px; border: 1px solid var(--border); }
 .numbers dt { font-size: 12px; color: var(--text-soft); }
 .numbers dd { margin: 0; font-family: var(--font-card); font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
@@ -21,8 +21,8 @@
 .barNames { grid-area: names; font-size: 12px; color: var(--text-soft); }
 
 .extremes { display: flex; gap: 6px 18px; flex-wrap: wrap; margin: 0; font-size: 14px; }
-.low { color: #4f6f90; }
-.high { color: color-mix(in srgb, var(--gold) 55%, var(--text)); }
+.low { color: var(--tone-low); }
+.high { color: var(--tone-high); }
 :global([data-theme='dark']) .low { color: #9bb6d1; }
 @media (prefers-color-scheme: dark) { :global(:root:not([data-theme='light'])) .low { color: #9bb6d1; } }
 
@@ -35,15 +35,15 @@
 .finalize label { font-weight: 600; font-size: 14px; }
 .finalize select { min-width: 90px; }
 .callout { margin: 0; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 15px; }
-.flush { background: color-mix(in srgb, var(--gold) 22%, var(--surface)); border: 1px solid var(--gold); }
+.flush { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
 .breakTime { background: color-mix(in srgb, #8a6b52 16%, var(--surface)); border: 1px solid color-mix(in srgb, #8a6b52 50%, var(--border)); }
 .whoVoted { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .voter { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--surface-2); }
 .voterName { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .voterCard {
   flex-shrink: 0; min-width: 34px; padding: 2px 8px; text-align: center; font-family: var(--font-card); font-size: 18px; font-weight: 800;
-  border-radius: 6px; background: var(--card-face); color: var(--card-ink); border: 1.5px solid #d9d3c3;
+  border-radius: 6px; background: var(--card-face); color: var(--card-ink); border: 1.5px solid var(--border);
 }
-.voterLow { border-color: #4f86c6; box-shadow: 0 0 0 1.5px #4f86c6; }
-.voterHigh { border-color: var(--gold); box-shadow: 0 0 0 1.5px var(--gold); }
+.voterLow { border-color: var(--tone-low); box-shadow: 0 0 0 1.5px var(--tone-low); }
+.voterHigh { border-color: var(--tone-high); box-shadow: 0 0 0 1.5px var(--tone-high); }
 .excludedVoter { opacity: 0.45; }

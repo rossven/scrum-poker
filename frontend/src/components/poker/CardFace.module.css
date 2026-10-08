@@ -1,44 +1,44 @@
-/* İskambil kartı yüzleri. Boyut kapsayıcıdan gelir; köşe yazısı --corner ile ölçeklenir. */
+/* Kart yüzleri. Boyut kapsayıcıdan gelir; köşe yazısı --corner ile ölçeklenir, renk --ink ile (maviden kırmızıya). */
 .face, .back {
   position: absolute; inset: 0; border-radius: inherit; overflow: hidden;
   display: block; user-select: none;
 }
-.face { background: var(--card-face); color: var(--card-ink); border: 1px solid #d9d3c3; }
-.red { color: var(--card-red); }
-.jokerTone { color: #7a1f2b; }
-.coffeeTone { color: #5b2e1d; }
+.face {
+  --ink: var(--card-ink);
+  background: var(--card-face); color: var(--ink);
+  border: 1px solid #e3e7ec;
+}
+/* Üstte ince renk şeridi: kartın tonunu uzaktan da belli eder. */
+.band { position: absolute; left: 0; right: 0; top: 0; height: 5%; min-height: 3px; background: var(--ink); opacity: 0.9; }
+.unsureTone { --ink: #5b4bb7; }
+.coffeeTone { --ink: #6b4429; }
 
 .corner {
   position: absolute; display: flex; flex-direction: column; align-items: center;
-  line-height: 0.95; font-family: var(--font-card); font-weight: 800; letter-spacing: -0.02em; max-width: 70%;
+  line-height: 0.95; font-family: var(--font-card); font-weight: 800; letter-spacing: -0.03em; max-width: 72%;
 }
-.tl { top: 5%; left: 7%; }
-.br { bottom: 5%; right: 7%; transform: rotate(180deg); }
+.tl { top: 8%; left: 8%; }
+.br { bottom: 5%; right: 8%; transform: rotate(180deg); }
 .cornerValue { font-size: var(--corner); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.cornerSuit { font-size: calc(var(--corner) * 0.78); line-height: 1; }
 
 .middle {
-  position: absolute; inset: 24% 18%; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 2%;
+  position: absolute; inset: 28% 22%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2%; opacity: 0.9;
 }
 .middle > svg { width: 100%; height: auto; max-height: 100%; flex: 1 1 auto; min-height: 0; }
-.special { inset: 20% 22% 24%; }
+.special { inset: 22% 20% 24%; opacity: 1; }
 .longValue {
   font-family: var(--font-card); font-weight: 800; font-size: calc(var(--corner) * 0.95); line-height: 1.05;
   text-align: center; overflow-wrap: anywhere; word-break: break-all;
 }
 .caption {
-  font-size: calc(var(--corner) * 0.46); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: calc(var(--corner) * 0.42); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
 }
 
-/* Sırt: bordo zemin + altın kafes, beyaz kenar. */
-.back { background: var(--card-face); border: 1px solid #d9d3c3; padding: 7%; }
-.backInner {
-  display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;
-  border-radius: 3px;
-  background:
-    repeating-linear-gradient(45deg, transparent 0 3px, rgba(201, 162, 74, 0.55) 3px 4px),
-    repeating-linear-gradient(-45deg, transparent 0 3px, rgba(201, 162, 74, 0.55) 3px 4px),
-    var(--card-back);
+/* Sırt: düz yeşil, beyaz kenar, ortada döngü. Desen yok. */
+.back {
+  border: 3px solid var(--card-face);
+  background: radial-gradient(circle at 50% 35%, #1f9a6e, #0e5a42);
+  display: flex; align-items: center; justify-content: center;
 }
-.backEmblem { width: 52%; aspect-ratio: 1; display: block; }
+.backEmblem { width: 56%; aspect-ratio: 1; display: block; }

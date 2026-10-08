@@ -1,5 +1,5 @@
 /**
- * SprintMasası amblemi: yeşil çuha üstünde altın halka, iki iskambil kartı ve maça.
+ * SprintMasası amblemi: yeşil zemin üstünde bir kart, kartın ortasında sprint döngüsü.
  * Aynı çizim public/favicon.svg'de de var (ürün adı değişirse ikisi birlikte güncellenir).
  */
 export function Logo({ size = 28, title }: { size?: number; title?: string }) {
@@ -14,30 +14,37 @@ export function Logo({ size = 28, title }: { size?: number; title?: string }) {
 export function LogoArt() {
   return (
     <>
-      <circle cx="32" cy="32" r="30" fill="#1c6b46" />
-      <circle cx="32" cy="32" r="30" fill="none" stroke="#5b2e1d" strokeWidth="3" />
-      <circle cx="32" cy="32" r="25.5" fill="none" stroke="#c9a24a" strokeWidth="1.6" />
-      <rect x="15" y="17" width="20" height="28" rx="3" fill="#fffdf7" stroke="#c9a24a" strokeWidth="1.2" transform="rotate(-14 25 31)" />
-      <rect x="27" y="17" width="20" height="28" rx="3" fill="#fffdf7" stroke="#c9a24a" strokeWidth="1.2" transform="rotate(10 37 31)" />
-      <path
-        transform="rotate(10 37 31)"
-        d="M37 22.5c-3.6 3.6-7.4 5.8-7.4 9.4 0 2.2 1.7 3.8 3.7 3.8 1.2 0 2.2-.5 2.8-1.3l-1.3 4.4h4.4l-1.3-4.4c.6.8 1.6 1.3 2.8 1.3 2 0 3.7-1.6 3.7-3.8 0-3.6-3.8-5.8-7.4-9.4z"
-        fill="#1b1b1b"
-      />
+      <defs>
+        <linearGradient id="sm-logo-bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#1f9a6e" />
+          <stop offset="1" stopColor="#0e5a42" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#sm-logo-bg)" />
+      <rect x="17" y="11" width="30" height="42" rx="6" fill="#ffffff" transform="rotate(-8 32 32)" />
+      <g transform="translate(12 12)">
+        <SprintLoopPaths color="#12775a" />
+      </g>
     </>
   );
 }
 
-/** Kart ortasındaki sade amblem. */
-export function CardEmblem() {
+/** Sprint döngüsü: kendine dönen ok ve ortada bir nokta (40×40 ızgara). */
+function SprintLoopPaths({ color }: { color: string }) {
+  return (
+    <>
+      <path d="M26 9.6A12 12 0 1 0 32 20" fill="none" stroke={color} strokeWidth="3.6" strokeLinecap="round" />
+      <path d="M32 14.2 27.6 21.4h8.8z" fill={color} stroke={color} strokeWidth="1.2" strokeLinejoin="round" />
+      <circle cx="20" cy="20" r="3.6" fill={color} />
+    </>
+  );
+}
+
+/** Kart ortasındaki amblem; renk kartın tonundan gelir. */
+export function SprintEmblem({ color = 'currentColor' }: { color?: string }) {
   return (
     <svg viewBox="0 0 40 40" width="100%" height="100%" aria-hidden>
-      <circle cx="20" cy="20" r="17" fill="none" stroke="#c9a24a" strokeWidth="1.6" />
-      <circle cx="20" cy="20" r="13.5" fill="#1c6b46" />
-      <path
-        d="M20 10.5c-3.4 3.4-7 5.5-7 8.9 0 2.1 1.6 3.6 3.5 3.6 1.1 0 2.1-.5 2.7-1.2L18 26h4l-1.2-4.2c.6.7 1.6 1.2 2.7 1.2 1.9 0 3.5-1.5 3.5-3.6 0-3.4-3.6-5.5-7-8.9z"
-        fill="#fffdf7"
-      />
+      <SprintLoopPaths color={color} />
     </svg>
   );
 }

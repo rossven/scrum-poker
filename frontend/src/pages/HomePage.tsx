@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Chip } from '../components/brand/Chip';
-import { Icon, SuitRow, type IconName } from '../components/Icon';
+import { Icon, type IconName } from '../components/Icon';
 import { Shell } from '../components/Shell';
 import { CardFace } from '../components/poker/CardFace';
+import { cardTone } from '../lib/deck';
 import { navigate, roomPath } from '../lib/router';
 import styles from './HomePage.module.css';
+
+const HERO_CARDS = ['1', '3', '8', '13'];
 
 const FEATURES: { key: string; icon: IconName }[] = [
   { key: 'cards', icon: 'cards' },
@@ -29,15 +31,15 @@ export function HomePage() {
       <section className={styles.hero}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>
-            <SuitRow size={11} />
-            <span>{t('home.eyebrow')}</span>
+            <span className={styles.dot} aria-hidden />
+            {t('home.eyebrow')}
           </p>
           <h1 className={styles.title}>{t('app.name')}</h1>
           <p className={styles.tagline}>{t('app.tagline')}</p>
 
           <div className={`card ${styles.actions}`}>
             <button type="button" className={`btn btn-primary ${styles.create}`} onClick={() => navigate('/yeni')}>
-              <Icon name="chip" size={20} />
+              <Icon name="plus" size={20} />
               {t('home.create')}
             </button>
             <div className={styles.or}>
@@ -69,17 +71,12 @@ export function HomePage() {
           <div className={styles.table}>
             <div className={styles.tableTop}>
               <div className={styles.fan}>
-                {['?', '5', '8', '13'].map((v, i) => (
-                  <span key={v} className={styles.card} style={{ rotate: `${(i - 1.5) * 9}deg`, translate: `0 ${Math.abs(i - 1.5) * 5}px` }}>
-                    <CardFace value={v} index={i} compact />
+                {HERO_CARDS.map((v, i) => (
+                  <span key={v} className={styles.card} style={{ rotate: `${(i - 1.5) * 8}deg`, translate: `0 ${Math.abs(i - 1.5) * 6}px` }}>
+                    <CardFace value={v} tone={cardTone(HERO_CARDS, v)} compact />
                   </span>
                 ))}
               </div>
-              <Chip tone="red" size={42} className={`${styles.chip} ${styles.chipA}`} />
-              <Chip tone="black" size={38} className={`${styles.chip} ${styles.chipB}`} />
-              <Chip tone="cream" size={34} className={`${styles.chip} ${styles.chipC}`} />
-              <Chip tone="green" size={36} className={`${styles.chip} ${styles.chipD}`} />
-              <span className={styles.dealer}>D</span>
             </div>
           </div>
         </div>

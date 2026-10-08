@@ -1,29 +1,44 @@
-/* Krupiye tepsisi: ahşap çerçeveli, içi kağıt; solda "D" pulu ile krupiye etiketi. */
+/* Krupiye tepsisi: üst satırda tur düğmeleri, alt satırda isteğe bağlı konu ve zamanlayıcı. */
 .bar {
-  position: relative; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
-  padding: 12px 14px 12px 14px; border-radius: var(--radius);
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'tag timer' 'primary primary' 'topic topic';
+  align-items: center; gap: 12px 14px;
+  padding: 14px 16px; border-radius: var(--radius);
   background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
-  border-top: 4px solid transparent;
-  background-image: linear-gradient(var(--surface), var(--surface)), var(--wood);
-  background-origin: border-box; background-clip: padding-box, border-box;
 }
 .tag {
-  display: inline-flex; align-items: center; gap: 8px; padding-right: 12px; margin-right: 2px;
-  font-family: var(--font-display); font-weight: 700; font-size: 16px;
-  border-right: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px;
+  font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  background: var(--surface-2); border: 1px solid var(--border);
 }
 .dealerChip {
   width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-  font-family: var(--font-card); font-weight: 800; font-size: 13px; color: #1b1b1b; background: #fffdf7;
-  border: 2px solid var(--gold); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-display); font-weight: 800; font-size: 12px; color: var(--accent-contrast); background: var(--accent);
 }
-.group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.primary { flex: 1 1 auto; }
-.timer { margin-left: auto; padding-left: 12px; border-left: 1px solid var(--border); }
+.group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { grid-area: tag; justify-self: start; }
+.primary { grid-area: primary; }
+.timer { grid-area: timer; justify-self: end; gap: 2px; }
 .label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-soft); margin-right: 2px; }
-.assign { display: inline-flex; align-items: center; gap: 4px; }
-.assignSelect { min-height: 34px; padding: 0 8px; font-size: 14px; width: auto; border-radius: 999px; }
+
+/* "Kim alacak?" + süre seçimi tek bir bütün gibi: aynı yükseklik, ortak kenar. */
+.assign { display: inline-flex; align-items: stretch; }
+.assignButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.assignSelect {
+  min-height: 44px; padding: 0 30px 0 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); border-left: 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6660' stroke-width='2.5' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right 10px center;
+  appearance: none; -webkit-appearance: none; line-height: 1;
+}
+.assignSelect:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.assignButton:global(.btn-primary) + .assignSelect { border-color: var(--accent); }
+
+.topic {
+  grid-area: topic; display: flex; align-items: center; gap: 8px; min-width: 0;
+  padding-top: 12px; border-top: 1px solid var(--border);
+}
+.topicIcon { color: var(--text-soft); }
+.topicInput { flex: 1; min-width: 0; min-height: 38px; border-color: transparent; background: var(--surface-2); }
 @media (max-width: 640px) {
-  .tag { border-right: 0; padding-right: 0; width: 100%; }
-  .timer { margin-left: 0; padding-left: 0; border-left: 0; }
+  .bar { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'tag' 'primary' 'timer' 'topic'; }
+  .timer { justify-self: start; }
 }

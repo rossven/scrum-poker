@@ -110,7 +110,8 @@
     "dealerNowYou": "Krupiye artık sensin",
     "kick": "Masadan at",
     "kickConfirm": "{{name}} masadan çıkarılsın mı? Açılmamış oyu silinir; link ile yeniden katılabilir.",
-    "kickedToast": "{{name}} masadan çıkarıldı"
+    "kickedToast": "{{name}} masadan çıkarıldı",
+    "topic": "Konu"
   },
   "status": {
     "connecting": "Bağlanıyor…",
@@ -224,7 +225,8 @@
     "breakTimeSub": "Oyların çoğu mola kartı.",
     "joker": "Joker",
     "break": "Mola",
-    "dealerTray": "Krupiye masası"
+    "dealerTray": "Krupiye masası",
+    "topicOptional": "Konu (isteğe bağlı)"
   },
   "tickets": {
     "title": "Ticket'lar",

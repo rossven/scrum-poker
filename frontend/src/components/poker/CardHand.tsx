@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CardFace } from './CardFace';
 import styles from './CardHand.module.css';
+import { cardTone } from '../../lib/deck';
 
 interface Props {
   cards: string[];
@@ -88,7 +89,7 @@ export function CardHand({ cards, selected, disabled, onVote, dealKey }: Props) 
                 aria-label={t('poker.cardLabel', { card })}
                 onClick={() => onVote(isSelected ? null : card)}
               >
-                <CardFace value={card} index={i} />
+                <CardFace value={card} tone={cardTone(cards, card)} />
               </button>
             </motion.span>
           );

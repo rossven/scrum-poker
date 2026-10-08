@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 /*
  * SprintMasası ikon seti: projeye özel çizildi (proje lisansıyla birlikte gelir, dış kaynak yok).
- * 24×24 ızgara, 1.8 kalınlıkta yuvarlak uçlu çizgi; iskambil sembolleri dolgulu.
+ * 24×24 ızgara, 1.8 kalınlıkta yuvarlak uçlu çizgi. İskambil sembolü yok.
  * İkonlar süstür (aria-hidden): düğmenin erişilebilir adı her zaman yanındaki yazıdır.
  */
 
@@ -22,22 +22,6 @@ const gearPath = (() => {
 })();
 
 const ICONS = {
-  spade: (
-    <path {...f} d="M12 2.5c-3 3.5-7.5 6.1-7.5 10.1 0 2.5 2 4.4 4.3 4.4 1.2 0 2.2-.4 2.9-1.2l-1.2 5.7h3l-1.2-5.7c.7.8 1.7 1.2 2.9 1.2 2.3 0 4.3-1.9 4.3-4.4 0-4-4.5-6.6-7.5-10.1z" />
-  ),
-  heart: (
-    <path {...f} d="M12 20.5S3.5 15.2 3.5 9.3C3.5 6.6 5.6 4.5 8.2 4.5c1.6 0 3 .8 3.8 2.1.8-1.3 2.2-2.1 3.8-2.1 2.6 0 4.7 2.1 4.7 4.8 0 5.9-8.5 11.2-8.5 11.2z" />
-  ),
-  diamond: <path {...f} d="M12 2.5 19 12l-7 9.5L5 12z" />,
-  club: (
-    <g {...f}>
-      <circle cx="12" cy="7.3" r="3.7" />
-      <circle cx="7.3" cy="13.2" r="3.7" />
-      <circle cx="16.7" cy="13.2" r="3.7" />
-      <circle cx="12" cy="12.4" r="2.6" />
-      <path d="M12 12.5 10.3 21.5h3.4z" />
-    </g>
-  ),
   chip: (
     <>
       <circle cx="12" cy="12" r="9" />
@@ -49,7 +33,6 @@ const ICONS = {
     <>
       <rect x="8.5" y="3.5" width="11" height="15" rx="2" />
       <path d="M6.3 6.4 4.4 6.9A2 2 0 0 0 3 9.3l2.9 10.8a2 2 0 0 0 2.4 1.4l5.2-1.4" />
-      <path {...f} d="M14 7.8c-1.2 1.3-2.8 2.2-2.8 3.7 0 .9.7 1.6 1.6 1.6.4 0 .8-.2 1.1-.5l-.5 2.1h1.2l-.5-2.1c.3.3.7.5 1.1.5.9 0 1.6-.7 1.6-1.6 0-1.5-1.6-2.4-2.8-3.7z" />
     </>
   ),
   crown: (
@@ -191,17 +174,5 @@ export function Icon({ name, size = 18, className }: { name: IconName; size?: nu
     >
       {ICONS[name]}
     </svg>
-  );
-}
-
-/** Takımın dört sembolü yan yana: başlık ve ayırıcı süsü. */
-export function SuitRow({ size = 12, className }: { size?: number; className?: string }) {
-  return (
-    <span className={`suit-row ${className ?? ''}`} aria-hidden>
-      <Icon name="spade" size={size} />
-      <Icon name="heart" size={size} className="suit-red" />
-      <Icon name="diamond" size={size} className="suit-red" />
-      <Icon name="club" size={size} />
-    </span>
   );
 }

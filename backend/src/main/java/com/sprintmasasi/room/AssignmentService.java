@@ -26,8 +26,8 @@ public class AssignmentService {
 
     private static final Logger log = LoggerFactory.getLogger(AssignmentService.class);
 
-    public static final int DEFAULT_VOLUNTEER_SECONDS = 20;
-    public static final int MIN_VOLUNTEER_SECONDS = 5;
+    public static final int DEFAULT_VOLUNTEER_SECONDS = 10;
+    public static final int MIN_VOLUNTEER_SECONDS = 10;
     public static final int MAX_VOLUNTEER_SECONDS = 300;
     /** Sonuç herkese ulaşsın diye oyun bu kadar sonra başlar; istemciler aynı anda başlatır. */
     public static final int GAME_LEAD_MS = 1500;

@@ -5,8 +5,8 @@ import styles from './PlayingCard.module.css';
 interface Props {
   /** Ön yüzde yazacak değer; kapalı kartta gösterilmez. */
   value?: string;
-  /** Destedeki sırası (sembol için). */
-  index?: number;
+  /** Renk tonu (0 düşük – 1 yüksek), bkz. cardTone. */
+  tone?: number | null;
   faceUp: boolean;
   size?: 'sm' | 'md';
   highlight?: 'low' | 'high';
@@ -14,10 +14,10 @@ interface Props {
 }
 
 /**
- * Masadaki iskambil kartı. faceUp değişince Y ekseninde çevrilir (flip).
+ * Masadaki oy kartı. faceUp değişince Y ekseninde çevrilir (flip).
  * Hareketi azalt ayarında MotionConfig dönüşü anında yapar.
  */
-export function PlayingCard({ value, index = 0, faceUp, size = 'sm', highlight, dimmed }: Props) {
+export function PlayingCard({ value, tone = null, faceUp, size = 'sm', highlight, dimmed }: Props) {
   const classes = [styles.card, styles[size], highlight ? styles[highlight] : '', dimmed ? styles.dimmed : '']
     .filter(Boolean)
     .join(' ');
@@ -33,7 +33,7 @@ export function PlayingCard({ value, index = 0, faceUp, size = 'sm', highlight, 
           <CardBack />
         </div>
         <div className={`${styles.side} ${styles.frontSide}`}>
-          {faceUp && value !== undefined && <CardFace value={value} index={index} compact={size === 'sm'} />}
+          {faceUp && value !== undefined && <CardFace value={value} tone={tone} compact={size === 'sm'} />}
         </div>
       </motion.div>
     </div>

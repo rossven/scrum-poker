@@ -1,17 +1,17 @@
 .wrap { width: 100%; }
 /* Masa yüksekliği ekran boyuna bağlı: dizüstü ekranda masa + kart eli aynı anda görünsün.
    Üst/alt boşluk yalnızca koltukların masadan taşan yarısı kadar, kart eli masanın hemen altında kalsın. */
-.arena { position: relative; width: 100%; height: clamp(380px, 48vh, 540px); margin: 50px auto 46px; }
+.arena { position: relative; width: 100%; height: clamp(430px, 58vh, 640px); margin: 50px auto 46px; }
 
-/* Masa: koyu ahşap kenar (rail), ince altın çizgi, ortadan aydınlanan yeşil çuha. */
+/* Masa: koyu ahşap kenar (rail), ortadan aydınlanan yeşil çuha. */
 .table {
   /* Üst/alt koltuk (kart + avatar + isim) masanın kenarına oturacak kadar pay bırakılır. */
-  position: absolute; inset: calc(8% + 84px) 25%; border-radius: 50%;
+  position: absolute; inset: calc(3% + 84px) 22%; border-radius: 50%;
   padding: 14px;
   background:
     repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.025) 0 3px, transparent 3px 9px),
     linear-gradient(160deg, color-mix(in srgb, var(--rail) 80%, #a0603a), var(--rail) 45%, var(--rail-dark));
-  box-shadow: 0 0 0 2px var(--rail-dark), 0 0 0 4px color-mix(in srgb, var(--gold) 35%, transparent), 0 22px 46px rgba(0, 0, 0, 0.34), inset 0 2px 3px rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 2px var(--rail-dark), 0 22px 46px rgba(0, 0, 0, 0.3), inset 0 2px 3px rgba(255, 255, 255, 0.14);
 }
 .felt {
   position: relative; width: 100%; height: 100%; border-radius: 50%;
@@ -22,17 +22,11 @@
     radial-gradient(ellipse at 50% 40%, var(--felt-light) 0%, var(--felt) 55%, var(--felt-dark) 100%);
   box-shadow: inset 0 6px 24px rgba(0, 0, 0, 0.35);
 }
-/* Çuhanın kenarında ince altın çizgi */
+/* Çuhanın kenarında ince açık çizgi */
 .felt::before {
   content: ''; position: absolute; inset: 9px; border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--gold) 60%, transparent);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
   pointer-events: none;
-}
-/* Çuhaya basılmış silik maça amblemi */
-.felt::after {
-  content: ''; position: absolute; left: 50%; top: 50%; width: 46%; aspect-ratio: 1; transform: translate(-50%, -50%);
-  pointer-events: none; opacity: 0.07;
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='none' stroke='white' stroke-width='0.6'/><path fill='white' d='M12 4.5c-2.4 2.8-6 4.9-6 8.1 0 2 1.6 3.5 3.4 3.5 1 0 1.8-.3 2.3-1l-1 4.4h2.6l-1-4.4c.5.7 1.3 1 2.3 1 1.8 0 3.4-1.5 3.4-3.5 0-3.2-3.6-5.3-6-8.1z'/></svg>") center / contain no-repeat;
 }
 .seats { list-style: none; margin: 0; padding: 0; }
 .seatSlot { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
@@ -43,8 +37,7 @@
 .flyingCard {
   position: absolute; width: 18px; height: 26px; margin: -13px 0 0 -9px; border-radius: 3px;
   background:
-    repeating-linear-gradient(45deg, transparent 0 2px, rgba(201, 162, 74, 0.6) 2px 3px),
-    var(--card-back);
+    radial-gradient(circle at 50% 35%, #1f9a6e, #0e5a42);
   border: 2px solid var(--card-face); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 .emoji {
@@ -55,8 +48,8 @@
 /* Mobil: masa küçülür, koltuklar akan bir ızgaraya geçer. */
 @media (max-width: 640px) {
   .arena { height: auto; margin: 0; display: flex; flex-direction: column; gap: 18px; }
-  .table { position: relative; inset: auto; width: 100%; aspect-ratio: 2.1 / 1; padding: 10px; }
+  .table { position: relative; inset: auto; width: 100%; aspect-ratio: 1.6 / 1; padding: 10px; }
   .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px 8px; }
   .seatSlot { position: static; transform: none !important; display: flex; justify-content: center; }
-  .fx { inset: 0 0 auto 0; aspect-ratio: 2.1 / 1; }
+  .fx { inset: 0 0 auto 0; aspect-ratio: 1.6 / 1; }
 }

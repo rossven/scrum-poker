@@ -179,7 +179,7 @@ Kimlik: takma ad + avatar. Tarayıcıda saklanan rastgele bir token ile aynı ki
 
 ### Akış
 1. Moderatör bir ticket için **"Kim alacak?"** adımını başlatır (poker sonrası buton olarak çıkar, ayrıca istediği an da başlatabilir).
-2. **Gönüllü turu:** Herkesin ekranında "Ben alırım" butonu. Süre sınırı opsiyonel (varsayılan 20 sn). Tek gönüllü varsa iş ona atanır, oyun atlanır (moderatör isterse yine de oyun başlatabilir). Birden fazla gönüllü varsa adaylar gönüllüler olur. Hiç gönüllü yoksa adaylar tüm oy veren katılımcılardır.
+2. **Gönüllü turu:** Herkesin ekranında "Ben alırım" butonu. Süre sınırı opsiyonel (varsayılan 10 sn). Tek gönüllü varsa iş ona atanır, oyun atlanır (moderatör isterse yine de oyun başlatabilir). Birden fazla gönüllü varsa adaylar gönüllüler olur. Hiç gönüllü yoksa adaylar tüm oy veren katılımcılardır.
 3. **Aday ayarı:** Moderatör, oyundan önce kişileri adaylıktan çıkarabilir (örn. izinli, kapasitesi dolu).
 4. **Oyun seçimi ve başlatma:** Moderatör bir oyun seçer ve başlatır.
 5. **Sonuç:** Kazanan ticket'a atanır, kutlama animasyonu gösterilir, ticket listesinde "Atanan: X" görünür. Moderatör sonucu geri alıp yeniden oyun başlatabilir (geçmişte kalır).
@@ -210,11 +210,15 @@ Oyun mimarisi: her oyun, ortak bir `TieBreakerGame` arayüzünü gerçekleştirs
 - Krupiye istenmeyen çevrimdışı koltukları "Masadan at" ile elle de temizleyebilir.
 
 ### Tasarım turu (M3 kapanmadan)
-- Arayüz "sade web formu" görünümünden çıkıp tek bir poker görsel diline geçer: ahşap kenar + altın çizgili üst şerit, çuha yeşili masa, krupiye tepsisi gibi duran tur düğmeleri, fiş görünümlü birincil düğmeler.
-- Yazı tipleri pakete gömülür (harici CDN yok, lisansı OFL): başlıklar için karakterli bir serif, kart değerleri için okunaklı bir slab serif, metin için Inter.
-- Emoji tabanlı düğme ikonları yerine kendi çizdiğimiz tutarlı bir poker ikon seti (maça/kupa/karo/sinek, fiş, kart, taç, at, çark, el, zamanlayıcı vb.) kullanılır; ikonlar süstür, düğmenin erişilebilir adı yazıdır.
-- Ana sayfa, oda oluşturma/katılma, masa, koltuklar, sonuç ve yan paneller (ticket, geçmiş, atama) aynı başlık ve kart diliyle görünür. Açık ve koyu temada, masaüstü ve telefonda kontrol edilir.
-- Davranış değişmez: mevcut otomatik testler (birim + uçtan uca) aynen geçer.
+- Arayüz "sade web formu" görünümünden çıkar, **modern** ve tutarlı bir görsel dile geçer. Masa (yeşil çuha, kenar) korunur; klasik kumarhane süsleri (ahşap şerit, altın işlemeler) kullanılmaz.
+- **İskambil sembolü yok:** maça/kupa/karo/sinek ürünün hiçbir yerinde (masa ortası, kart ortası, kart sırtı, logo, zemin deseni) görünmez. Kartlarda yalnızca değer üst ve alt köşede yazar; kart ortasında scrum'a ait bir görsel (sprint döngüsü) durur.
+- Kart değerlerinin rengi düşük puandan yüksek puana maviden kırmızıya geçer (destedeki sırasına göre); "?" ve "☕" nötr kalır.
+- Kart elindeki kartlar seçmesi rahat olacak kadar büyük; masa eskisine göre daha yüksek (basık durmaz).
+- Masanın ortasında yalnızca ticket başlığı (ticket listesi açıksa), oy durumu ve zamanlayıcı görünür. "Serbest tur" yazısı kalkar; "Ne oylanıyor?" konusu krupiye tepsisinde isteğe bağlı bir alana taşınır, boşsa hiçbir yerde görünmez.
+- "Kim alacak?" gönüllü süresi seçenekleri 10/20/30/60 sn ve süresiz; varsayılan ve en kısa süre 10 sn. Seçim kutusu düğmeyle aynı hizada.
+- Yazı tipleri ve ikonlar pakete gömülü (harici CDN yok, lisansı uygun); ikonlar süstür, düğmenin erişilebilir adı yazıdır.
+- Ana sayfa, oda oluşturma/katılma, masa, koltuklar, sonuç ve yan paneller aynı dille görünür; açık ve koyu temada, masaüstü ve telefonda kontrol edilir.
+- Davranış değişmez: mevcut otomatik testler geçer (yalnızca taşınan konu alanının seçicisi güncellenir).
 
 ### Kabul kriterleri
 - Moderatör bir kişiyi attığında o kişinin bağlantısı kapanır, eski token'ı ile yeniden bağlanamaz ve masadan/aday listesinden kalkar. Moderatör olmayanın atma isteği reddedilir (otomatik testler).
@@ -328,7 +332,7 @@ _Ürün adı, avatar kütüphanesi ve lisansı, CSS yaklaşımı, barındırma t
 ### M3
 
 - **Akış durumu:** Oda başına en fazla bir "Kim alacak?" akışı (`Assignment`): `VOLUNTEERING` → `CANDIDATES` → `RESULT`. Krupiye "Kim alacak?" düğmesiyle (tur düğmelerinin yanında; kartlar açılınca vurgulu) istediği an başlatır; süren akış varken yeniden başlatmak onun yerine geçer. Akış, başladığı andaki ticket'a (ya da serbest turun konusuna) bağlanır; sonra masaya başka ticket gelse de sonuç o ticket'a yazılır.
-- **Gönüllü turu:** Süre 20 sn (varsayılan), 30 sn, 60 sn ya da süresiz; sunucu 5-300 sn kabul eder. Süre dolunca sunucu turu kendisi kapatır (zamanlanmış görev); krupiye erken kapatabilir. Gözlemciler gönüllü olamaz.
+- **Gönüllü turu:** Süre 10 sn (varsayılan), 20 sn, 30 sn, 60 sn ya da süresiz; sunucu 10-300 sn kabul eder. Süre dolunca sunucu turu kendisi kapatır (zamanlanmış görev); krupiye erken kapatabilir. Gözlemciler gönüllü olamaz.
 - **"Hiç gönüllü yoksa tüm oy veren katılımcılar":** Bu turda oy verip hâlâ odada olan katılımcılar. Kimse oy vermediyse (akış poker olmadan başlatıldıysa) gözlemci olmayan tüm katılımcılar.
 - **Tek gönüllü:** İş hemen atanır (`game: "volunteer"`), oyun yok. "Moderatör isterse yine de oyun başlatabilir": sonuç panelindeki "Geri al, yeniden oyna" ile aday ayarına dönülür; bu durumda adaylar gönüllü + tüm havuz olur (tek kişiyle oyun anlamsız olduğu için). Aday ayarında tek aday kalırsa "X alsın" düğmesiyle oyunsuz atanır (`game: "direct"`).
 - **Aday ayarı:** Krupiye tüm katılımcılar arasından kutucuklarla çıkarır ya da geri ekler (spec yalnızca çıkarmayı istiyordu; geri ekleme yanlış tıklamayı düzeltmek için).
@@ -345,4 +349,4 @@ _Ürün adı, avatar kütüphanesi ve lisansı, CSS yaklaşımı, barındırma t
 - **Düzeltme (M1'den kalan aralıklı hata):** Aynı anda gelen iki niyetin `room.state` mesajları bazen hesaplandıkları sıranın tersiyle gönderiliyordu; eski durum yenisinin üstüne yazılıyor, istemci örneğin 4 oy yerine 2 oy görüyordu (`fourClientsVoteAndNoVoteLeaksBeforeReveal` ara sıra kırmızıydı). Artık durum oda kilidi altında hesaplanıp yine kilit altında yayınlanıyor.
 - **Arayüz düzeltmesi:** Masanın üst tarafındaki koltukların krupiye menüsü (Dürt, Krupiye yap, Masadan at) masanın ortasının altında kalıyor, tıklanamıyordu; menüsü açık koltuk artık en üstte.
 
-- **Tasarım turu:** Yazı tipleri `@fontsource` paketleriyle gömülü (Playfair Display başlık, Bitter kart değerleri, Inter Variable metin; hepsi OFL-1.1, yalnızca latin + latin-ext). İkonlar `components/Icon.tsx` içinde kendi çizimimiz (24px ızgara, çizgi ikon; iskambil sembolleri dolgulu), harici ikon kütüphanesi yok. Düğmelerdeki emoji yerine bu ikonlar geldi; ikonlar `aria-hidden`, erişilebilir ad yazıdan gelir, bu yüzden testlerdeki seçiciler değişmedi. Masaya atılan emojiler ve at yarışındaki atlar emoji olarak kaldı (oyun içeriği). Üst şerit ahşap + altın çizgi, krupiye düğmeleri "Krupiye masası" tepsisinde, koltuk isimleri koyu plaka, birincil düğmeler fiş kenarlı.
+- **Tasarım turu:** İlk sürüm klasik poker temasıydı (ahşap şerit, Playfair, iskambil sembolleri); proje sahibi daha modern istedi, ikinci sürümde: yazı tipleri Plus Jakarta Sans (başlık, marka, kart değerleri) + Inter (metin), ikisi de `@fontsource-variable` ile gömülü (OFL-1.1). İkonlar `components/Icon.tsx` içinde kendi çizimimiz; iskambil sembolleri setten çıkarıldı. Kart ortası ve logo: sprint döngüsü amblemi. Kart rengi `lib/deck.ts` `cardTone`: özel olmayan kartlar sırayla 0..1, renk `color-mix(in oklch, mavi, kırmızı)`. Üst bar: yarı saydam düz bar. Konu alanı krupiye tepsisine taşındı (e2e seçicisi buna göre). Gönüllü süresi en az 10 sn (sunucu 10 sn altını reddeder), varsayılan 10.

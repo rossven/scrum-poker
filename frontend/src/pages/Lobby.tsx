@@ -18,6 +18,7 @@ import { ResultsPanel } from '../components/poker/ResultsPanel';
 import { RoundControls } from '../components/poker/RoundControls';
 import { TableCenter } from '../components/poker/TableCenter';
 import { TicketQueue } from '../components/poker/TicketQueue';
+import { cardTone } from '../lib/deck';
 import { useGameTiming } from '../lib/gameClock';
 import { play } from '../lib/sound';
 import { navigate } from '../lib/router';
@@ -87,7 +88,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
     const v = votesById.get(p.id);
     if (!v) return <EmptyCardSlot />;
     const highlight = stats?.lowestIds.includes(p.id) ? 'low' : stats?.highestIds.includes(p.id) ? 'high' : undefined;
-    return <PlayingCard faceUp size="md" value={v.card} index={room.deckCards.indexOf(v.card)} highlight={highlight} dimmed={v.excluded} />;
+    return <PlayingCard faceUp size="md" value={v.card} tone={cardTone(room.deckCards, v.card)} highlight={highlight} dimmed={v.excluded} />;
   };
 
   const renderActions = (p: ParticipantView) => {
@@ -158,6 +159,9 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
             <span className={styles.metaItem}>· {t(`decks.${room.deck}`)}</span>
             {room.passwordProtected && <span className={styles.metaItem}>· <Icon name="lock" size={14} /> {t('room.passwordProtected')}</span>}
           </p>
+          {!round.ticketId && round.topic && (
+            <p className={styles.topic}><span className={styles.topicLabel}>{t('room.topic')}</span> {round.topic}</p>
+          )}
         </div>
         <div className={styles.tools}>
           <CopyLinkButton code={room.code} />
@@ -201,7 +205,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
             youId={youId}
             renderCard={renderCard}
             renderActions={renderActions}
-            center={<TableCenter room={room} seatedCount={seated.length} allVoted={allVoted} isModerator={isModerator} />}
+            center={<TableCenter room={room} seatedCount={seated.length} allVoted={allVoted} />}
             dealKey={round.id}
             revealKey={voting ? null : round.id}
             emojis={flyingEmojis}

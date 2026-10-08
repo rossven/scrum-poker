@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomState, RoundView } from '../../api/types';
-import { formatNumber, isSpecialCard } from '../../lib/deck';
+import { cardTone, formatNumber, isSpecialCard, toneColor } from '../../lib/deck';
 import { useRoomStore } from '../../store/roomStore';
 import { Avatar } from '../Avatar';
 import { isBreakTime, isRoyalFlush } from './FunFx';
@@ -61,7 +61,8 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
             <li key={v.participantId} className={`${styles.voter} ${v.excluded ? styles.excludedVoter : ''}`}>
               <Avatar seed={v.avatar} size={30} alt="" />
               <span className={styles.voterName}>{v.nickname}</span>
-              <span className={`${styles.voterCard} ${stats.lowestIds.includes(v.participantId) ? styles.voterLow : ''} ${stats.highestIds.includes(v.participantId) ? styles.voterHigh : ''}`}>
+              <span className={`${styles.voterCard} ${stats.lowestIds.includes(v.participantId) ? styles.voterLow : ''} ${stats.highestIds.includes(v.participantId) ? styles.voterHigh : ''}`}
+                style={{ color: toneColor(cardTone(room.deckCards, v.card)) }}>
                 {v.card}
               </span>
             </li>
@@ -83,11 +84,11 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
         <ul className={styles.bars} aria-label={t('poker.distribution')}>
           {stats.distribution.map((b) => (
             <li key={b.card}>
-              <span className={styles.barCard}>{b.card}</span>
+              <span className={styles.barCard} style={{ color: toneColor(cardTone(room.deckCards, b.card)) }}>{b.card}</span>
               <span className={styles.barTrack}>
                 <span
                   className={`${styles.barFill} ${isSpecialCard(b.card) ? styles.special : ''}`}
-                  style={{ width: `${(b.count / maxCount) * 100}%` }}
+                  style={{ width: `${(b.count / maxCount) * 100}%`, background: toneColor(cardTone(room.deckCards, b.card)) }}
                 />
               </span>
               <span className={styles.barCount}>{b.count}</span>
