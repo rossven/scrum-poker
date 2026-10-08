@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { RoomState } from '../../api/types';
 import { formatNumber } from '../../lib/deck';
 import { useRoomStore } from '../../store/roomStore';
+import { Icon } from '../Icon';
 import { Timer } from './Timer';
 import styles from './TableCenter.module.css';
 
@@ -96,7 +97,7 @@ function Topic({ topic, editable }: { topic?: string; editable: boolean }) {
       title={t('poker.topicEdit')}
     >
       <strong className={styles.ticket}>{topic ?? t('poker.topicPlaceholder')}</strong>
-      <span aria-hidden className={styles.pen}>✎</span>
+      <span aria-hidden className={styles.pen}><Icon name="pencil" size={15} /></span>
       <span className="visually-hidden">{t('poker.topicEdit')}</span>
     </button>
   );

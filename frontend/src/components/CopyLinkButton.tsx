@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { roomUrl } from '../lib/router';
+import { Icon } from './Icon';
 
 export function CopyLinkButton({ code }: { code: string }) {
   const { t } = useTranslation();
@@ -18,7 +19,8 @@ export function CopyLinkButton({ code }: { code: string }) {
 
   return (
     <button type="button" className="btn btn-small" onClick={copy} aria-live="polite">
-      {copied ? `✓ ${t('room.copied')}` : `🔗 ${t('room.copyLink')}`}
+      <Icon name={copied ? 'check' : 'link'} />
+      {copied ? t('room.copied') : t('room.copyLink')}
     </button>
   );
 }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { ParticipantView, RoomState } from '../api/types';
 import { Avatar } from '../components/Avatar';
 import { CopyLinkButton } from '../components/CopyLinkButton';
+import { Icon } from '../components/Icon';
 import { RoomSettings } from '../components/RoomSettings';
 import { SoundToggle } from '../components/SoundToggle';
 import { TableView } from '../components/TableView';
@@ -96,22 +97,22 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
     return (
       <>
         {canNudge && (
-          <button type="button" className="btn btn-ghost" onClick={() => nudge(p.id)}>👉 {t('poker.nudge')}</button>
+          <button type="button" className="btn btn-ghost" onClick={() => nudge(p.id)}><Icon name="nudge" size={14} /> {t('poker.nudge')}</button>
         )}
         {!p.moderator && (
-          <button type="button" className="btn btn-ghost" onClick={() => promote(p.id)}>{t('room.makeModerator')}</button>
+          <button type="button" className="btn btn-ghost" onClick={() => promote(p.id)}><Icon name="crown" size={14} /> {t('room.makeModerator')}</button>
         )}
         {canObserve && (
-          <button type="button" className="btn btn-ghost" onClick={() => setObserver(p.id, true)}>{t('room.makeObserver')}</button>
+          <button type="button" className="btn btn-ghost" onClick={() => setObserver(p.id, true)}><Icon name="eye" size={14} /> {t('room.makeObserver')}</button>
         )}
-        <button type="button" className="btn btn-ghost btn-danger" onClick={() => confirmKick(p)}>{t('room.kick')}</button>
+        <button type="button" className="btn btn-ghost btn-danger" onClick={() => confirmKick(p)}><Icon name="kick" size={14} /> {t('room.kick')}</button>
       </>
     );
   };
 
   const observerList = observers.length > 0 && (
     <section className={styles.observers} aria-label={t('room.observers')}>
-      <h2 className={styles.sectionTitle}>{t('room.observers')}</h2>
+      <h2 className={`panel-title ${styles.sectionTitle}`}><Icon name="eye" size={16} />{t('room.observers')}</h2>
       <ul>
         {observers.map((o) => (
           <li key={o.id} className={o.online ? '' : styles.away}>
@@ -145,15 +146,17 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
   return (
     <div className={styles.lobby}>
       <div className={styles.topbar}>
-        <div>
+        <div className={styles.heading}>
           <h1 className={styles.title}>{room.name ?? t('app.name')}</h1>
           <p className={styles.meta}>
-            {t('room.code')}: <strong className={styles.code}>{room.code}</strong>
-            {' · '}
-            {t('room.count', { count: room.participants.length })}
-            {' · '}
-            {t(`decks.${room.deck}`)}
-            {room.passwordProtected && <> · 🔒 {t('room.passwordProtected')}</>}
+            <span className={styles.codeChip}>
+              <span className="visually-hidden">{t('room.code')}: </span>
+              <span aria-hidden className={styles.codeLabel}>{t('room.code')}</span>
+              <strong className={styles.code}>{room.code}</strong>
+            </span>
+            <span className={styles.metaItem}>· {t('room.count', { count: room.participants.length })}</span>
+            <span className={styles.metaItem}>· {t(`decks.${room.deck}`)}</span>
+            {room.passwordProtected && <span className={styles.metaItem}>· <Icon name="lock" size={14} /> {t('room.passwordProtected')}</span>}
           </p>
         </div>
         <div className={styles.tools}>
@@ -161,21 +164,25 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
           <SoundToggle />
           {me && (
             me.observer ? (
-              <button type="button" className="btn btn-small" onClick={() => setObserver(null, false)}>{t('room.becomeParticipant')}</button>
+              <button type="button" className="btn btn-small" onClick={() => setObserver(null, false)}>
+                <Icon name="cards" size={16} />{t('room.becomeParticipant')}
+              </button>
             ) : (
               <button type="button" className="btn btn-ghost btn-small" disabled={voting && iVoted}
                 title={voting && iVoted ? t('errors.ALREADY_VOTED') : undefined}
                 onClick={() => setObserver(null, true)}>
-                {t('room.becomeObserver')}
+                <Icon name="eye" size={16} />{t('room.becomeObserver')}
               </button>
             )
           )}
           {isModerator && (
-            <button type="button" className="btn btn-small" onClick={() => setSettingsOpen((v) => !v)}>
-              ⚙ {t('room.settings')}
+            <button type="button" className="btn btn-small" onClick={() => setSettingsOpen((v) => !v)} aria-expanded={settingsOpen}>
+              <Icon name="gear" size={16} />{t('room.settings')}
             </button>
           )}
-          <button type="button" className="btn btn-ghost btn-small" onClick={onLeave}>{t('room.leave')}</button>
+          <button type="button" className="btn btn-ghost btn-small" onClick={onLeave}>
+            <Icon name="door" size={16} />{t('room.leave')}
+          </button>
         </div>
       </div>
 

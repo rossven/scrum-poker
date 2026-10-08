@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { RoomState, TicketView } from '../../api/types';
 import { useRoomStore } from '../../store/roomStore';
 import styles from './TicketQueue.module.css';
+import { Icon } from '../Icon';
 
 const URL_IN_LINE = /(https?:\/\/\S+)/i;
 
@@ -49,7 +50,7 @@ export function TicketQueue({ room, isModerator, hiddenResultId }: {
   return (
     <section className={`card ${styles.panel}`} aria-label={t('tickets.title')}>
       <div className={styles.head}>
-        <h2 className={styles.title}>{t('tickets.title')}</h2>
+        <h2 className={`panel-title ${styles.title}`}><Icon name="ticket" size={18} />{t('tickets.title')}</h2>
         {room.tickets.length > 0 && (
           <span className="muted">{t('tickets.progress', { done: estimated, total: room.tickets.length })}</span>
         )}
@@ -75,7 +76,7 @@ export function TicketQueue({ room, isModerator, hiddenResultId }: {
                 {tk.id === room.currentTicketId && <span className={styles.nowBadge}>{t('tickets.onTable')}</span>}
               </div>
               {tk.assignee && tk.id !== hiddenTicketId && (
-                <p className={styles.assignee}>🙋 {t('tickets.assignee', { name: tk.assignee.nickname })}</p>
+                <p className={styles.assignee}><Icon name="hand" size={14} /> {t('tickets.assignee', { name: tk.assignee.nickname })}</p>
               )}
               {tk.note && <p className={styles.note}>{tk.note}</p>}
               {tk.history.length > 0 && (
@@ -85,7 +86,7 @@ export function TicketQueue({ room, isModerator, hiddenResultId }: {
                     {tk.history.map((r, idx) => (
                       <li key={idx}>
                         <strong>{t('poker.roundN', { n: r.number })}</strong>
-                        {r.finalEstimate && <> · ✓ {r.finalEstimate}</>}
+                        {r.finalEstimate && <> · <Icon name="check" size={13} /> {r.finalEstimate}</>}
                         {' · '}
                         {r.votes.map((v) => `${v.nickname}: ${v.card}`).join(', ') || t('tickets.noVotes')}
                       </li>
@@ -101,9 +102,9 @@ export function TicketQueue({ room, isModerator, hiddenResultId }: {
                     </button>
                   )}
                   <button type="button" className="btn btn-ghost btn-small" disabled={i === 0}
-                    onClick={() => moveTicket(tk.id, i - 1)} aria-label={t('tickets.moveUp')}>↑</button>
+                    onClick={() => moveTicket(tk.id, i - 1)} aria-label={t('tickets.moveUp')}><Icon name="arrowUp" size={14} /></button>
                   <button type="button" className="btn btn-ghost btn-small" disabled={i === room.tickets.length - 1}
-                    onClick={() => moveTicket(tk.id, i + 1)} aria-label={t('tickets.moveDown')}>↓</button>
+                    onClick={() => moveTicket(tk.id, i + 1)} aria-label={t('tickets.moveDown')}><Icon name="arrowDown" size={14} /></button>
                   <button type="button" className="btn btn-ghost btn-small" onClick={() => setEditing(tk.id)}>
                     {t('tickets.edit')}
                   </button>

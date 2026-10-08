@@ -15,7 +15,22 @@
     "joinTitle": "Bir odaya katıl",
     "codePlaceholder": "Oda kodu",
     "join": "Katıl",
-    "or": "ya da"
+    "or": "ya da",
+    "eyebrow": "Planning poker masası",
+    "features": {
+      "cards": {
+        "title": "Kartlar aynı anda açılır",
+        "text": "Herkes kapalı oy verir, krupiye açınca dağılım, ortalama ve uç değerler masada."
+      },
+      "assign": {
+        "title": "Kim alacak?",
+        "text": "Gönüllü yoksa at yarışı ya da çark karar verir; sonucu sunucu adil biçimde belirler."
+      },
+      "tickets": {
+        "title": "Ticket kuyruğu",
+        "text": "İstersen ticket listesiyle ilerle; final tahminler ve atamalar oturum geçmişinde kalır."
+      }
+    }
   },
   "create": {
     "title": "Yeni oda",
@@ -208,7 +223,8 @@
     "breakTime": "Mola zamanı? ☕",
     "breakTimeSub": "Oyların çoğu mola kartı.",
     "joker": "Joker",
-    "break": "Mola"
+    "break": "Mola",
+    "dealerTray": "Krupiye masası"
   },
   "tickets": {
     "title": "Ticket'lar",

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { SessionRound } from '../../api/types';
 import styles from './SessionHistory.module.css';
+import { Icon } from '../Icon';
 
 /** Ticket'sız (serbest) turların kaydı: konu, final ve oylar. En yenisi üstte. */
 export function SessionHistory({ rounds }: { rounds: SessionRound[] }) {
@@ -8,7 +9,7 @@ export function SessionHistory({ rounds }: { rounds: SessionRound[] }) {
   if (rounds.length === 0) return null;
   return (
     <section className={`card ${styles.panel}`} aria-label={t('session.title')}>
-      <h2 className={styles.title}>{t('session.title')}</h2>
+      <h2 className={`panel-title ${styles.title}`}><Icon name="history" size={17} />{t('session.title')}</h2>
       <ol className={styles.list}>
         {[...rounds].reverse().map((r, i) => (
           <li key={rounds.length - i} className={styles.item}>

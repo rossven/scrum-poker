@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useTheme, type ThemeChoice } from '../lib/theme';
+import { Icon, type IconName } from './Icon';
 
 const ORDER: ThemeChoice[] = ['system', 'light', 'dark'];
-const ICON: Record<ThemeChoice, string> = { system: '🖥️', light: '☀️', dark: '🌙' };
+const ICON: Record<ThemeChoice, IconName> = { system: 'monitor', light: 'sun', dark: 'moon' };
 
 export function ThemeToggle() {
   const { t } = useTranslation();
@@ -16,7 +17,7 @@ export function ThemeToggle() {
       title={`${t('theme.label')}: ${t(`theme.${theme}`)}`}
       aria-label={`${t('theme.label')}: ${t(`theme.${theme}`)}`}
     >
-      <span aria-hidden>{ICON[theme]}</span>
+      <Icon name={ICON[theme]} />
       <span>{t(`theme.${theme}`)}</span>
     </button>
   );

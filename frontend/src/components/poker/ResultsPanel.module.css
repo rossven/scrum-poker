@@ -1,21 +1,21 @@
 .panel { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-.title { font-size: 18px; }
+.title { font-size: 20px; }
 .consensus { font-size: 13px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--bg-soft); color: var(--text-soft); }
 .unanimous { background: color-mix(in srgb, var(--sage) 25%, var(--surface)); color: var(--text); }
 .close { background: color-mix(in srgb, var(--sage) 14%, var(--surface)); color: var(--text); }
 .spread { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--text); }
 
 .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0; }
-.numbers div { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 12px; }
+.numbers div { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 12px; border-left: 3px solid color-mix(in srgb, var(--gold) 70%, transparent); }
 .numbers dt { font-size: 12px; color: var(--text-soft); }
-.numbers dd { margin: 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.numbers dd { margin: 0; font-family: var(--font-card); font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
 .bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .bars li { display: grid; grid-template-columns: 44px 1fr 24px; grid-template-areas: 'card track count' '. names names'; align-items: center; gap: 0 8px; font-size: 14px; }
-.barCard { grid-area: card; font-weight: 700; text-align: center; }
+.barCard { grid-area: card; font-family: var(--font-card); font-weight: 800; text-align: center; }
 .barTrack { grid-area: track; height: 12px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; }
-.barFill { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.4s ease; }
+.barFill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--felt), var(--accent)); transition: width 0.4s ease; }
 .special { background: var(--border); }
 .barCount { grid-area: count; text-align: right; font-variant-numeric: tabular-nums; }
 .barNames { grid-area: names; font-size: 12px; color: var(--text-soft); }
@@ -30,7 +30,7 @@
 .excludeBox ul { list-style: none; padding: 6px 0 0; margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .excludeBox label { display: flex; align-items: center; gap: 8px; }
 
-.final { margin: 0; font-weight: 600; color: var(--text); }
+.final { margin: 0; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
 .finalize { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .finalize label { font-weight: 600; font-size: 14px; }
 .finalize select { min-width: 90px; }
@@ -41,7 +41,7 @@
 .voter { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--surface-2); }
 .voterName { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .voterCard {
-  flex-shrink: 0; min-width: 34px; padding: 2px 8px; text-align: center; font-size: 18px; font-weight: 800;
+  flex-shrink: 0; min-width: 34px; padding: 2px 8px; text-align: center; font-family: var(--font-card); font-size: 18px; font-weight: 800;
   border-radius: 6px; background: var(--card-face); color: var(--card-ink); border: 1.5px solid #d9d3c3;
 }
 .voterLow { border-color: #4f86c6; box-shadow: 0 0 0 1.5px #4f86c6; }

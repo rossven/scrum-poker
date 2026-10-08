@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { TimerView } from '../../api/types';
 import { play } from '../../lib/sound';
 import styles from './Timer.module.css';
+import { Icon } from '../Icon';
 
 /**
  * Tartışma geri sayımı. Sunucu kalan süreyi gönderir; bitiş anı bu tarayıcının saatine göre
@@ -34,7 +35,7 @@ export function Timer({ timer }: { timer: TimerView }) {
   const text = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   return (
     <span className={`${styles.timer} ${done ? styles.done : ''}`} role="timer" aria-live={done ? 'polite' : 'off'}>
-      ⏱ {done ? t('poker.timerDone') : text}
+      <Icon name="timer" size={15} /> {done ? t('poker.timerDone') : text}
     </span>
   );
 }

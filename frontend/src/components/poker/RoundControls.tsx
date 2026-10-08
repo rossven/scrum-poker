@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomState } from '../../api/types';
 import { useRoomStore } from '../../store/roomStore';
+import { Icon } from '../Icon';
 import styles from './RoundControls.module.css';
 
 const TIMER_PRESETS = [60, 120, 300];
@@ -35,7 +36,11 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
 
   return (
     <div className={styles.bar}>
-      <div className={styles.group}>
+      <span className={styles.tag} title={t('room.dealerButton')}>
+        <span className={styles.dealerChip} aria-hidden>D</span>
+        {t('poker.dealerTray')}
+      </span>
+      <div className={`${styles.group} ${styles.primary}`}>
         {voting ? (
           <button
             type="button"
@@ -44,24 +49,24 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
             disabled={round.votedIds.length === 0}
             title={round.votedIds.length === 0 ? t('poker.noVotesYet') : allVoted ? t('poker.everyoneVoted') : undefined}
           >
-            🂠 {t('poker.reveal')}
+            <Icon name="cards" /> {t('poker.reveal')}
           </button>
         ) : freeFinalized ? (
-          <button type="button" className="btn btn-primary" onClick={newRound}>🂠 {t('poker.newRound')}</button>
+          <button type="button" className="btn btn-primary" onClick={newRound}><Icon name="cards" /> {t('poker.newRound')}</button>
         ) : (
-          <button type="button" className="btn" onClick={newRound}>↻ {t('poker.revote')}</button>
+          <button type="button" className="btn" onClick={newRound}><Icon name="refresh" /> {t('poker.revote')}</button>
         )}
         {voting && round.votedIds.length > 0 && (
-          <button type="button" className="btn btn-ghost btn-small" onClick={newRound}>{t('poker.resetVotes')}</button>
+          <button type="button" className="btn btn-ghost btn-small" onClick={newRound}><Icon name="undo" size={16} /> {t('poker.resetVotes')}</button>
         )}
         {voting && waiting.length > 0 && round.votedIds.length > 0 && (
-          <button type="button" className="btn btn-ghost btn-small" onClick={nudgeWaiting}>👉 {t('poker.nudgeAll')}</button>
+          <button type="button" className="btn btn-ghost btn-small" onClick={nudgeWaiting}><Icon name="nudge" size={16} /> {t('poker.nudgeAll')}</button>
         )}
         {!room.assignment && (
           <span className={styles.assign}>
             <button type="button" className={`btn ${voting ? 'btn-ghost' : 'btn-primary'}`}
               onClick={() => startAssignment(volunteerSeconds)}>
-              🙋 {t('assign.startButton')}
+              <Icon name="hand" /> {t('assign.startButton')}
             </button>
             <select className={`input ${styles.assignSelect}`} aria-label={t('assign.volunteerTime')}
               value={volunteerSeconds} onChange={(e) => setVolunteerSeconds(Number(e.target.value))}>
@@ -73,16 +78,16 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
         )}
         {hasPending && (
           <button type="button" className={`btn ${round.state === 'FINALIZED' ? 'btn-primary' : 'btn-ghost'}`} onClick={nextTicket}>
-            {t('poker.nextTicket')} →
+            {t('poker.nextTicket')} <Icon name="arrowRight" />
           </button>
         )}
       </div>
-      <div className={styles.group} aria-label={t('poker.timer')}>
+      <div className={`${styles.group} ${styles.timer}`} aria-label={t('poker.timer')}>
         {room.timer ? (
-          <button type="button" className="btn btn-ghost btn-small" onClick={stopTimer}>{t('poker.timerStop')}</button>
+          <button type="button" className="btn btn-ghost btn-small" onClick={stopTimer}><Icon name="timer" size={16} /> {t('poker.timerStop')}</button>
         ) : (
           <>
-            <span className={styles.label}>⏱ {t('poker.timer')}</span>
+            <span className={styles.label}><Icon name="timer" size={16} /> {t('poker.timer')}</span>
             {TIMER_PRESETS.map((s) => (
               <button key={s} type="button" className="btn btn-ghost btn-small" onClick={() => startTimer(s)}>
                 {t('poker.minutes', { count: s / 60 })}

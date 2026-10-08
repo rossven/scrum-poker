@@ -33,7 +33,15 @@
   --shadow: 0 1px 2px rgba(15, 30, 20, 0.08), 0 6px 18px rgba(15, 30, 20, 0.1);
   --radius: 14px;
   --radius-sm: 10px;
-  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Başlık/marka: Playfair Display; kart değerleri ve sayılar: Bitter. İkisi de pakete gömülü. */
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-card: 'Bitter', Rockwell, Georgia, serif;
+  /* Ahşap kenar (üst şerit, krupiye tepsisi): iki temada aynı. */
+  --wood: linear-gradient(180deg, #6e3a24 0%, var(--rail) 45%, var(--rail-dark) 100%);
+  --plate: #2b1710;         /* koltuk isim plakası */
+  --plate-text: #f5ecd6;
+  --page-pattern: rgba(28, 107, 70, 0.05);
   color-scheme: light;
 }
 
@@ -54,6 +62,7 @@
     --sage: #5cc28e;
     --danger: #ef7d86;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --page-pattern: rgba(212, 174, 85, 0.035);
     color-scheme: dark;
   }
 }
@@ -74,6 +83,7 @@
   --sage: #5cc28e;
   --danger: #ef7d86;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --page-pattern: rgba(212, 174, 85, 0.035);
   color-scheme: dark;
 }
 
@@ -83,9 +93,13 @@ html, body, #root { height: 100%; }
 
 body {
   margin: 0;
+  /* Zemin: kart sırtı gibi çok silik baklava deseni + üstten hafif çuha ışığı. */
   background:
-    radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--felt) 10%, transparent), transparent 70%),
+    radial-gradient(1200px 520px at 50% -8%, color-mix(in srgb, var(--felt) 14%, transparent), transparent 70%),
+    repeating-linear-gradient(45deg, var(--page-pattern) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(-45deg, var(--page-pattern) 0 1px, transparent 1px 22px),
     var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
   font-size: 16px;
@@ -99,25 +113,49 @@ a { color: var(--accent-strong); }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-h1, h2, h3 { line-height: 1.2; margin: 0; }
+h1, h2, h3 { line-height: 1.2; margin: 0; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.005em; }
+h1 { font-weight: 900; }
 
-/* Ortak form ve buton stilleri */
+/* İkonlar metinle aynı hizada; iskambil kırmızısı yalnızca kupa/karo için. */
+.icon { flex-shrink: 0; display: inline-block; vertical-align: -0.2em; }
+.suit-row { display: inline-flex; gap: 3px; align-items: center; color: var(--text-soft); }
+.suit-row .suit-red { color: var(--card-red); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .suit-row .suit-red { color: #e0606b; } }
+:root[data-theme='dark'] .suit-row .suit-red { color: #e0606b; }
+
+/* Panel başlığı: serif başlık + solunda küçük altın ikon. */
+.panel-title { display: flex; align-items: center; gap: 8px; }
+.panel-title > .icon { color: color-mix(in srgb, var(--gold) 75%, var(--text)); }
+
+/* Ortak form ve buton stilleri. Düğmeler fiş gibi yuvarlak; birincil düğmenin kenarında fiş çentikleri. */
 .btn {
+  position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 18px;
-  border-radius: var(--radius-sm); border: 1px solid var(--border);
-  background: var(--surface); cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface); cursor: pointer; font-weight: 600;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
 }
-.btn:hover { background: var(--surface-2); }
+.btn:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--gold) 55%, var(--border)); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+.btn-primary {
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 82%, #ffffff), var(--accent) 70%);
+  border-color: var(--accent-strong); color: var(--accent-contrast);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent-strong) 80%, #000), 0 4px 10px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.btn-primary::after {
+  content: ''; position: absolute; inset: 3px; border-radius: inherit; pointer-events: none;
+  border: 1.5px dashed color-mix(in srgb, var(--accent-contrast) 55%, transparent);
+}
 .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
-.btn-ghost { background: transparent; border-color: transparent; }
-.btn-ghost:hover { background: var(--bg-soft); }
+.btn-primary:disabled::after { opacity: 0.5; }
+.btn-ghost { background: transparent; border-color: transparent; box-shadow: none; }
+.btn-ghost:hover { background: color-mix(in srgb, var(--text) 7%, transparent); border-color: transparent; }
 .btn-danger { color: var(--danger); }
-.btn-small { min-height: 34px; padding: 0 12px; font-size: 14px; }
+.btn-small { min-height: 34px; padding: 0 12px; font-size: 14px; gap: 6px; }
+.btn-small.btn-primary::after { inset: 2.5px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label, .label { font-weight: 600; font-size: 14px; }
@@ -129,9 +167,15 @@ h1, h2, h3 { line-height: 1.2; margin: 0; }
 }
 .input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
 
+/* Panel: krem kağıt, ince altın üst çizgi. */
 .card {
+  position: relative;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.card::before {
+  content: ''; position: absolute; left: 18px; right: 18px; top: -1px; height: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 80%, transparent), transparent);
 }
 
 .error-text { color: var(--danger); font-size: 14px; margin: 0; }

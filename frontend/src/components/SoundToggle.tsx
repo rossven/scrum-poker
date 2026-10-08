@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { setSoundEnabled, useSoundEnabled } from '../lib/sound';
+import { Icon } from './Icon';
 
 /** Tek tuşla ses aç/kapa. Varsayılan kapalı. */
 export function SoundToggle() {
@@ -15,7 +16,7 @@ export function SoundToggle() {
       title={label}
       aria-label={label}
     >
-      <span aria-hidden>{on ? '🔔' : '🔕'}</span>
+      <Icon name={on ? 'bell' : 'bellOff'} />
       <span>{t('sound.label')}</span>
     </button>
   );

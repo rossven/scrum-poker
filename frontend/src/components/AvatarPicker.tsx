@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BEARDS, formatAvatar, GLASSES, HATS, OUTFITS, parseAvatar, randomAvatar, randomSeed, type AvatarSpec } from '../lib/avatar';
 import { Avatar } from './Avatar';
 import styles from './AvatarPicker.module.css';
+import { Icon } from './Icon';
 
 const SUGGESTIONS = 6;
 const fresh = () => Array.from({ length: SUGGESTIONS }, randomAvatar);
@@ -52,9 +53,9 @@ export function AvatarPicker({ value, onChange }: Props) {
         ))}
       </div>
       <div className={styles.row}>
-        <button type="button" className="btn btn-ghost btn-small" onClick={shuffle}>↻ {t('join.shuffle')}</button>
+        <button type="button" className="btn btn-ghost btn-small" onClick={shuffle}><Icon name="shuffle" /> {t('join.shuffle')}</button>
         <button type="button" className="btn btn-ghost btn-small" onClick={() => change({ seed: randomSeed() })}>
-          ☺ {t('avatar.newFace')}
+          <Icon name="smile" /> {t('avatar.newFace')}
         </button>
       </div>
       <div className={styles.custom}>

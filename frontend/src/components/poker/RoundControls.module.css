@@ -1,5 +1,29 @@
-.bar { display: flex; justify-content: space-between; align-items: center; gap: 8px 16px; flex-wrap: wrap; }
+/* Krupiye tepsisi: ahşap çerçeveli, içi kağıt; solda "D" pulu ile krupiye etiketi. */
+.bar {
+  position: relative; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
+  padding: 12px 14px 12px 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
+  border-top: 4px solid transparent;
+  background-image: linear-gradient(var(--surface), var(--surface)), var(--wood);
+  background-origin: border-box; background-clip: padding-box, border-box;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 8px; padding-right: 12px; margin-right: 2px;
+  font-family: var(--font-display); font-weight: 700; font-size: 16px;
+  border-right: 1px solid var(--border);
+}
+.dealerChip {
+  width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-card); font-weight: 800; font-size: 13px; color: #1b1b1b; background: #fffdf7;
+  border: 2px solid var(--gold); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
 .group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.label { font-size: 14px; color: var(--text-soft); margin-right: 2px; }
+.primary { flex: 1 1 auto; }
+.timer { margin-left: auto; padding-left: 12px; border-left: 1px solid var(--border); }
+.label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-soft); margin-right: 2px; }
 .assign { display: inline-flex; align-items: center; gap: 4px; }
-.assignSelect { min-height: 34px; padding: 0 8px; font-size: 14px; width: auto; }
+.assignSelect { min-height: 34px; padding: 0 8px; font-size: 14px; width: auto; border-radius: 999px; }
+@media (max-width: 640px) {
+  .tag { border-right: 0; padding-right: 0; width: 100%; }
+  .timer { margin-left: 0; padding-left: 0; border-left: 0; }
+}

@@ -6,6 +6,7 @@ import { useRoomStore } from '../../store/roomStore';
 import { Avatar } from '../Avatar';
 import { isBreakTime, isRoyalFlush } from './FunFx';
 import styles from './ResultsPanel.module.css';
+import { Icon } from '../Icon';
 
 interface Props {
   room: RoomState;
@@ -35,7 +36,7 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
   return (
     <section className={`card ${styles.panel}`} aria-label={t('poker.results')}>
       <div className={styles.head}>
-        <h2 className={styles.title}>{t('poker.results')}</h2>
+        <h2 className={`panel-title ${styles.title}`}><Icon name="chart" size={18} />{t('poker.results')}</h2>
         <span className={`${styles.consensus} ${styles[stats.consensus.toLowerCase()]}`}>
           {t(`poker.consensus.${stats.consensus}`)}
         </span>
@@ -98,8 +99,8 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
 
       {(stats.lowestIds.length > 0 || stats.highestIds.length > 0) && (
         <p className={styles.extremes}>
-          <span className={styles.low}>▼ {t('poker.lowest')}: {stats.lowestIds.map(nameOf).join(', ')}</span>
-          <span className={styles.high}>▲ {t('poker.highest')}: {stats.highestIds.map(nameOf).join(', ')}</span>
+          <span className={styles.low}><Icon name="arrowDown" size={14} /> {t('poker.lowest')}: {stats.lowestIds.map(nameOf).join(', ')}</span>
+          <span className={styles.high}><Icon name="arrowUp" size={14} /> {t('poker.highest')}: {stats.highestIds.map(nameOf).join(', ')}</span>
         </p>
       )}
 
@@ -125,7 +126,7 @@ export function ResultsPanel({ room, round, isModerator }: Props) {
       )}
 
       {round.state === 'FINALIZED' && round.finalEstimate && (
-        <p className={styles.final}>✓ {t('poker.finalSaved', { value: round.finalEstimate })}</p>
+        <p className={styles.final}><Icon name="check" size={16} /> {t('poker.finalSaved', { value: round.finalEstimate })}</p>
       )}
 
       {canFinalize && (

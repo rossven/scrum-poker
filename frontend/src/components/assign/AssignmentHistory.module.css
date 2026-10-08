@@ -1,9 +1,9 @@
 .panel { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-.title { font-size: 16px; }
+.title { font-size: 18px; }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
 .item { padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2); }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .subject { overflow-wrap: anywhere; font-size: 14px; }
-.winner { flex-shrink: 0; }
+.winner { flex-shrink: 0; font-family: var(--font-display); }
 .meta { margin: 2px 0 0; font-size: 12px; color: var(--text-soft); }
 .undone .row { text-decoration: line-through; opacity: 0.6; }

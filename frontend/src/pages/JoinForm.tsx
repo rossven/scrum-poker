@@ -7,6 +7,7 @@ import { isValidAvatar, randomAvatar } from '../lib/avatar';
 import { navigate } from '../lib/router';
 import { preferences, sessions } from '../lib/session';
 import styles from './Form.module.css';
+import { Icon } from '../components/Icon';
 
 interface Props {
   info: RoomInfo;
@@ -70,7 +71,7 @@ export function JoinForm({ info, onJoined }: Props) {
       <h1 className={styles.title}>{info.name ?? t('join.title')}</h1>
       <p className={styles.subtitle}>
         {t('room.code')}: <strong>{info.code}</strong>
-        {info.passwordProtected && <> · 🔒 {t('room.passwordProtected')}</>}
+        {info.passwordProtected && <> · <Icon name="lock" size={14} /> {t('room.passwordProtected')}</>}
       </p>
 
       <div className="field">

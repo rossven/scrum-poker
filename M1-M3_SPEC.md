@@ -209,6 +209,13 @@ Oyun mimarisi: her oyun, ortak bir `TieBreakerGame` arayüzünü gerçekleştirs
 - Güvenlik: isimle devralınan koltuğa **krupiyelik geçmez**. Kopan kişi krupiyeyse, devralan kişi normal katılımcı olur; krupiyeliği bir krupiye yeniden verir (başka krupiye yoksa M1'deki devretme kuralı işler). Böylece biri sadece ismi yazarak krupiye yetkisi alamaz.
 - Krupiye istenmeyen çevrimdışı koltukları "Masadan at" ile elle de temizleyebilir.
 
+### Tasarım turu (M3 kapanmadan)
+- Arayüz "sade web formu" görünümünden çıkıp tek bir poker görsel diline geçer: ahşap kenar + altın çizgili üst şerit, çuha yeşili masa, krupiye tepsisi gibi duran tur düğmeleri, fiş görünümlü birincil düğmeler.
+- Yazı tipleri pakete gömülür (harici CDN yok, lisansı OFL): başlıklar için karakterli bir serif, kart değerleri için okunaklı bir slab serif, metin için Inter.
+- Emoji tabanlı düğme ikonları yerine kendi çizdiğimiz tutarlı bir poker ikon seti (maça/kupa/karo/sinek, fiş, kart, taç, at, çark, el, zamanlayıcı vb.) kullanılır; ikonlar süstür, düğmenin erişilebilir adı yazıdır.
+- Ana sayfa, oda oluşturma/katılma, masa, koltuklar, sonuç ve yan paneller (ticket, geçmiş, atama) aynı başlık ve kart diliyle görünür. Açık ve koyu temada, masaüstü ve telefonda kontrol edilir.
+- Davranış değişmez: mevcut otomatik testler (birim + uçtan uca) aynen geçer.
+
 ### Kabul kriterleri
 - Moderatör bir kişiyi attığında o kişinin bağlantısı kapanır, eski token'ı ile yeniden bağlanamaz ve masadan/aday listesinden kalkar. Moderatör olmayanın atma isteği reddedilir (otomatik testler).
 - Çevrimdışı koltuğun ismiyle giren kişi koltuğu devralabilir, "Ayşe 2" oluşmaz; çevrimiçi koltuk devralınamaz; devralmada krupiyelik geçmez (otomatik testler).
@@ -337,3 +344,5 @@ _Ürün adı, avatar kütüphanesi ve lisansı, CSS yaklaşımı, barındırma t
 - **Koltuk devralma:** REST katılımında `takeover` alanı. İlk denemede sunucu `SEAT_TAKEOVER` ile sorar; katılma formunda "Bu koltuk senin mi? Devral / Yeni koltuk aç". Kontrol şifreden sonra yapılır (şifreyi bilmeyen koltuk var mı öğrenemez). Henüz bağlanmamış (katılıp sayfayı kapatan) koltuk da çevrimdışı sayılır. Krupiyelik devralınmaz: koltuk krupiyeninse rozet kalkar; başka bağlı krupiye yoksa M1 kuralıyla en eski bağlı katılımcıya geçer (odada kimse bağlı değilse devralan kişi bağlanınca, yine M1 kuralıyla, krupiye olur; bu durumda zaten yeni katılan herkes krupiye olurdu).
 - **Düzeltme (M1'den kalan aralıklı hata):** Aynı anda gelen iki niyetin `room.state` mesajları bazen hesaplandıkları sıranın tersiyle gönderiliyordu; eski durum yenisinin üstüne yazılıyor, istemci örneğin 4 oy yerine 2 oy görüyordu (`fourClientsVoteAndNoVoteLeaksBeforeReveal` ara sıra kırmızıydı). Artık durum oda kilidi altında hesaplanıp yine kilit altında yayınlanıyor.
 - **Arayüz düzeltmesi:** Masanın üst tarafındaki koltukların krupiye menüsü (Dürt, Krupiye yap, Masadan at) masanın ortasının altında kalıyor, tıklanamıyordu; menüsü açık koltuk artık en üstte.
+
+- **Tasarım turu:** Yazı tipleri `@fontsource` paketleriyle gömülü (Playfair Display başlık, Bitter kart değerleri, Inter Variable metin; hepsi OFL-1.1, yalnızca latin + latin-ext). İkonlar `components/Icon.tsx` içinde kendi çizimimiz (24px ızgara, çizgi ikon; iskambil sembolleri dolgulu), harici ikon kütüphanesi yok. Düğmelerdeki emoji yerine bu ikonlar geldi; ikonlar `aria-hidden`, erişilebilir ad yazıdan gelir, bu yüzden testlerdeki seçiciler değişmedi. Masaya atılan emojiler ve at yarışındaki atlar emoji olarak kaldı (oyun içeriği). Üst şerit ahşap + altın çizgi, krupiye düğmeleri "Krupiye masası" tepsisinde, koltuk isimleri koyu plaka, birincil düğmeler fiş kenarlı.

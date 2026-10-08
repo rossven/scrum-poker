@@ -10,6 +10,7 @@ import { Avatar } from '../Avatar';
 import { HorseRace } from './HorseRace';
 import { Wheel } from './Wheel';
 import styles from './AssignmentPanel.module.css';
+import { Icon } from '../Icon';
 
 interface Props {
   room: RoomState;
@@ -30,7 +31,7 @@ export function AssignmentPanel({ room, assignment, youId, isModerator, timing }
     <section className={`card ${styles.panel}`} aria-label={t('assign.title')}>
       <div className={styles.head}>
         <div>
-          <h2 className={styles.title}>🙋 {t('assign.title')}</h2>
+          <h2 className={`panel-title ${styles.title}`}><Icon name="hand" size={20} />{t('assign.title')}</h2>
           {assignment.title && <p className={styles.subject}>{assignment.title}</p>}
         </div>
         {isModerator && (
@@ -55,7 +56,7 @@ function Countdown({ remainingMs }: { remainingMs: number }) {
     return () => window.clearInterval(id);
   }, []);
   const secs = Math.max(0, Math.ceil((endsAt - now) / 1000));
-  return <span className={styles.countdown} role="timer">⏱ {t('assign.seconds', { count: secs })}</span>;
+  return <span className={styles.countdown} role="timer"><Icon name="timer" size={15} /> {t('assign.seconds', { count: secs })}</span>;
 }
 
 function Volunteering({ room, assignment, youId, isModerator }: Omit<Props, 'timing'>) {
@@ -77,7 +78,8 @@ function Volunteering({ room, assignment, youId, isModerator }: Omit<Props, 'tim
           aria-pressed={iVolunteered}
           onClick={() => setVolunteer(!iVolunteered)}
         >
-          {iVolunteered ? t('assign.unvolunteer') : `✋ ${t('assign.volunteer')}`}
+          {!iVolunteered && <Icon name="hand" size={20} />}
+          {iVolunteered ? t('assign.unvolunteer') : t('assign.volunteer')}
         </button>
       )}
       <div>
@@ -137,7 +139,7 @@ function Candidates({ room, assignment, isModerator }: { room: RoomState; assign
           </ul>
         )}
       </div>
-      {room.fairRotation && <p className={styles.note}>⚖ {t('assign.weightedOn')}</p>}
+      {room.fairRotation && <p className={styles.note}><Icon name="scale" size={15} /> {t('assign.weightedOn')}</p>}
       {isModerator ? (
         <>
           <fieldset className={styles.games}>
@@ -145,7 +147,7 @@ function Candidates({ room, assignment, isModerator }: { room: RoomState; assign
             {PLAYABLE_GAMES.map((g) => (
               <label key={g} className={`${styles.gameOption} ${game === g ? styles.chosen : ''}`}>
                 <input type="radio" name="game" value={g} checked={game === g} onChange={() => setGame(g)} />
-                <span aria-hidden className={styles.gameIcon}>{g === 'horse' ? '🏇' : '🎡'}</span>
+                <span className={styles.gameIcon}><Icon name={g === 'horse' ? 'horse' : 'wheel'} size={22} /></span>
                 {t(`assign.games.${g}`)}
               </label>
             ))}
@@ -162,7 +164,7 @@ function Candidates({ room, assignment, isModerator }: { room: RoomState; assign
               play('shuffle');
               playGame(game);
             }}>
-            {count === 1 ? t('assign.assignDirect', { name: candidates[0].nickname }) : `▶ ${t('assign.start')}`}
+            {count === 1 ? t('assign.assignDirect', { name: candidates[0].nickname }) : <><Icon name="play" /> {t('assign.start')}</>}
           </button>
         </>
       ) : (
@@ -204,11 +206,11 @@ function Result({ assignment, isModerator, timing }: { assignment: AssignmentVie
           transition={{ type: 'spring', stiffness: 260, damping: 16 }}>
           <Avatar seed={result.winner.avatar} size={56} alt="" />
           <div>
-            <strong className={styles.winnerName}>🎉 {t('assign.winner', { name: result.winner.nickname })}</strong>
+            <strong className={styles.winnerName}><Icon name="crown" size={20} /> {t('assign.winner', { name: result.winner.nickname })}</strong>
             <p className="muted">
               {result.game === 'volunteer' ? t('assign.byVolunteer') : result.game === 'direct' ? t('assign.byDirect')
                 : t('assign.byGame', { game: t(`assign.games.${result.game}`) })}
-              {result.weighted && <> · ⚖ {t('assign.weightedOn')}</>}
+              {result.weighted && <> · <Icon name="scale" size={13} /> {t('assign.weightedOn')}</>}
             </p>
           </div>
         </motion.div>
@@ -220,7 +222,7 @@ function Result({ assignment, isModerator, timing }: { assignment: AssignmentVie
       )}
       {isModerator && done && (
         <div className={styles.tools}>
-          <button type="button" className="btn btn-small" onClick={undoAssignment}>↺ {t('assign.undo')}</button>
+          <button type="button" className="btn btn-small" onClick={undoAssignment}><Icon name="undo" size={16} /> {t('assign.undo')}</button>
           <button type="button" className="btn btn-primary btn-small" onClick={closeAssignment}>{t('assign.done')}</button>
         </div>
       )}

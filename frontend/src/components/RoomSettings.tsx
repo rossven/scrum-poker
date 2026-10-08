@@ -4,6 +4,7 @@ import type { RoomState } from '../api/types';
 import { useRoomStore } from '../store/roomStore';
 import { DeckPicker, deckChoiceCards, deckChoiceValid, type DeckChoice } from './DeckPicker';
 import styles from './RoomSettings.module.css';
+import { Icon } from './Icon';
 
 /** Krupiye paneli: ticket listesi aç/kapa, deste, şifre değiştir/kaldır, odayı kapat. */
 export function RoomSettings({ room, onClose }: { room: RoomState; onClose: () => void }) {
@@ -39,7 +40,7 @@ export function RoomSettings({ room, onClose }: { room: RoomState; onClose: () =
 
   return (
     <div className={`card ${styles.panel}`}>
-      <h2 className={styles.title}>{t('room.settings')}</h2>
+      <h2 className={`panel-title ${styles.title}`}><Icon name="gear" size={18} />{t('room.settings')}</h2>
       <div className="field">
         <label className={styles.toggle}>
           <input type="checkbox" checked={room.ticketsEnabled} onChange={(e) => setTicketsEnabled(e.target.checked)} />
