@@ -87,5 +87,5 @@
 
 /* Çok oy olunca yalnızca dağılım sütunu kendi içinde kayar; final tahmin ve kaydet düğmesi hep görünür. */
 @media (min-width: 961px) {
-  .col:first-child { max-height: 25vh; overflow-y: auto; align-self: start; }
+  .col:first-child { max-height: max(250px, 30vh); overflow-y: auto; }
 }
