@@ -203,8 +203,15 @@ Oyun mimarisi: her oyun, ortak bir `TieBreakerGame` arayüzünü gerçekleştirs
 - Atılan kişinin açılmamış oyu turdan silinir. Aday listesindeyse veya gönüllüyse oradan da çıkarılır. Daha önce yapılmış atamalar ve geçmiş değişmez.
 - Atılan kişi oda linkiyle yeniden katılabilir (kalıcı engelleme bu milestone'da yok). Atılan kişi moderatörse ve başka moderatör kalmazsa M1'deki devretme kuralı uygulanır.
 
+### Kopan kişinin koltuğu ve aynı isimle yeniden giriş
+- Bugünkü davranış: aynı tarayıcıdan dönen kişi saklı oturum token'ıyla kendi koltuğuna döner. Başka tarayıcıdan, gizli pencereden ya da tarayıcı verisi silinmişken aynı isimle girince yeni bir koltuk açılır ve isim "Ayşe 2" olur; eski koltuk çevrimdışı olarak masada kalır.
+- M3'te: bir kişi, **çevrimdışı** bir koltuğun ismiyle (büyük/küçük harf duyarsız) katılırsa "Bu koltuk senin mi? Devral / Yeni koltuk aç" sorulur. "Devral" seçilirse yeni bağlantı eski koltuğa geçer (isim, avatar, bu turdaki oy, gönüllülük korunur), eski token geçersiz olur ve "Ayşe 2" oluşmaz. Koltuk çevrimiçiyse devralma sunulmaz, bugünkü gibi numara eklenir.
+- Güvenlik: isimle devralınan koltuğa **krupiyelik geçmez**. Kopan kişi krupiyeyse, devralan kişi normal katılımcı olur; krupiyeliği bir krupiye yeniden verir (başka krupiye yoksa M1'deki devretme kuralı işler). Böylece biri sadece ismi yazarak krupiye yetkisi alamaz.
+- Krupiye istenmeyen çevrimdışı koltukları "Masadan at" ile elle de temizleyebilir.
+
 ### Kabul kriterleri
 - Moderatör bir kişiyi attığında o kişinin bağlantısı kapanır, eski token'ı ile yeniden bağlanamaz ve masadan/aday listesinden kalkar. Moderatör olmayanın atma isteği reddedilir (otomatik testler).
+- Çevrimdışı koltuğun ismiyle giren kişi koltuğu devralabilir, "Ayşe 2" oluşmaz; çevrimiçi koltuk devralınamaz; devralmada krupiyelik geçmez (otomatik testler).
 - Tek gönüllü varsa oyun çalışmadan atama yapılır.
 - Aday çıkarma ve gönüllü kuralları doğru çalışır (otomatik testler).
 - 10.000 deneme simülasyonunda (birim test) eşit ağırlıkta her adayın kazanma oranı beklenen aralıkta; ağırlıklı modda oranlar ağırlıklarla uyumlu.
