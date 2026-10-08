@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/http';
 import type { JoinResult, RoomInfo } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
-import { randomSeed } from '../lib/avatar';
+import { isValidAvatar, randomAvatar } from '../lib/avatar';
 import { navigate } from '../lib/router';
 import { preferences, sessions } from '../lib/session';
 import styles from './Form.module.css';
@@ -17,7 +17,10 @@ export function JoinForm({ info, onJoined }: Props) {
   const { t } = useTranslation();
   // Önceki odalarda kullanılan isim/avatar hatırlanır (yalnızca bu tarayıcıda).
   const [nickname, setNickname] = useState(() => preferences.get('nickname', ''));
-  const [avatar, setAvatar] = useState(() => preferences.get('avatar', '') || randomSeed());
+  const [avatar, setAvatar] = useState(() => {
+    const saved = preferences.get('avatar', '');
+    return isValidAvatar(saved) ? saved : randomAvatar();
+  });
   const [observer, setObserver] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);

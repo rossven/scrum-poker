@@ -5,12 +5,13 @@ import { useRoomStore } from '../store/roomStore';
 import { DeckPicker, deckChoiceCards, deckChoiceValid, type DeckChoice } from './DeckPicker';
 import styles from './RoomSettings.module.css';
 
-/** Moderatör paneli: deste, şifre değiştir/kaldır, odayı kapat. */
+/** Krupiye paneli: ticket listesi aç/kapa, deste, şifre değiştir/kaldır, odayı kapat. */
 export function RoomSettings({ room, onClose }: { room: RoomState; onClose: () => void }) {
   const { t } = useTranslation();
   const setPassword = useRoomStore((s) => s.setPassword);
   const setDeck = useRoomStore((s) => s.setDeck);
   const closeRoom = useRoomStore((s) => s.closeRoom);
+  const setTicketsEnabled = useRoomStore((s) => s.setTicketsEnabled);
   const toast = useRoomStore((s) => s.toast);
   const [password, setPw] = useState('');
   const [deck, setDeckChoice] = useState<DeckChoice>({ deck: room.deck, customText: (room.customDeck ?? []).join(', ') });
@@ -39,6 +40,13 @@ export function RoomSettings({ room, onClose }: { room: RoomState; onClose: () =
   return (
     <div className={`card ${styles.panel}`}>
       <h2 className={styles.title}>{t('room.settings')}</h2>
+      <div className="field">
+        <label className={styles.toggle}>
+          <input type="checkbox" checked={room.ticketsEnabled} onChange={(e) => setTicketsEnabled(e.target.checked)} />
+          <span>{t('tickets.enable')}</span>
+        </label>
+        <small>{room.ticketsEnabled ? t('tickets.disableHint') : t('tickets.enableHint')}</small>
+      </div>
       <form onSubmit={applyDeck} className="field">
         <label htmlFor="room-deck">{t('decks.title')}</label>
         <DeckPicker id="room-deck" value={deck} onChange={setDeckChoice} />

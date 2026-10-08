@@ -9,7 +9,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 /**
- * Poker niyetleri: /app/poker.*, /app/ticket.*, /app/timer.*, /app/participant.*.
+ * Poker niyetleri: /app/poker.*, /app/ticket.*, /app/timer.*, /app/participant.*, /app/table.*,
+ * /app/room.set_tickets_enabled.
  * Yetki ve kurallar PokerService içinde; hatalar RoomSocketController'daki işleyiciyle kişiye döner.
  */
 @Controller
@@ -34,6 +35,14 @@ public class PokerSocketController {
     public record TimerPayload(int seconds) {}
 
     public record ObserverPayload(String participantId, boolean observer) {}
+
+    public record TicketsEnabledPayload(boolean enabled) {}
+
+    public record TopicPayload(String topic) {}
+
+    public record NudgePayload(String participantId) {}
+
+    public record EmojiPayload(String emoji) {}
 
     private final PokerService poker;
 
@@ -130,5 +139,29 @@ public class PokerSocketController {
     public void setObserver(@Payload ObserverPayload body, Principal principal) {
         var p = (RoomPrincipal) principal;
         poker.setObserver(p.roomCode(), p.participantId(), body.participantId(), body.observer());
+    }
+
+    @MessageMapping("room.set_tickets_enabled")
+    public void setTicketsEnabled(@Payload TicketsEnabledPayload body, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        poker.setTicketsEnabled(p.roomCode(), p.participantId(), body.enabled());
+    }
+
+    @MessageMapping("poker.set_topic")
+    public void setTopic(@Payload TopicPayload body, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        poker.setTopic(p.roomCode(), p.participantId(), body.topic());
+    }
+
+    @MessageMapping("poker.nudge")
+    public void nudge(@Payload NudgePayload body, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        poker.nudge(p.roomCode(), p.participantId(), body.participantId());
+    }
+
+    @MessageMapping("table.emoji")
+    public void emoji(@Payload EmojiPayload body, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        poker.throwEmoji(p.roomCode(), p.participantId(), body.emoji());
     }
 }

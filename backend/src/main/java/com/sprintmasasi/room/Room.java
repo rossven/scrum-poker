@@ -4,6 +4,7 @@ import com.sprintmasasi.poker.Deck;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import com.sprintmasasi.room.RoomViews.SessionRoundView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -21,6 +22,8 @@ import java.util.function.Supplier;
  */
 public class Room {
 
+    static final int MAX_SESSION_HISTORY = 20;
+
     private final ReentrantLock lock = new ReentrantLock();
     private final String code;
     private final Instant createdAt;
@@ -30,6 +33,10 @@ public class Room {
     /** Moderatörün oluşturduğu özel deste; başka desteye geçilse de oda boyunca saklanır. */
     private Deck customDeck;
     private final List<Ticket> tickets = new ArrayList<>();
+    /** Ticket listesi isteğe bağlı (varsayılan kapalı). Kapatınca ticket'lar silinmez, gizlenir. */
+    private boolean ticketsEnabled;
+    /** Ticket'sız (serbest) turların kaydı, en eskiden yeniye; en fazla MAX_SESSION_HISTORY. */
+    private final List<SessionRoundView> sessionHistory = new ArrayList<>();
     private String currentTicketId;
     private PokerRound round;
     private long roundCounter;
@@ -42,11 +49,17 @@ public class Room {
     private boolean closed;
 
     public Room(String code, String name, Deck deck, String passwordHash, String creatorClaimToken, Instant now) {
+        this(code, name, deck, passwordHash, creatorClaimToken, false, now);
+    }
+
+    public Room(String code, String name, Deck deck, String passwordHash, String creatorClaimToken,
+                boolean ticketsEnabled, Instant now) {
         this.code = code;
+        this.ticketsEnabled = ticketsEnabled;
         this.name = name;
         this.deck = deck;
         this.customDeck = Deck.CUSTOM.equals(deck.id()) ? deck : null;
-        this.round = new PokerRound(++roundCounter, 1, null);
+        this.round = new PokerRound(++roundCounter, 1, null, null);
         this.passwordHash = passwordHash;
         this.creatorClaimToken = creatorClaimToken;
         this.createdAt = now;
@@ -76,6 +89,16 @@ public class Room {
     Deck deck() { return deck; }
     Deck customDeck() { return customDeck; }
     List<Ticket> tickets() { return tickets; }
+    public boolean ticketsEnabled() { return ticketsEnabled; }
+    void setTicketsEnabled(boolean enabled) { this.ticketsEnabled = enabled; }
+    List<SessionRoundView> sessionHistory() { return sessionHistory; }
+
+    void addSessionRecord(SessionRoundView record) {
+        sessionHistory.add(record);
+        if (sessionHistory.size() > MAX_SESSION_HISTORY) {
+            sessionHistory.removeFirst();
+        }
+    }
     String currentTicketId() { return currentTicketId; }
     PokerRound round() { return round; }
     Instant timerEndsAt() { return timerEndsAt; }
@@ -98,8 +121,13 @@ public class Room {
 
     /** Yeni oylama turu başlatır; önceki tur artık geçersizdir (oyları istemciye hiç gitmeyecek). */
     PokerRound startRound(String ticketId, int number) {
+        return startRound(ticketId, number, null);
+    }
+
+    /** topic: ticket'sız turda krupiyenin yazdığı kısa konu ("Ne oylanıyor?"). */
+    PokerRound startRound(String ticketId, int number, String topic) {
         this.currentTicketId = ticketId;
-        this.round = new PokerRound(++roundCounter, number, ticketId);
+        this.round = new PokerRound(++roundCounter, number, ticketId, ticketId == null ? topic : null);
         return round;
     }
 

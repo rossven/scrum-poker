@@ -9,6 +9,8 @@
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
 .main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 76px; }
+/* Ticket listesi kapalı: masa ortada, tek sütun. */
+.solo { grid-template-columns: minmax(0, 1fr); max-width: 900px; margin: 0 auto; width: 100%; }
 @media (max-width: 960px) {
   .layout { grid-template-columns: minmax(0, 1fr); }
   .side { position: static; }

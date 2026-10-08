@@ -20,21 +20,26 @@ class PokerRound {
     private final long id;
     private final int number;
     private final String ticketId;
+    /** Ticket'sız turun konusu (en fazla 120 karakter, boş olabilir). */
+    private String topic;
     private final Map<String, Vote> votes = new LinkedHashMap<>();
     private final Set<String> excluded = new HashSet<>();
     private State state = State.VOTING;
     private String finalEstimate;
     private boolean archived;
 
-    PokerRound(long id, int number, String ticketId) {
+    PokerRound(long id, int number, String ticketId, String topic) {
         this.id = id;
         this.number = number;
         this.ticketId = ticketId;
+        this.topic = topic;
     }
 
     long id() { return id; }
     int number() { return number; }
     String ticketId() { return ticketId; }
+    String topic() { return topic; }
+    void setTopic(String topic) { this.topic = topic; }
     State state() { return state; }
     Map<String, Vote> votes() { return votes; }
     Set<String> excluded() { return excluded; }

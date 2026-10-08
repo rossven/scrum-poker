@@ -2,9 +2,11 @@ package com.sprintmasasi.room;
 
 import com.sprintmasasi.poker.Deck;
 import com.sprintmasasi.room.RoomViews.RoundRecordView;
+import com.sprintmasasi.room.RoomViews.SessionRoundView;
 import com.sprintmasasi.room.RoomViews.YourVote;
 import com.sprintmasasi.stats.UsageStats;
 import java.time.Clock;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -23,6 +25,11 @@ public class PokerService {
     public static final int MAX_TICKETS = 100;
     public static final int TIMER_MIN_SECONDS = 10;
     public static final int TIMER_MAX_SECONDS = 3600;
+    /** Aynı kişi en fazla 30 sn'de bir dürtülebilir. */
+    public static final Duration NUDGE_INTERVAL = Duration.ofSeconds(30);
+    /** Masaya emoji: kişi başına 10 sn'de en fazla 5. */
+    public static final int EMOJI_BURST = 5;
+    public static final Duration EMOJI_WINDOW = Duration.ofSeconds(10);
 
     public record NewTicket(String title, String link, String note) {}
 
@@ -31,6 +38,8 @@ public class PokerService {
     private final SecureIds ids;
     private final Clock clock;
     private final UsageStats stats;
+    private final RateLimiter nudges;
+    private final RateLimiter emojis;
 
     public PokerService(RoomService rooms, RoomEvents events, SecureIds ids, Clock clock, UsageStats stats) {
         this.rooms = rooms;
@@ -38,6 +47,8 @@ public class PokerService {
         this.ids = ids;
         this.clock = clock;
         this.stats = stats;
+        this.nudges = new RateLimiter(clock, 1, NUDGE_INTERVAL);
+        this.emojis = new RateLimiter(clock, EMOJI_BURST, EMOJI_WINDOW);
     }
 
     // ---------------------------------------------------------------- oylama
@@ -93,16 +104,24 @@ public class PokerService {
             RoomService.requireModerator(room, actorId);
             PokerRound old = room.round();
             archiveIfRevealed(room);
-            // Açılmamış tur yeniden başlarsa numara artmaz (sadece oylar sıfırlanır).
-            int number = old.isVoting() ? old.number() : old.number() + 1;
-            room.startRound(old.ticketId(), number);
+            if (old.ticketId() == null && old.state() == PokerRound.State.FINALIZED) {
+                // Ticket'sız tur finallendi: yeni konu için temiz bir serbest tur.
+                room.startRound(null, 1, null);
+            } else {
+                // Açılmamış tur yeniden başlarsa numara artmaz (sadece oylar sıfırlanır).
+                int number = old.isVoting() ? old.number() : old.number() + 1;
+                room.startRound(old.ticketId(), number, old.topic());
+            }
             room.touch(clock.instant());
         });
         log.info("event=poker.new_round room={}", room.code());
         rooms.broadcast(room);
     }
 
-    /** Moderatör final tahmini onaylar; ticket "tahmin edildi" olur. */
+    /**
+     * Krupiye final tahmini onaylar. Masada ticket varsa "tahmin edildi" olur;
+     * yoksa (serbest tur) final tura ve oturum geçmişine yazılır.
+     */
     public void finalizeEstimate(String code, String actorId, String value) {
         Room room = rooms.require(code);
         room.withLock(() -> {
@@ -111,12 +130,11 @@ public class PokerService {
             if (round.state() != PokerRound.State.REVEALED) {
                 throw new RoomException(ErrorCode.WRONG_PHASE);
             }
-            Ticket ticket = room.currentTicket().orElseThrow(() -> new RoomException(ErrorCode.WRONG_PHASE));
             if (value == null || !room.deck().contains(value) || Deck.isSpecial(value)) {
                 throw new RoomException(ErrorCode.INVALID_INPUT);
             }
             round.finalizeWith(value);
-            ticket.estimate(value);
+            room.currentTicket().ifPresent(ticket -> ticket.estimate(value));
             archiveIfRevealed(room);
             room.touch(clock.instant());
         });
@@ -152,7 +170,7 @@ public class PokerService {
             archiveIfRevealed(room);
             room.setDeck(deck);
             PokerRound old = room.round();
-            room.startRound(old.ticketId(), old.isVoting() ? old.number() : old.number() + 1);
+            room.startRound(old.ticketId(), old.isVoting() ? old.number() : old.number() + 1, old.topic());
             room.touch(clock.instant());
         });
         log.info("event=poker.deck_changed room={}", room.code());
@@ -177,6 +195,7 @@ public class PokerService {
         }
         Room room = rooms.require(code);
         room.withLock(() -> {
+            requireTicketsEnabled(room);
             RoomService.requireModerator(room, actorId);
             if (room.tickets().size() + fresh.size() > MAX_TICKETS) {
                 throw new RoomException(ErrorCode.TICKET_LIMIT);
@@ -197,6 +216,7 @@ public class PokerService {
         String note = Validation.ticketNote(raw.note());
         Room room = rooms.require(code);
         room.withLock(() -> {
+            requireTicketsEnabled(room);
             RoomService.requireModerator(room, actorId);
             requireTicket(room, ticketId).edit(title, link, note);
             room.touch(clock.instant());
@@ -207,6 +227,7 @@ public class PokerService {
     public void removeTicket(String code, String actorId, String ticketId) {
         Room room = rooms.require(code);
         room.withLock(() -> {
+            requireTicketsEnabled(room);
             RoomService.requireModerator(room, actorId);
             Ticket ticket = requireTicket(room, ticketId);
             room.tickets().remove(ticket);
@@ -222,6 +243,7 @@ public class PokerService {
     public void moveTicket(String code, String actorId, String ticketId, int toIndex) {
         Room room = rooms.require(code);
         room.withLock(() -> {
+            requireTicketsEnabled(room);
             RoomService.requireModerator(room, actorId);
             Ticket ticket = requireTicket(room, ticketId);
             room.tickets().remove(ticket);
@@ -236,6 +258,7 @@ public class PokerService {
     public void selectTicket(String code, String actorId, String ticketId) {
         Room room = rooms.require(code);
         room.withLock(() -> {
+            requireTicketsEnabled(room);
             RoomService.requireModerator(room, actorId);
             Ticket ticket = requireTicket(room, ticketId);
             archiveIfRevealed(room);
@@ -249,6 +272,7 @@ public class PokerService {
     public void nextTicket(String code, String actorId) {
         Room room = rooms.require(code);
         room.withLock(() -> {
+            requireTicketsEnabled(room);
             RoomService.requireModerator(room, actorId);
             archiveIfRevealed(room);
             List<Ticket> list = room.tickets();
@@ -269,6 +293,98 @@ public class PokerService {
             room.touch(clock.instant());
         });
         rooms.broadcast(room);
+    }
+
+    // ---------------------------------------------------------------- isteğe bağlı ticket / serbest tur
+
+    /**
+     * Ticket listesini açar/kapatır. Kapatınca ticket'lar silinmez, gizlenir; masada ticket varsa
+     * açık tur o ticket'ın geçmişine yazılır ve yeni serbest tur başlar. Açınca masa boşsa
+     * sıradaki tahmin edilmemiş ticket masaya gelir.
+     */
+    public void setTicketsEnabled(String code, String actorId, boolean enabled) {
+        Room room = rooms.require(code);
+        boolean changed = room.withLock(() -> {
+            RoomService.requireModerator(room, actorId);
+            if (room.ticketsEnabled() == enabled) {
+                return false;
+            }
+            room.setTicketsEnabled(enabled);
+            PokerRound round = room.round();
+            if (!enabled && round.ticketId() != null) {
+                archiveIfRevealed(room);
+                room.startRound(null, 1, null);
+            } else if (enabled && round.ticketId() == null && round.isVoting() && round.votes().isEmpty()) {
+                room.tickets().stream().filter(t -> t.status() == Ticket.Status.PENDING).findFirst()
+                        .ifPresent(t -> room.startRound(t.id(), t.history().size() + 1));
+            }
+            room.touch(clock.instant());
+            return true;
+        });
+        if (!changed) {
+            return;
+        }
+        if (enabled) {
+            stats.ticketsEnabled(room.code());
+        }
+        log.info("event=room.tickets_enabled room={} enabled={}", room.code(), enabled);
+        rooms.broadcast(room);
+    }
+
+    /** Ticket'sız turun konusu ("Ne oylanıyor?"). Masada ticket varsa yazılamaz. */
+    public void setTopic(String code, String actorId, String rawTopic) {
+        String topic = Validation.topic(rawTopic);
+        Room room = rooms.require(code);
+        room.withLock(() -> {
+            RoomService.requireModerator(room, actorId);
+            if (room.round().ticketId() != null) {
+                throw new RoomException(ErrorCode.WRONG_PHASE);
+            }
+            room.round().setTopic(topic);
+            room.touch(clock.instant());
+        });
+        rooms.broadcast(room);
+    }
+
+    // ---------------------------------------------------------------- eğlenceli dokunuşlar
+
+    /** Krupiye oy vermeyen bir katılımcıyı dürter. Kişi başına 30 sn'de bir. */
+    public void nudge(String code, String actorId, String targetId) {
+        Room room = rooms.require(code);
+        room.withLock(() -> {
+            RoomService.requireModerator(room, actorId);
+            Participant target = room.participant(targetId == null ? "" : targetId)
+                    .orElseThrow(() -> new RoomException(ErrorCode.INVALID_INPUT));
+            if (target.id().equals(actorId) || target.observer()) {
+                throw new RoomException(ErrorCode.INVALID_INPUT);
+            }
+            if (!room.round().isVoting() || room.round().hasVoted(target.id())) {
+                throw new RoomException(ErrorCode.WRONG_PHASE);
+            }
+            if (!nudges.tryAcquire(room.code() + "|" + target.id())) {
+                throw new RoomException(ErrorCode.RATE_LIMITED);
+            }
+        });
+        events.nudged(room.code(), targetId);
+    }
+
+    /** Masaya emoji fırlatır (izleyiciler dahil herkes). Saklanmaz; kişi başına hız sınırlı. */
+    public void throwEmoji(String code, String actorId, String rawEmoji) {
+        String emoji = Validation.tableEmoji(rawEmoji);
+        Room room = rooms.require(code);
+        room.withLock(() -> {
+            room.participant(actorId).orElseThrow(() -> new RoomException(ErrorCode.FORBIDDEN));
+            if (!emojis.tryAcquire(room.code() + "|" + actorId)) {
+                throw new RoomException(ErrorCode.RATE_LIMITED);
+            }
+        });
+        events.emoji(room.code(), actorId, emoji);
+    }
+
+    /** Süresi dolmuş hız sınırı pencerelerini temizler (zamanlanmış görev çağırır). */
+    public void purgeLimiters() {
+        nudges.purge();
+        emojis.purge();
     }
 
     // ---------------------------------------------------------------- zamanlayıcı
@@ -320,19 +436,34 @@ public class PokerService {
 
     // ---------------------------------------------------------------- yardımcılar
 
+    private static void requireTicketsEnabled(Room room) {
+        if (!room.ticketsEnabled()) {
+            throw new RoomException(ErrorCode.FEATURE_DISABLED);
+        }
+    }
+
     private static Ticket requireTicket(Room room, String ticketId) {
         return room.ticket(ticketId).orElseThrow(() -> new RoomException(ErrorCode.INVALID_INPUT));
     }
 
-    /** Açılmış (REVEALED/FINALIZED) turu, bir ticket'a aitse ve henüz yazılmadıysa, geçmişine ekler. */
+    /**
+     * Açılmış (REVEALED/FINALIZED) turu, henüz yazılmadıysa kaydeder: ticket'a aitse o ticket'ın geçmişine,
+     * ticket'sız (serbest) turdaysa konusuyla birlikte oturum geçmişine.
+     */
     private static void archiveIfRevealed(Room room) {
         PokerRound round = room.round();
-        if (round.isVoting() || round.archived() || round.ticketId() == null) {
+        if (round.isVoting() || round.archived()) {
             return;
         }
-        room.ticket(round.ticketId()).ifPresent(t -> t.addHistory(new RoundRecordView(round.number(),
-                RoomService.voteViews(room, round), RoomService.statistics(room.deck(), round),
-                round.finalEstimate())));
+        var votes = RoomService.voteViews(room, round);
+        var statistics = RoomService.statistics(room.deck(), round);
+        if (round.ticketId() == null) {
+            room.addSessionRecord(new SessionRoundView(round.topic(), round.number(), votes, statistics,
+                    round.finalEstimate()));
+        } else {
+            room.ticket(round.ticketId()).ifPresent(t -> t.addHistory(new RoundRecordView(round.number(), votes,
+                    statistics, round.finalEstimate())));
+        }
         round.markArchived();
     }
 }

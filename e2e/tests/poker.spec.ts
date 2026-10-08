@@ -19,13 +19,14 @@ test('iki tarayıcı: ticket ekle, oy ver, aç, final tahmini yaz', async ({ bro
 
   await a.goto('/yeni');
   await a.getByLabel(/Oda adı/).fill('Poker');
+  await a.getByLabel('Ticket listesi kullan').check();
   await a.getByRole('button', { name: 'Odayı oluştur' }).click();
   await joinAs(a, 'Ayşe');
   await b.goto(a.url());
   await joinAs(b, 'Mehmet');
   await expect(a.getByText('Mehmet', { exact: true })).toBeVisible();
 
-  // Moderatör ticket ekler; ilk ticket masaya gelir
+  // Krupiye ticket ekler; ilk ticket masaya gelir
   await a.getByLabel('Ticket ekle').fill('ABC-1 Giriş sayfası');
   await a.getByRole('button', { name: '1 ticket ekle' }).click();
   await expect(b.getByText('ABC-1 Giriş sayfası').first()).toBeVisible();
@@ -54,6 +55,57 @@ test('iki tarayıcı: ticket ekle, oy ver, aç, final tahmini yaz', async ({ bro
   await a.getByRole('button', { name: 'Onayla' }).click();
   await expect(b.getByText('Final tahmin: 8').first()).toBeVisible();
   await expect(b.getByText('1/1 tahmin edildi')).toBeVisible();
+});
+
+test('ticket listesi kapalı: serbest turda konu yaz, oy ver, aç, final oturum geçmişine yazılır', async ({ browser }) => {
+  const a = await (await browser.newContext()).newPage();
+  const b = await (await browser.newContext()).newPage();
+
+  await a.goto('/yeni');
+  await a.getByRole('button', { name: 'Odayı oluştur' }).click();
+  await joinAs(a, 'Ayşe');
+  await b.goto(a.url());
+  await joinAs(b, 'Mehmet');
+  await expect(a.getByText('Mehmet', { exact: true })).toBeVisible();
+
+  // Yeni odada ticket paneli yok
+  await expect(a.getByRole('region', { name: "Ticket'lar" })).toHaveCount(0);
+  await expect(a.getByLabel('Ticket ekle')).toHaveCount(0);
+
+  // Krupiye masanın ortasına konu yazar
+  await a.getByRole('button', { name: /Ne oylanıyor\?/ }).click();
+  await a.getByLabel('Konu').fill('Giriş sayfası');
+  await a.getByRole('button', { name: 'Kaydet' }).click();
+  await expect(b.getByText('Giriş sayfası').first()).toBeVisible();
+
+  // Krupiye bekleyeni dürter (Ayşe oy verdi, Mehmet bekliyor)
+  await a.getByRole('button', { name: 'Kart 5', exact: true }).click();
+  await a.getByRole('button', { name: /Bekleyenleri dürt/ }).click();
+  await expect(b.getByText(/Krupiye seni dürttü/)).toBeVisible();
+
+  await b.getByRole('button', { name: 'Kart 5', exact: true }).click();
+  await expect(a.getByText('Herkes oy verdi').first()).toBeVisible();
+  await a.getByRole('button', { name: /Kartları aç/ }).click();
+
+  // Herkes aynı kart: Royal Flush
+  await expect(b.getByText('Herkes aynı kartı seçti.')).toBeVisible();
+  await a.getByRole('button', { name: 'Onayla' }).click();
+  await expect(b.getByText('Final tahmin: 5').first()).toBeVisible();
+
+  const history = b.getByRole('region', { name: 'Oturum geçmişi' });
+  await expect(history.getByText('Giriş sayfası')).toBeVisible();
+  await expect(history.getByText('5', { exact: true })).toBeVisible();
+
+  // Masaya emoji fırlatılır, karşı tarafta görünür
+  await b.getByRole('button', { name: 'Masaya 🎉 at' }).click();
+  await expect(a.locator('[data-fx="emoji"]', { hasText: '🎉' })).toHaveCount(1);
+
+  // Krupiye ticket listesini açınca panel gelir
+  await a.getByRole('button', { name: /Oda ayarları/ }).click();
+  // Kutu sunucudan gelen durumu gösterir: tıklayınca onay gelince işaretlenir
+  await a.getByLabel('Ticket listesi kullan').click();
+  await expect(a.getByLabel('Ticket listesi kullan')).toBeChecked();
+  await expect(b.getByRole('region', { name: "Ticket'lar" })).toBeVisible();
 });
 
 test('mobil genişlikte kart seçip oy verilebilir', async ({ browser }) => {

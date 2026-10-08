@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "SprintMasası",
-    "tagline": "Ekibinle sakin ve adil sprint planlama. Hesap yok, link yeter."
+    "tagline": "Ekibinle eğlenceli ve adil sprint planlama. Hesap yok, link yeter."
   },
   "common": {
     "back": "Geri",
@@ -24,7 +24,8 @@
     "deck": "Başlangıç destesi",
     "password": "Şifre",
     "passwordHint": "Boş bırakırsan link olan herkes girebilir.",
-    "submit": "Odayı oluştur"
+    "submit": "Odayı oluştur",
+    "ticketsHint": "Kapalıyken masada serbest tur oynanır; krupiye istediği an ayarlardan açabilir."
   },
   "decks": {
     "modified-fibonacci": "Modifiye Fibonacci",
@@ -64,12 +65,12 @@
     "participants": "Katılımcılar",
     "observers": "İzleyiciler",
     "you": "sen",
-    "moderator": "Moderatör",
+    "moderator": "Krupiye",
     "observer": "Gözlemci",
     "participant": "Katılımcı",
     "online": "Çevrimiçi",
     "offline": "Çevrimdışı",
-    "makeModerator": "Moderatör yap",
+    "makeModerator": "Krupiye yap",
     "leave": "Odadan çık",
     "settings": "Oda ayarları",
     "changePassword": "Şifreyi değiştir",
@@ -84,7 +85,10 @@
     "makeObserver": "İzleyici yap",
     "makeParticipant": "Masaya al",
     "becomeObserver": "İzleyici ol",
-    "becomeParticipant": "Masaya otur"
+    "becomeParticipant": "Masaya otur",
+    "dealerButton": "Krupiye (dağıtıcı düğmesi)",
+    "dealerNow": "Krupiye artık {{name}}",
+    "dealerNowYou": "Krupiye artık sensin"
   },
   "status": {
     "connecting": "Bağlanıyor…",
@@ -95,7 +99,7 @@
     "notFoundTitle": "Oda bulunamadı",
     "notFoundBody": "Bu oda kapatılmış, süresi dolmuş ya da sunucu yeniden başlamış olabilir.",
     "closedTitle": "Oda kapatıldı",
-    "closedBody": "Moderatör odayı kapattı.",
+    "closedBody": "Krupiye odayı kapattı.",
     "expiredBody": "Oda uzun süre kullanılmadığı için kapatıldı.",
     "newRoom": "Yeni oda aç"
   },
@@ -114,17 +118,18 @@
     "PASSWORD_REQUIRED": "Bu oda şifreli, lütfen şifreyi gir.",
     "WRONG_PASSWORD": "Şifre yanlış.",
     "INVALID_TOKEN": "Oturumun geçersiz, lütfen tekrar katıl.",
-    "FORBIDDEN": "Bunu yalnızca moderatör yapabilir.",
+    "FORBIDDEN": "Bunu yalnızca krupiye yapabilir.",
     "ROOM_FULL": "Oda dolu.",
     "TOO_MANY_ATTEMPTS": "Çok fazla yanlış deneme. Biraz bekleyip tekrar dene.",
-    "RATE_LIMITED": "Çok hızlı gidiyorsun, biraz bekle.",
+    "RATE_LIMITED": "Biraz yavaş, masa nefes alsın.",
     "NETWORK": "Sunucuya ulaşılamadı.",
     "UNKNOWN": "Bir şeyler ters gitti.",
     "INVALID_DECK": "Deste geçersiz: en fazla 20 kart, kart başına en fazla 8 karakter, tekrar olmamalı.",
     "INVALID_TICKET": "Ticket geçersiz: başlık 1-120 karakter, link http(s) ile başlamalı.",
     "WRONG_PHASE": "Bu şu an yapılamaz (tur durumu değişti).",
     "ALREADY_VOTED": "Oy verdin; izleyiciye geçmek için önce oyunu geri al.",
-    "TICKET_LIMIT": "Bir odada en fazla 100 ticket olabilir."
+    "TICKET_LIMIT": "Bir odada en fazla 100 ticket olabilir.",
+    "FEATURE_DISABLED": "Ticket listesi bu odada kapalı."
   },
   "sound": {
     "label": "Ses",
@@ -148,7 +153,6 @@
     "finalSaved": "Final tahmin: {{value}}",
     "roundN": "{{n}}. tur",
     "freeRound": "Serbest tur",
-    "noTicket": "Masada ticket yok",
     "timer": "Süre",
     "timerStop": "Süreyi durdur",
     "timerDone": "Süre doldu",
@@ -174,8 +178,22 @@
     "finalLabel": "Final tahmin",
     "finalize": "Onayla",
     "suggested": "öneri",
-    "finalNeedsTicket": "Final tahmin bir ticket'a yazılır. Kuyruğa ticket ekleyip masaya getir.",
-    "deckChangedToast": "Deste değişti, bu turun oyları sıfırlandı."
+    "deckChangedToast": "Deste değişti, bu turun oyları sıfırlandı.",
+    "freeRoundN": "Serbest tur · {{n}}",
+    "topicLabel": "Konu",
+    "topicPlaceholder": "Ne oylanıyor?",
+    "topicEdit": "Konuyu yaz",
+    "noTopic": "Serbest tur",
+    "newRound": "Yeni tur",
+    "nudge": "Dürt",
+    "nudgeAll": "Bekleyenleri dürt",
+    "nudgedYou": "👉 Krupiye seni dürttü: masa oyunu bekliyor.",
+    "royalFlush": "Royal Flush!",
+    "royalFlushSub": "Herkes aynı kartı seçti.",
+    "breakTime": "Mola zamanı? ☕",
+    "breakTimeSub": "Oyların çoğu mola kartı.",
+    "joker": "Joker",
+    "break": "Mola"
   },
   "tickets": {
     "title": "Ticket'lar",
@@ -200,6 +218,56 @@
     "addButton_other": "{{count}} ticket ekle",
     "fieldTitle": "Başlık",
     "fieldLink": "Link",
-    "fieldNote": "Not"
+    "fieldNote": "Not",
+    "enable": "Ticket listesi kullan",
+    "enableHint": "Açınca masanın yanında ticket kuyruğu çıkar.",
+    "disableHint": "Kapatırsan ticket'lar silinmez, gizlenir; tekrar açınca geri gelir."
+  },
+  "avatar": {
+    "preview": "Seçtiğin karakter",
+    "newFace": "Başka yüz",
+    "prev": "Önceki {{part}}",
+    "next": "Sonraki {{part}}",
+    "hat": "Şapka",
+    "glasses": "Gözlük",
+    "beard": "Bıyık/sakal",
+    "outfit": "Kıyafet",
+    "hatOptions": {
+      "none": "Yok",
+      "cowboy": "Kovboy",
+      "fedora": "Fötr",
+      "tophat": "Silindir",
+      "visor": "Krupiye vizörü"
+    },
+    "glassesOptions": {
+      "none": "Yok",
+      "round": "Gözlük",
+      "sun": "Güneş gözlüğü",
+      "monocle": "Monokl"
+    },
+    "beardOptions": {
+      "none": "Yok",
+      "mustache": "Bıyık",
+      "beard": "Sakal",
+      "goatee": "Keçi sakalı"
+    },
+    "outfitOptions": {
+      "0": "Çuha yeşili",
+      "1": "Bordo",
+      "2": "Lacivert",
+      "3": "Hardal",
+      "4": "Mor",
+      "5": "Gri",
+      "6": "Turuncu",
+      "7": "Turkuaz"
+    }
+  },
+  "session": {
+    "title": "Oturum geçmişi",
+    "untitled": "Konusuz tur"
+  },
+  "emoji": {
+    "title": "Masaya at",
+    "throw": "Masaya {{emoji}} at"
   }
 }

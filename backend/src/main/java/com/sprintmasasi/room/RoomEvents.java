@@ -17,6 +17,12 @@ public interface RoomEvents {
     /** Deste değişti, mevcut turun oyları sıfırlandı (bilgilendirme için). */
     void deckChanged(String code, String deckId);
 
+    /** Krupiye oy vermeyen birini dürttü (koltuğu kısa titrer). */
+    void nudged(String code, String participantId);
+
+    /** Biri masaya emoji fırlattı (saklanmaz, yalnızca anlık). */
+    void emoji(String code, String participantId, String emoji);
+
     void participantJoined(String code, String participantId);
 
     void participantLeft(String code, String participantId);

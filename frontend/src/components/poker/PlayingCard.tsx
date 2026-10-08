@@ -1,9 +1,12 @@
 import { motion } from 'framer-motion';
+import { CardBack, CardFace } from './CardFace';
 import styles from './PlayingCard.module.css';
 
 interface Props {
   /** Ön yüzde yazacak değer; kapalı kartta gösterilmez. */
   value?: string;
+  /** Destedeki sırası (sembol için). */
+  index?: number;
   faceUp: boolean;
   size?: 'sm' | 'md';
   highlight?: 'low' | 'high';
@@ -11,10 +14,10 @@ interface Props {
 }
 
 /**
- * İskambil hissi veren kart. faceUp değişince Y ekseninde çevrilir (flip).
+ * Masadaki iskambil kartı. faceUp değişince Y ekseninde çevrilir (flip).
  * Hareketi azalt ayarında MotionConfig dönüşü anında yapar.
  */
-export function PlayingCard({ value, faceUp, size = 'sm', highlight, dimmed }: Props) {
+export function PlayingCard({ value, index = 0, faceUp, size = 'sm', highlight, dimmed }: Props) {
   const classes = [styles.card, styles[size], highlight ? styles[highlight] : '', dimmed ? styles.dimmed : '']
     .filter(Boolean)
     .join(' ');
@@ -26,9 +29,11 @@ export function PlayingCard({ value, faceUp, size = 'sm', highlight, dimmed }: P
         animate={{ rotateY: faceUp ? 180 : 0 }}
         transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
       >
-        <div className={`${styles.face} ${styles.back}`} aria-hidden />
-        <div className={`${styles.face} ${styles.front}`}>
-          <span className={styles.value}>{faceUp ? value : ''}</span>
+        <div className={`${styles.side} ${styles.backSide}`} aria-hidden>
+          <CardBack />
+        </div>
+        <div className={`${styles.side} ${styles.frontSide}`}>
+          {faceUp && value !== undefined && <CardFace value={value} index={index} compact={size === 'sm'} />}
         </div>
       </motion.div>
     </div>

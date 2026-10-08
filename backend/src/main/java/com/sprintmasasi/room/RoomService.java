@@ -70,6 +70,11 @@ public class RoomService {
 
     public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
                                    String clientIp) {
+        return create(rawName, rawDeck, customCards, rawPassword, false, clientIp);
+    }
+
+    public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
+                                   boolean ticketsEnabled, String clientIp) {
         if (!roomCreation.tryAcquire(clientIp)) {
             throw new RoomException(ErrorCode.RATE_LIMITED);
         }
@@ -80,9 +85,12 @@ public class RoomService {
         String claim = ids.token();
         // Çakışma olasılığı çok düşük ama yine de yeni kod dene.
         for (int attempt = 0; attempt < 10; attempt++) {
-            Room room = new Room(ids.roomCode(), name, deck, hash, claim, clock.instant());
+            Room room = new Room(ids.roomCode(), name, deck, hash, claim, ticketsEnabled, clock.instant());
             if (repository.saveIfAbsent(room)) {
                 stats.roomCreated();
+                if (ticketsEnabled) {
+                    stats.ticketsEnabled(room.code());
+                }
                 log.info("event=room.created room={}", room.code());
                 return new CreateRoomResult(room.code(), claim);
             }
@@ -327,14 +335,16 @@ public class RoomService {
                 .sorted(Comparator.comparingLong(Participant::joinOrder))
                 .map(p -> new ParticipantView(p.id(), p.nickname(), p.avatar(), p.moderator(), p.observer(), p.online()))
                 .toList();
-        List<TicketView> tickets = room.tickets().stream()
+        // Ticket listesi kapalıyken ticket'lar sunucuda saklanır ama istemciye gitmez.
+        List<TicketView> tickets = !room.ticketsEnabled() ? List.of() : room.tickets().stream()
                 .map(t -> new TicketView(t.id(), t.title(), t.link(), t.note(), t.status().name(), t.finalEstimate(),
                         List.copyOf(t.history())))
                 .toList();
         Deck custom = room.customDeck();
         return new RoomState(room.code(), room.name(), room.deckId(), room.deck().cards(),
                 custom == null ? null : custom.cards(), room.passwordProtected(), props.maxParticipants(), people,
-                tickets, room.currentTicketId(), roundView(room), timerView(room));
+                room.ticketsEnabled(), tickets, room.currentTicketId(), roundView(room), timerView(room),
+                List.copyOf(room.sessionHistory()));
     }
 
     /**
@@ -345,10 +355,10 @@ public class RoomService {
         PokerRound round = room.round();
         List<String> votedIds = List.copyOf(round.votes().keySet());
         if (round.isVoting()) {
-            return new RoundView(round.id(), round.number(), round.ticketId(), round.state().name(), votedIds,
-                    null, null, null);
+            return new RoundView(round.id(), round.number(), round.ticketId(), round.topic(), round.state().name(),
+                    votedIds, null, null, null);
         }
-        return new RoundView(round.id(), round.number(), round.ticketId(), round.state().name(), votedIds,
+        return new RoundView(round.id(), round.number(), round.ticketId(), round.topic(), round.state().name(), votedIds,
                 voteViews(room, round), statistics(room.deck(), round), round.finalEstimate());
     }
 
