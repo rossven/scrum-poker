@@ -18,6 +18,8 @@ public enum ErrorCode {
     WRONG_PHASE(409),
     /** Oy vermiş kişi tur bitmeden gözlemciye geçemez. */
     ALREADY_VOTED(409),
+    /** Hiç oy yokken kartlar açılamaz. */
+    NO_VOTES(409),
     TICKET_LIMIT(409),
     /** Özellik bu odada kapalı (ör. ticket listesi kapalıyken ticket.* niyetleri). */
     FEATURE_DISABLED(409),

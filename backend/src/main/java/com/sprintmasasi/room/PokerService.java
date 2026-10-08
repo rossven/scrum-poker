@@ -89,6 +89,9 @@ public class PokerService {
             if (!room.round().isVoting()) {
                 throw new RoomException(ErrorCode.WRONG_PHASE);
             }
+            if (room.round().votes().isEmpty()) {
+                throw new RoomException(ErrorCode.NO_VOTES);
+            }
             room.round().reveal();
             room.touch(clock.instant());
         });

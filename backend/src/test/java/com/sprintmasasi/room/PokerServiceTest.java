@@ -135,9 +135,21 @@ class PokerServiceTest {
     // ---------------------------------------------------------------- kurallar
 
     @Test
+    void cannotRevealWithoutAnyVote() {
+        assertThatThrownBy(() -> poker.reveal(code, mod.participantId())).extracting("code")
+                .isEqualTo(ErrorCode.NO_VOTES);
+        assertThat(state().round().state()).isEqualTo("VOTING");
+
+        poker.vote(code, ali.participantId(), "5");
+        poker.reveal(code, mod.participantId());
+        assertThat(state().round().state()).isEqualTo("REVEALED");
+    }
+
+    @Test
     void cannotVoteAfterRevealOrWithCardNotInDeck() {
         assertThatThrownBy(() -> poker.vote(code, ali.participantId(), "4")).extracting("code")
                 .isEqualTo(ErrorCode.INVALID_INPUT);
+        poker.vote(code, ali.participantId(), "3");
         poker.reveal(code, mod.participantId());
         assertThatThrownBy(() -> poker.vote(code, ali.participantId(), "5")).extracting("code")
                 .isEqualTo(ErrorCode.WRONG_PHASE);
@@ -246,6 +258,7 @@ class PokerServiceTest {
         assertThatThrownBy(() -> poker.finalizeEstimate(code, mod.participantId(), "5")).extracting("code")
                 .isEqualTo(ErrorCode.WRONG_PHASE); // yeni ticket yeni turla geldi, açılmadı
         poker.selectTicket(code, mod.participantId(), state().tickets().getFirst().id());
+        poker.vote(code, ali.participantId(), "3");
         poker.reveal(code, mod.participantId());
         assertThatThrownBy(() -> poker.finalizeEstimate(code, mod.participantId(), "?")).extracting("code")
                 .isEqualTo(ErrorCode.INVALID_INPUT);
@@ -311,10 +324,12 @@ class PokerServiceTest {
     void nextSkipsEstimatedTickets() {
         poker.addTickets(code, mod.participantId(), List.of(new NewTicket("A", null, null),
                 new NewTicket("B", null, null)));
+        poker.vote(code, ali.participantId(), "3");
         poker.reveal(code, mod.participantId());
         poker.finalizeEstimate(code, mod.participantId(), "3");
         poker.nextTicket(code, mod.participantId());
         assertThat(state().currentTicketId()).isEqualTo(state().tickets().get(1).id());
+        poker.vote(code, ali.participantId(), "3");
         poker.reveal(code, mod.participantId());
         poker.finalizeEstimate(code, mod.participantId(), "5");
         poker.nextTicket(code, mod.participantId());

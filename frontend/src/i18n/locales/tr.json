@@ -129,7 +129,8 @@
     "WRONG_PHASE": "Bu şu an yapılamaz (tur durumu değişti).",
     "ALREADY_VOTED": "Oy verdin; izleyiciye geçmek için önce oyunu geri al.",
     "TICKET_LIMIT": "Bir odada en fazla 100 ticket olabilir.",
-    "FEATURE_DISABLED": "Ticket listesi bu odada kapalı."
+    "FEATURE_DISABLED": "Ticket listesi bu odada kapalı.",
+    "NO_VOTES": "Henüz kimse oy vermedi, kartlar açılamaz."
   },
   "sound": {
     "label": "Ses",
@@ -147,6 +148,7 @@
     "resetVotes": "Oyları sıfırla",
     "nextTicket": "Sıradaki ticket",
     "everyoneVoted": "Herkes oy verdi",
+    "noVotesYet": "Kartları açmak için en az bir oy gerekli",
     "votedCount": "{{voted}}/{{total}} kişi oy verdi",
     "revealed": "Kartlar açıldı",
     "revealedAverage": "Ortalama {{value}}",

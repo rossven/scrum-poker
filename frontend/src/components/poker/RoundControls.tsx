@@ -40,7 +40,8 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
             type="button"
             className={`btn ${allVoted ? 'btn-primary' : ''}`}
             onClick={reveal}
-            title={allVoted ? t('poker.everyoneVoted') : undefined}
+            disabled={round.votedIds.length === 0}
+            title={round.votedIds.length === 0 ? t('poker.noVotesYet') : allVoted ? t('poker.everyoneVoted') : undefined}
           >
             🂠 {t('poker.reveal')}
           </button>

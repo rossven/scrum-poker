@@ -47,6 +47,7 @@ Hata yanıtı: `{ "error": "KOD" }`
 | `ALREADY_VOTED` | 409 | Açık turda oy vermiş kişi izleyiciye geçemez |
 | `TICKET_LIMIT` | 409 | Odada en fazla 100 ticket |
 | `FEATURE_DISABLED` | 409 | Özellik bu odada kapalı (ticket listesi kapalıyken `ticket.*`) |
+| `NO_VOTES` | 409 | Hiç oy yokken `poker.reveal` |
 | `TOO_MANY_ATTEMPTS` | 429 | IP + oda başına yanlış şifre sınırı |
 | `RATE_LIMITED` | 429 | Hız sınırı |
 
@@ -82,7 +83,7 @@ Başka bir odanın konusuna abone olma isteği reddedilir.
 | `room.leave` | `{}` | herkes | Koltuk silinir. Moderatör kalmazsa en eski bağlı kişiye devredilir. |
 | `room.close` | `{}` | moderatör | Herkese `room.closed`, oda silinir |
 | `poker.vote` | `{ card }` | katılımcı (gözlemci değil) | Oy ver/değiştir. `card: null` oyu geri çeker. Yalnızca `VOTING`. Kişiye `poker.your_vote` |
-| `poker.reveal` | `{}` | moderatör | Tur `REVEALED` olur, oylar ve istatistik herkese gider |
+| `poker.reveal` | `{}` | moderatör | En az bir oy gerekir (yoksa `NO_VOTES`). Tur `REVEALED` olur, oylar ve istatistik herkese gider |
 | `poker.new_round` | `{}` | moderatör | Aynı ticket/konu için yeni tur. Açılmış tur geçmişe yazılır. Finallenmiş ticket'sız turdan sonra konusu boş 1. tur başlar |
 | `poker.finalize` | `{ value }` | moderatör | `REVEALED` turda final tahmin (destedeki bir kart, `?`/`☕` olamaz). Masada ticket varsa `ESTIMATED` olur; yoksa final tura ve oturum geçmişine yazılır |
 | `poker.set_topic` | `{ topic }` | moderatör | Ticket'sız turun konusu ("Ne oylanıyor?"), en fazla 120 karakter; boş metin konuyu siler. Masada ticket varsa `WRONG_PHASE` |
