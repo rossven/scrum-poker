@@ -197,7 +197,7 @@ Oyun mimarisi: her oyun, ortak bir `TieBreakerGame` arayüzünü gerçekleştirs
 - Aynı odadaki herkes aynı sonucu aynı anda görür (sunucu zaman damgasıyla senkron başlatır).
 
 ### Masadan atma (moderatör yetkisi)
-- Moderatör (krupiye), oturuma katılan herhangi bir kişiyi (katılımcı veya gözlemci) masadan **atabilir**. Kendini atamaz. Koltuk menüsünde ve izleyiciler listesinde "Masadan at" seçeneği çıkar; yanlışlıkla basılmasın diye onay sorulur.
+- Moderatör (krupiye), oturuma katılan herhangi bir kişiyi (katılımcı veya gözlemci) masadan **atabilir**. Kendini atamaz. Bu yetki yalnızca krupiyededir ve **oylama yoktur**: krupiye tek başına karar verir. Koltuk menüsünde ve izleyiciler listesinde "Masadan at" seçeneği çıkar; yanlış tıklamaya karşı yalnızca krupiyenin kendi ekranında "Emin misin?" sorulur.
 - Yetki kontrolü sunucuda yapılır: moderatör olmayan birinin atma isteği reddedilir.
 - Atılan kişinin oturum token'ı geçersiz olur, bağlantısı kapanır ve ekranında "Krupiye seni masadan çıkardı" mesajı görünür. Odadaki herkes "X masadan çıkarıldı" bildirimini görür.
 - Atılan kişinin açılmamış oyu turdan silinir. Aday listesindeyse veya gönüllüyse oradan da çıkarılır. Daha önce yapılmış atamalar ve geçmiş değişmez.
