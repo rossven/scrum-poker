@@ -84,3 +84,8 @@
   .mini { width: 40px; height: 57px; --corner: 12px; }
   .dist { gap: 8px 16px; }
 }
+
+/* Çok oy olunca yalnızca dağılım sütunu kendi içinde kayar; final tahmin ve kaydet düğmesi hep görünür. */
+@media (min-width: 961px) {
+  .col:first-child { max-height: 25vh; overflow-y: auto; align-self: start; }
+}

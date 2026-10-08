@@ -30,13 +30,41 @@ function avatarSize(n: number, narrow: boolean) {
 }
 
 /** i = 0 masanın altında (kart elinin hemen üstü), diğerleri saat yönünde dizilir. */
-function seatPoint(i: number, n: number, narrow: boolean) {
+function ellipsePoint(i: number, n: number, narrow: boolean) {
   const twoRows = n > 16;
   const angle = Math.PI / 2 + (i / n) * Math.PI * 2;
   const outer = !twoRows || i % 2 === 0;
-  const rx = (outer ? 46 : 35) - (narrow ? 8 : 0);
-  const ry = outer ? 43 : 31;
+  const rx = (outer ? 42 : 32) - (narrow ? 6 : 0);
+  const ry = outer ? 39 : 28;
   return { x: 50 + rx * Math.cos(angle), y: 45 + ry * Math.sin(angle) };
+}
+
+/**
+ * 6-16 kişide koltuklar masanın alt ve üst kenarında sıralanır, yanlarda birer koltuk durur:
+ * oval üzerinde eşit açıyla dizilince yan koltuklar üst üste biniyordu. Sıra saat yönünde, sen altta ortadasın.
+ */
+function stadiumPoints(n: number, narrow: boolean) {
+  const m = n - 2;
+  let bottom = Math.ceil(m / 2);
+  if (bottom % 2 === 0) bottom += 1; // sen alt sırada tam ortada oturursun
+  const top = m - bottom;
+  const row = (count: number, y: number) => {
+    const dx = count > 1 ? Math.min(narrow ? 24 : 21, 66 / (count - 1)) : 0;
+    return Array.from({ length: count }, (_, k) => ({ x: 50 + (k - (count - 1) / 2) * dx, y }));
+  };
+  const bottomRow = row(bottom, 84);
+  const topRow = row(top, 6);
+  const sideX = narrow ? 9 : 12;
+  const half = (bottom - 1) / 2;
+  const left = bottomRow.slice(0, half + 1).reverse(); // ortadan sola
+  const right = bottomRow.slice(half + 1).reverse(); // sağ uçtan ortaya
+  return [...left, { x: sideX, y: 38 }, ...topRow, { x: 100 - sideX, y: 38 }, ...right];
+}
+
+function layoutPoints(n: number, narrow: boolean) {
+  return n >= 6 && n <= 16
+    ? stadiumPoints(n, narrow)
+    : Array.from({ length: n }, (_, i) => ellipsePoint(i, n, narrow));
 }
 
 const pct = (p: { x: number; y: number }) => ({ left: `${p.x}%`, top: `${p.y}%` });
@@ -68,7 +96,8 @@ export function TableView({ people, youId, renderCard, renderActions, renderStat
   const [fx, setFx] = useState<Fx[]>([]);
   // Sen her zaman masanın altında, kendi kart elinin yanında oturursun.
   const youIndex = Math.max(0, people.findIndex((p) => p.id === youId));
-  const seatAt = (i: number) => seatPoint((i - youIndex + people.length) % people.length, people.length, narrow);
+  const points = layoutPoints(people.length, narrow);
+  const seatAt = (i: number) => points[(i - youIndex + people.length) % people.length];
   const dealerIndex = people.findIndex((p) => p.moderator);
   const dealerPoint = dealerIndex >= 0 ? seatAt(dealerIndex) : { x: 50, y: 50 };
 
