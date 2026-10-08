@@ -22,4 +22,6 @@ RUN useradd --system --uid 1001 app
 COPY --from=backend /app/backend/build/libs/sprintmasasi-*.jar /app/app.jar
 USER app
 EXPOSE 8080
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]
+# Render ücretsiz plan 512 MB: heap %55'te kalır, JVM'in kendi ek yüküne yer açılır.
+# %75'te toplam bellek sınırı aşılıp süreç öldürülüyor, bellekteki odalar kayboluyordu.
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=55", "-jar", "/app/app.jar"]
