@@ -26,7 +26,8 @@ public class AssignmentService {
 
     private static final Logger log = LoggerFactory.getLogger(AssignmentService.class);
 
-    public static final int DEFAULT_VOLUNTEER_SECONDS = 10;
+    /** Oda ayarının varsayılanı (tasarım: 20 sn; 10, 30, 60 ya da süresiz seçilebilir). */
+    public static final int DEFAULT_VOLUNTEER_SECONDS = 20;
     public static final int MIN_VOLUNTEER_SECONDS = 10;
     public static final int MAX_VOLUNTEER_SECONDS = 300;
     /** Sonuç herkese ulaşsın diye oyun bu kadar sonra başlar; istemciler aynı anda başlatır. */
@@ -53,16 +54,17 @@ public class AssignmentService {
 
     /**
      * Krupiye "Kim alacak?" adımını başlatır (masadaki ticket ya da serbest turun konusu için).
-     * seconds: gönüllü turu süresi; 0 = süre sınırı yok (krupiye kapatır). Süren bir akış varsa yerine geçer.
+     * seconds: gönüllü turu süresi; 0 = süre sınırı yok (krupiye kapatır); null = odanın ayarı.
+     * Süren bir akış varsa yerine geçer.
      */
     public void start(String code, String actorId, Integer rawSeconds) {
-        int seconds = rawSeconds == null ? DEFAULT_VOLUNTEER_SECONDS : rawSeconds;
-        if (seconds != 0 && (seconds < MIN_VOLUNTEER_SECONDS || seconds > MAX_VOLUNTEER_SECONDS)) {
-            throw new RoomException(ErrorCode.INVALID_INPUT);
+        if (rawSeconds != null) {
+            validSeconds(rawSeconds);
         }
         Room room = rooms.require(code);
         String assignmentId = room.withLock(() -> {
             RoomService.requireModerator(room, actorId);
+            int seconds = rawSeconds == null ? room.volunteerSeconds() : rawSeconds;
             String ticketId = room.round().ticketId();
             String title = room.currentTicket().map(Ticket::title).orElse(room.round().topic());
             var a = new Assignment(ids.ticketId(), ticketId, title, seconds, clock.instant());
@@ -70,16 +72,62 @@ public class AssignmentService {
             room.touch(clock.instant());
             return a.id();
         });
-        if (seconds > 0) {
-            scheduler.schedule(() -> closeVolunteeringIfDue(room.code(), assignmentId),
-                    clock.instant().plusSeconds(seconds));
-        }
+        scheduleClose(room);
         log.info("event=assign.start room={}", room.code());
         rooms.broadcast(room);
     }
 
+    /**
+     * Gönüllü süresi oda ayarı (0 = süresiz). Gönüllü turu sürüyorsa onun bitişi de başlangıçtan itibaren
+     * yeniden hesaplanır; yeni süre çoktan geçtiyse tur hemen kapanır.
+     */
+    public void setVolunteerSeconds(String code, String actorId, int seconds) {
+        validSeconds(seconds);
+        Room room = rooms.require(code);
+        room.withLock(() -> {
+            RoomService.requireModerator(room, actorId);
+            room.setVolunteerSeconds(seconds);
+            Assignment a = room.assignment();
+            if (a != null && a.phase() == Assignment.Phase.VOLUNTEERING) {
+                a.retime(seconds);
+                if (a.volunteerEndsAt() != null && !clock.instant().isBefore(a.volunteerEndsAt())) {
+                    finishVolunteering(room, a);
+                }
+            }
+            room.touch(clock.instant());
+        });
+        scheduleClose(room);
+        rooms.broadcast(room);
+    }
+
+    private static void validSeconds(int seconds) {
+        if (seconds != 0 && (seconds < MIN_VOLUNTEER_SECONDS || seconds > MAX_VOLUNTEER_SECONDS)) {
+            throw new RoomException(ErrorCode.INVALID_INPUT);
+        }
+    }
+
+    /** Süren gönüllü turunun bitişine kapanış görevi kurar (eski görevler bitiş değiştiyse boşa çalışır). */
+    private void scheduleClose(Room room) {
+        var due = room.withLock(() -> {
+            Assignment a = room.assignment();
+            return a == null || a.phase() != Assignment.Phase.VOLUNTEERING || a.volunteerEndsAt() == null
+                    ? null : java.util.Map.entry(a.id(), a.volunteerEndsAt());
+        });
+        if (due != null) {
+            scheduler.schedule(() -> closeVolunteeringIfDue(room.code(), due.getKey()), due.getValue());
+        }
+    }
+
     /** "Ben alırım" (ya da vazgeç). Yalnızca gönüllü turunda, oy verebilen katılımcılar. */
     public void volunteer(String code, String actorId, boolean volunteer) {
+        volunteer(code, actorId, volunteer, false);
+    }
+
+    /**
+     * Gönüllü turunda kişinin kararı: "Ben alırım" (volunteer), "Pas" (pass) ya da ikisi de değil (vazgeç).
+     * İkisi birden seçilemez; gönüllülük pası ezer.
+     */
+    public void volunteer(String code, String actorId, boolean volunteer, boolean pass) {
         Room room = rooms.require(code);
         room.withLock(() -> {
             Participant me = room.participant(actorId).orElseThrow(() -> new RoomException(ErrorCode.FORBIDDEN));
@@ -89,8 +137,14 @@ public class AssignmentService {
             Assignment a = requirePhase(room, Assignment.Phase.VOLUNTEERING);
             if (volunteer) {
                 a.volunteers().add(actorId);
+                a.passes().remove(actorId);
             } else {
                 a.volunteers().remove(actorId);
+                if (pass) {
+                    a.passes().add(actorId);
+                } else {
+                    a.passes().remove(actorId);
+                }
             }
             room.touch(clock.instant());
         });

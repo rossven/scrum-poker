@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RoomController {
 
     public record CreateRoomRequest(String name, String deck, List<String> customDeck, String password,
-                                    boolean ticketsEnabled) {}
+                                    boolean ticketsEnabled, boolean autoReveal) {}
 
     /** takeover: aynı isimli çevrimdışı koltuk için yanıt (null = henüz sorulmadı; bkz. SEAT_TAKEOVER). */
     public record JoinRequest(String nickname, String avatar, boolean observer, String password, String token,
@@ -36,7 +36,7 @@ public class RoomController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateRoomResult create(@RequestBody CreateRoomRequest body, HttpServletRequest request) {
         return rooms.create(body.name(), body.deck(), body.customDeck(), body.password(), body.ticketsEnabled(),
-                ClientIp.of(request));
+                body.autoReveal(), ClientIp.of(request));
     }
 
     @GetMapping("/{code}")

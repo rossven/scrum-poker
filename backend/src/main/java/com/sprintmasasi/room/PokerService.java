@@ -57,6 +57,7 @@ public class PokerService {
     public void vote(String code, String actorId, String rawCard) {
         Room room = rooms.require(code);
         String card = rawCard == null || rawCard.isBlank() ? null : rawCard;
+        boolean[] autoRevealed = {false};
         YourVote echo = room.withLock(() -> {
             Participant me = room.participant(actorId).orElseThrow(() -> new RoomException(ErrorCode.FORBIDDEN));
             if (me.observer()) {
@@ -73,12 +74,47 @@ public class PokerService {
                     throw new RoomException(ErrorCode.INVALID_INPUT);
                 }
                 round.vote(actorId, new PokerRound.Vote(card, me.nickname(), me.avatar()));
+                if (room.autoReveal() && everyoneOnlineVoted(room)) {
+                    round.reveal();
+                    autoRevealed[0] = true;
+                }
             }
             room.touch(clock.instant());
             return new YourVote(round.id(), card);
         });
+        if (autoRevealed[0]) {
+            stats.pokerRoundRevealed();
+            log.info("event=poker.auto_reveal room={}", room.code());
+        }
         // Değer yalnızca oy verene gider; odaya sadece "kimler oy verdi" yayınlanır.
         events.yourVote(room.code(), actorId, echo);
+        rooms.broadcast(room);
+    }
+
+    /** Otomatik aç için: bağlı ve oy verebilen herkes oy verdi mi (oda kilidi altında). */
+    private static boolean everyoneOnlineVoted(Room room) {
+        List<Participant> voters = room.participantList().stream()
+                .filter(p -> !p.observer() && p.online())
+                .toList();
+        return !voters.isEmpty() && voters.stream().allMatch(p -> room.round().hasVoted(p.id()));
+    }
+
+    /** Otomatik aç oda ayarı (krupiye). Açılınca herkes zaten oy verdiyse kartlar hemen açılır. */
+    public void setAutoReveal(String code, String actorId, boolean enabled) {
+        Room room = rooms.require(code);
+        boolean revealed = room.withLock(() -> {
+            RoomService.requireModerator(room, actorId);
+            room.setAutoReveal(enabled);
+            room.touch(clock.instant());
+            if (enabled && room.round().isVoting() && !room.round().votes().isEmpty() && everyoneOnlineVoted(room)) {
+                room.round().reveal();
+                return true;
+            }
+            return false;
+        });
+        if (revealed) {
+            stats.pokerRoundRevealed();
+        }
         rooms.broadcast(room);
     }
 

@@ -1,24 +1,24 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomState } from '../../api/types';
 import { useRoomStore } from '../../store/roomStore';
 import { Icon } from '../Icon';
-import { TopicField } from './TopicField';
+import { Menu, MenuItem, MenuLabel } from '../Menu';
 import styles from './RoundControls.module.css';
 
 const TIMER_PRESETS = [60, 120, 300];
 const NUDGE_INTERVAL_MS = 30_000;
 
-/** Krupiyenin tur düğmeleri: aç, tekrar oyla / yeni tur, sıradaki ticket, bekleyenleri dürt, zamanlayıcı. */
-export function RoundControls({ room, allVoted, youId }: { room: RoomState; allVoted: boolean; youId: string | null }) {
+/**
+ * Krupiyenin araç çubuğu, masanın hemen altında: asıl işlem masanın ortasında ("Kartları aç"),
+ * burada küçük ve ikincil olanlar durur: dürt, tekrar oyla, Kim alacak?, "Daha fazla" menüsü.
+ */
+export function RoundControls({ room, youId, hasPending }: { room: RoomState; youId: string | null; hasPending: boolean }) {
   const { t } = useTranslation();
-  const { reveal, newRound, nextTicket, startTimer, stopTimer, nudge, startAssignment } = useRoomStore();
-  const [volunteerSeconds, setVolunteerSeconds] = useState(10);
+  const { newRound, nextTicket, startTimer, stopTimer, nudge, startAssignment } = useRoomStore();
   const round = room.round;
   const voting = round.state === 'VOTING';
   const freeFinalized = round.state === 'FINALIZED' && !round.ticketId;
-  const hasPending = room.ticketsEnabled
-    && room.tickets.some((tk) => tk.status === 'PENDING' && tk.id !== room.currentTicketId);
 
   // Oy vermemiş, bağlı katılımcılar (krupiye hariç). Sunucu kişi başına 30 sn sınırı uygular;
   // burada da hatırlanır ki düğme art arda basılınca hata yağmasın.
@@ -34,70 +34,46 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
       nudge(p.id);
     });
   };
+  const waitingNames = waiting.map((p) => p.nickname);
 
   return (
-    <div className={styles.bar}>
-      <span className={styles.tag} title={t('room.dealerButton')}>
-        <span className={styles.dealerChip} aria-hidden>D</span>
-        {t('poker.dealerTray')}
-      </span>
-      <div className={`${styles.group} ${styles.primary}`}>
-        {voting ? (
-          <button
-            type="button"
-            className={`btn ${allVoted ? 'btn-primary' : ''}`}
-            onClick={reveal}
-            disabled={round.votedIds.length === 0}
-            title={round.votedIds.length === 0 ? t('poker.noVotesYet') : allVoted ? t('poker.everyoneVoted') : undefined}
-          >
-            <Icon name="cards" /> {t('poker.reveal')}
-          </button>
-        ) : freeFinalized ? (
-          <button type="button" className="btn btn-primary" onClick={newRound}><Icon name="cards" /> {t('poker.newRound')}</button>
+    <div className={styles.bar} role="toolbar" aria-label={t('poker.dealerTray')}>
+      {voting && waiting.length > 0 && round.votedIds.length > 0 && (
+        <button type="button" className={styles.tool} onClick={nudgeWaiting}>
+          <Icon name="nudge" size={16} />
+          {t('poker.nudge')}
+          <small>{waitingNames.length > 2 ? `${waitingNames.slice(0, 2).join(', ')} +${waitingNames.length - 2}` : waitingNames.join(', ')}</small>
+        </button>
+      )}
+      {!voting && (
+        freeFinalized ? (
+          <button type="button" className={styles.tool} onClick={newRound}><Icon name="cards" size={16} />{t('poker.newRound')}</button>
         ) : (
-          <button type="button" className="btn" onClick={newRound}><Icon name="refresh" /> {t('poker.revote')}</button>
-        )}
+          <button type="button" className={styles.tool} onClick={newRound}><Icon name="refresh" size={16} />{t('poker.revote')}</button>
+        )
+      )}
+      {!room.assignment && (
+        <button type="button" className={styles.tool} onClick={() => startAssignment()}>
+          <Icon name="hand" size={16} />{t('assign.startButton')}
+        </button>
+      )}
+      <Menu label={t('poker.more')} align="end" triggerClassName={styles.tool}
+        trigger={<><Icon name="more" size={16} />{t('poker.more')}</>}>
         {voting && round.votedIds.length > 0 && (
-          <button type="button" className="btn btn-ghost btn-small" onClick={newRound}><Icon name="undo" size={16} /> {t('poker.resetVotes')}</button>
+          <MenuItem icon="undo" onClick={newRound}>{t('poker.resetVotes')}</MenuItem>
         )}
-        {voting && waiting.length > 0 && round.votedIds.length > 0 && (
-          <button type="button" className="btn btn-ghost btn-small" onClick={nudgeWaiting}><Icon name="nudge" size={16} /> {t('poker.nudgeAll')}</button>
-        )}
-        {!room.assignment && (
-          <span className={styles.assign}>
-            <button type="button" className={`btn ${voting ? '' : 'btn-primary'} ${styles.assignButton}`}
-              onClick={() => startAssignment(volunteerSeconds)}>
-              <Icon name="hand" /> {t('assign.startButton')}
-            </button>
-            <select className={styles.assignSelect} aria-label={t('assign.volunteerTime')}
-              value={volunteerSeconds} onChange={(e) => setVolunteerSeconds(Number(e.target.value))}>
-              {[10, 20, 30, 60, 0].map((s) => (
-                <option key={s} value={s}>{s ? t('assign.seconds', { count: s }) : t('assign.noLimit')}</option>
-              ))}
-            </select>
-          </span>
-        )}
-        {hasPending && (
-          <button type="button" className={`btn ${round.state === 'FINALIZED' ? 'btn-primary' : 'btn-ghost'}`} onClick={nextTicket}>
-            {t('poker.nextTicket')} <Icon name="arrowRight" />
-          </button>
-        )}
-      </div>
-      {!round.ticketId && <TopicField topic={round.topic} />}
-      <div className={`${styles.group} ${styles.timer}`} aria-label={t('poker.timer')}>
+        {hasPending && <MenuItem icon="arrowRight" onClick={nextTicket}>{t('poker.nextTicket')}</MenuItem>}
         {room.timer ? (
-          <button type="button" className="btn btn-ghost btn-small" onClick={stopTimer}><Icon name="timer" size={16} /> {t('poker.timerStop')}</button>
+          <MenuItem icon="timer" onClick={stopTimer}>{t('poker.timerStop')}</MenuItem>
         ) : (
           <>
-            <span className={styles.label}><Icon name="timer" size={16} /> {t('poker.timer')}</span>
+            <MenuLabel>{t('poker.timer')}</MenuLabel>
             {TIMER_PRESETS.map((s) => (
-              <button key={s} type="button" className="btn btn-ghost btn-small" onClick={() => startTimer(s)}>
-                {t('poker.minutes', { count: s / 60 })}
-              </button>
+              <MenuItem key={s} icon="timer" onClick={() => startTimer(s)}>{t('poker.minutes', { count: s / 60 })}</MenuItem>
             ))}
           </>
         )}
-      </div>
+      </Menu>
     </div>
   );
 }

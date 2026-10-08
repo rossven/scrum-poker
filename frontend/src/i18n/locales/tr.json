@@ -8,7 +8,8 @@
     "cancel": "Vazgeç",
     "save": "Kaydet",
     "loading": "Yükleniyor…",
-    "optional": "opsiyonel"
+    "optional": "opsiyonel",
+    "close": "Kapat"
   },
   "home": {
     "create": "Oda oluştur",
@@ -40,7 +41,8 @@
     "password": "Şifre",
     "passwordHint": "Boş bırakırsan link olan herkes girebilir.",
     "submit": "Odayı oluştur",
-    "ticketsHint": "Kapalıyken masada serbest tur oynanır; krupiye istediği an ayarlardan açabilir."
+    "ticketsHint": "Kapalıyken masada serbest tur oynanır; krupiye istediği an ayarlardan açabilir.",
+    "advanced": "Gelişmiş: şifre"
   },
   "decks": {
     "modified-fibonacci": "Modifiye Fibonacci",
@@ -111,7 +113,13 @@
     "kick": "Masadan at",
     "kickConfirm": "{{name}} masadan çıkarılsın mı? Açılmamış oyu silinir; link ile yeniden katılabilir.",
     "kickedToast": "{{name}} masadan çıkarıldı",
-    "topic": "Konu"
+    "topic": "Konu",
+    "copy": "Kopyala",
+    "invite": "Davet",
+    "shareLink": "Daveti paylaş",
+    "menu": "Daha fazla",
+    "countWaiting": "{{count}} kişi · {{waiting}} bekleniyor",
+    "ticketsAndHistory": "Kuyruk ve geçmiş"
   },
   "status": {
     "connecting": "Bağlanıyor…",
@@ -226,7 +234,29 @@
     "joker": "Joker",
     "break": "Mola",
     "dealerTray": "Krupiye masası",
-    "topicOptional": "Konu (isteğe bağlı)"
+    "topicOptional": "Konu (isteğe bağlı)",
+    "cardHalf": "Yarım kart",
+    "cardUnsure": "Emin değilim kartı",
+    "cardBreak": "Mola kartı",
+    "consensusTitle": "Uzlaşı",
+    "consensusFull": "Tam",
+    "consensusScattered": "Dağınık",
+    "countedOf": "{{counted}} oy sayıldı, {{rest}} sayılmadı",
+    "dealerPicksFinal": "Final tahmini krupiye seçer.",
+    "discussTip": "En yüksek {{high}}, en düşük {{low}} verdi. Gerekçelerini dinleyip tekrar oylayın.",
+    "distinctValues_one": "{{count}} farklı değer",
+    "distinctValues_other": "{{count}} farklı değer",
+    "more": "Daha fazla",
+    "otherValue": "Diğer",
+    "saveAndNext": "{{value}} kaydet, sıradakine geç",
+    "saveValue": "{{value}} olarak kaydet",
+    "suggestHint": "Medyan {{median}}, ortalama {{average}}",
+    "suggestionTitle": "Öneri",
+    "voteN_one": "{{count}} oy",
+    "voteN_other": "{{count}} oy",
+    "voteTotal_one": "{{count}} oy",
+    "voteTotal_other": "{{count}} oy",
+    "waitingDealer": "Krupiye bekleniyor…"
   },
   "tickets": {
     "title": "Ticket'lar",
@@ -255,7 +285,10 @@
     "enable": "Ticket listesi kullan",
     "enableHint": "Açınca masanın yanında ticket kuyruğu çıkar.",
     "disableHint": "Kapatırsan ticket'lar silinmez, gizlenir; tekrar açınca geri gelir.",
-    "assignee": "Atanan: {{name}}"
+    "assignee": "Atanan: {{name}}",
+    "addOrPaste": "Ekle ya da yapıştır",
+    "openLink": "Linki aç",
+    "rowMenu": "{{title}} işlemleri"
   },
   "avatar": {
     "preview": "Seçtiğin karakter",
@@ -302,7 +335,8 @@
   },
   "emoji": {
     "title": "Masaya at",
-    "throw": "Masaya {{emoji}} at"
+    "throw": "Masaya {{emoji}} at",
+    "react": "Tepki"
   },
   "assign": {
     "title": "Kim alacak?",
@@ -347,6 +381,87 @@
     "undo": "Geri al, yeniden oyna",
     "history": "Atama geçmişi",
     "amongN": "{{count}} aday",
-    "undone": "geri alındı"
+    "undone": "geri alındı",
+    "steps": {
+      "volunteer": "Gönüllü",
+      "candidates": "Adaylar",
+      "game": "Oyun",
+      "result": "Sonuç"
+    },
+    "volunteerTitle": "Kim alacak?",
+    "volunteerSub": "İşi almak isteyen “Ben alırım” desin; istemeyen pas geçebilir.",
+    "remaining": "kaldı",
+    "pass": "Pas",
+    "unpass": "Pasımı geri al",
+    "fairNote": "Dönüşümlü adalet açık: daha önce alanın şansı yarıya iner.",
+    "atTable": "Masada ({{count}})",
+    "tagVolunteer": "Ben alırım",
+    "tagPass": "Pas",
+    "tagThinking": "düşünüyor",
+    "finishEarly": "Süreyi bitir",
+    "singleCandidate": "{{name}} alıyor",
+    "directSub": "Tek aday olduğu için oyun oynanmayacak.",
+    "candidatesVolunteers_one": "{{count}} gönüllü var",
+    "candidatesVolunteers_other": "{{count}} gönüllü var",
+    "candidatesNobody_one": "Gönüllü yok, {{count}} aday",
+    "candidatesNobody_other": "Gönüllü yok, {{count}} aday",
+    "namesMore": "{{names}} ve {{count}} kişi daha",
+    "areCandidates": "aday.",
+    "fairSub": "Daha önce iş alanların şansı düşük.",
+    "equalSub": "Herkesin şansı eşit.",
+    "winsNone": "bu oturumda hiç almadı",
+    "winsN_one": "bu oturumda {{count}} kez aldı",
+    "winsN_other": "bu oturumda {{count}} kez aldı",
+    "addCandidate": "Aday ekle",
+    "removeCandidate": "{{name}} adaylıktan çıkar",
+    "serverDecides": "Kazananı sunucu belirler; kimse oyunu etkileyemez.",
+    "gameNote": {
+      "horse": "Adaylar koşar, ilk bitiren alır.",
+      "wheel": "Çark döner, ok kimde durursa o alır."
+    },
+    "startGame": {
+      "horse": "Yarışı başlat",
+      "wheel": "Çarkı çevir"
+    },
+    "watchTogether": "Herkes aynı anda izler.",
+    "raceStarted": "Yarış başladı!",
+    "raceSub": "{{names}} koşuyor.",
+    "wheelSpinning": "Çark dönüyor…",
+    "wheelSub": "Ok kimde durursa o alır.",
+    "sameRace": "Herkes aynı yarışı aynı anda görür.",
+    "wheelFoot": "Çarkta: {{names}}",
+    "skip": "Geç",
+    "leading": "{{name}} önde",
+    "lane": "{{n}}. kulvar: {{name}}",
+    "nextHalf": "Bir sonraki sefer şansı yarıya iner.",
+    "again": "Geri al, yeniden oyna",
+    "assignAndNext": "Ata ve sıradakine geç",
+    "dealerContinues": "Krupiye devam edecek…"
+  },
+  "a11y": {
+    "votes": "{{voted}} / {{total}} kişi oy verdi",
+    "revealed": "Kartlar açıldı"
+  },
+  "seat": {
+    "thinking": "düşünüyor",
+    "voted": "oy verdi"
+  },
+  "sidebar": {
+    "label": "Kuyruk ve geçmiş",
+    "queue": "Kuyruk",
+    "history": "Geçmiş",
+    "ticketRounds": "Ticket turları",
+    "emptyHistory": "Henüz geçmiş yok."
+  },
+  "settings": {
+    "autoReveal": "Otomatik aç",
+    "autoRevealHint": "Herkes oy verince kartlar kendiliğinden açılır.",
+    "fairHint": "Daha önce iş alanların şansı her seferinde yarıya iner.",
+    "volunteerHint": "Kim alacak? açıldığında gönüllülerin bekleneceği süre (saniye).",
+    "ticketsOffHint": "Açınca masanın yanında ticket kuyruğu çıkar.",
+    "password": "Oda şifresi",
+    "passwordHint": "Boş bırakırsan değişmez.",
+    "passwordSet": "Şifre var; yeni yazarsan değişir.",
+    "closeHint": "Oda herkes için kapanır ve silinir."
   }
 }

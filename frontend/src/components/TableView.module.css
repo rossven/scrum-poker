@@ -1,33 +1,27 @@
-.wrap { width: 100%; }
-/* Masa yüksekliği ekran boyuna bağlı: dizüstü ekranda masa + kart eli aynı anda görünsün.
-   Üst/alt boşluk yalnızca koltukların masadan taşan yarısı kadar, kart eli masanın hemen altında kalsın. */
-.arena { position: relative; width: 100%; height: clamp(430px, 58vh, 640px); margin: 50px auto 46px; }
+/* Arena: masa + etrafındaki koltuklar. Koltuk konumları TableView.tsx'te elips üzerinde yüzde olarak hesaplanır. */
+.wrap { width: 100%; padding: 74px 0 40px; }
+.arena { position: relative; width: min(100%, 940px); height: clamp(300px, 40vh, 420px); margin: 0 auto; }
 
-/* Masa: koyu ahşap kenar (rail), ortadan aydınlanan yeşil çuha. */
+/* Masa: düz çuha (ortadan hafif aydınlık), ince koyu halka. Ahşap doku ve dikiş çizgisi yok. */
 .table {
-  /* Üst/alt koltuk (kart + avatar + isim) masanın kenarına oturacak kadar pay bırakılır. */
-  position: absolute; inset: calc(3% + 84px) 22%; border-radius: 50%;
-  padding: 14px;
-  background:
-    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.025) 0 3px, transparent 3px 9px),
-    linear-gradient(160deg, color-mix(in srgb, var(--rail) 80%, #a0603a), var(--rail) 45%, var(--rail-dark));
-  box-shadow: 0 0 0 2px var(--rail-dark), 0 22px 46px rgba(0, 0, 0, 0.3), inset 0 2px 3px rgba(255, 255, 255, 0.14);
+  position: absolute; inset: 19% 20.2% 37.4%; border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 35%, var(--felt-light), var(--felt-dark) 78%);
+  box-shadow: 0 0 0 7px var(--ring), 0 0 0 8px rgba(255, 255, 255, 0.05), 0 24px 50px rgba(8, 40, 25, 0.28), inset 0 2px 0 rgba(255, 255, 255, 0.12);
 }
 .felt {
-  position: relative; width: 100%; height: 100%; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; text-align: center; padding: 6%;
+  position: relative; width: 100%; height: 100%; border-radius: inherit;
+  display: flex; align-items: center; justify-content: center; text-align: center;
   color: var(--table-text);
-  background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
-    radial-gradient(ellipse at 50% 40%, var(--felt-light) 0%, var(--felt) 55%, var(--felt-dark) 100%);
-  box-shadow: inset 0 6px 24px rgba(0, 0, 0, 0.35);
 }
-/* Çuhanın kenarında ince açık çizgi */
-.felt::before {
-  content: ''; position: absolute; inset: 9px; border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.16);
-  pointer-events: none;
+.felt::before { content: ''; position: absolute; inset: 14px; border-radius: inherit; border: 1px solid rgba(255, 255, 255, 0.14); pointer-events: none; }
+/* Silik oda adı: üstte ters, altta düz. */
+.roomName {
+  position: absolute; left: 0; right: 0; padding: 0 14%; text-align: center; font-size: 10.5px; font-weight: 600; letter-spacing: 0.26em;
+  text-transform: uppercase; color: rgba(255, 255, 255, 0.3); pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.nameTop { top: 28px; transform: rotate(180deg); }
+.nameBottom { bottom: 28px; }
+
 .seats { list-style: none; margin: 0; padding: 0; }
 .seatSlot { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
 /* Krupiye menüsü açık koltuk her şeyin (masa ortası, komşu koltuklar) üstünde kalsın. */
@@ -36,20 +30,20 @@
 .fx { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
 .flyingCard {
   position: absolute; width: 18px; height: 26px; margin: -13px 0 0 -9px; border-radius: 3px;
-  background:
-    radial-gradient(circle at 50% 35%, #1f9a6e, #0e5a42);
-  border: 2px solid var(--card-face); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(150deg, var(--card-back-1), var(--card-back-2));
+  border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 .emoji {
   position: absolute; font-size: 34px; line-height: 1;
   filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
 }
 
-/* Mobil: masa küçülür, koltuklar akan bir ızgaraya geçer. */
-@media (max-width: 640px) {
-  .arena { height: auto; margin: 0; display: flex; flex-direction: column; gap: 18px; }
-  .table { position: relative; inset: auto; width: 100%; aspect-ratio: 1.6 / 1; padding: 10px; }
-  .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px 8px; }
-  .seatSlot { position: static; transform: none !important; display: flex; justify-content: center; }
-  .fx { inset: 0 0 auto 0; aspect-ratio: 1.6 / 1; }
+@media (max-width: 720px) {
+  .wrap { padding: 54px 0 34px; }
+  .arena { height: 310px; }
+  .table { inset: 21% 18% 31%; box-shadow: 0 0 0 5px var(--ring), 0 16px 30px rgba(8, 40, 25, 0.25); }
+  .felt::before { inset: 9px; }
+  .roomName { font-size: 8.5px; letter-spacing: 0.24em; }
+  .nameTop { top: 17px; }
+  .nameBottom { bottom: 17px; }
 }

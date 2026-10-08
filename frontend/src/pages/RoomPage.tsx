@@ -73,5 +73,7 @@ export function RoomPage({ code }: { code: string }) {
     content = <p className="muted">{t('common.loading')}</p>;
   }
 
+  // Odanın içi kendi başlığını çizer (Shell yok); katılma ve hata ekranları ortak çerçevede.
+  if (!gone && phase.kind === 'in-room') return content;
   return <Shell>{content}</Shell>;
 }

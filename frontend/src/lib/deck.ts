@@ -41,9 +41,28 @@ export function cardTone(deck: string[], card: string): number | null {
   return scored.length > 1 ? i / (scored.length - 1) : 0;
 }
 
-/** Tonu CSS rengine çevirir (maviden kırmızıya, algısal olarak düzgün geçiş). */
+/**
+ * Ton basamakları: mavi → camgöbeği → kehribar → turuncu → kırmızı (önerilen renk yolu).
+ * 11 basamak, "modifiye Fibonacci"nin sayısal kartlarıyla birebir; başka desteler arada karışır.
+ */
+const TONE_STOPS = ['#2f62d8', '#2f74e0', '#2a87e0', '#1c98d4', '#149fb8', '#d49a12', '#e57a12', '#e0581f', '#d63e2e', '#c22e3a', '#a3213a'];
+
+const hexToRgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const rgbToHex = (c: number[]) => `#${c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
+
+/** Tonu (0..1) basamaklı ölçekten bir renge çevirir; nötr kartlar için undefined. */
 export function toneColor(tone: number | null | undefined): string | undefined {
   if (tone === null || tone === undefined) return undefined;
-  const pct = Math.round(tone * 100);
-  return `color-mix(in oklch, var(--tone-high) ${pct}%, var(--tone-low))`;
+  const x = Math.min(1, Math.max(0, tone)) * (TONE_STOPS.length - 1);
+  const i = Math.min(TONE_STOPS.length - 2, Math.floor(x));
+  const f = x - i;
+  const a = hexToRgb(TONE_STOPS[i]);
+  const b = hexToRgb(TONE_STOPS[i + 1]);
+  return rgbToHex(a.map((v, k) => v + (b[k] - v) * f));
+}
+
+/** "ABC-12 Giriş sayfası" → anahtar ve başlık; anahtar yoksa yalnızca başlık. */
+export function splitTicketTitle(title: string): { key?: string; text: string } {
+  const m = /^([A-Za-z][A-Za-z0-9]*-\d+)\s+(.+)$/.exec(title.trim());
+  return m ? { key: m[1].toUpperCase(), text: m[2] } : { text: title };
 }

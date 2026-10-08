@@ -1,6 +1,6 @@
 .card { perspective: 600px; flex-shrink: 0; border-radius: 8px; }
 /* sm: masadaki kart (390 px'te de köşeler okunur kalsın diye M2'den biraz büyük) */
-.sm { width: 46px; height: 64px; --corner: 14px; }
+.sm { width: 46px; height: 64px; --corner: 17px; }
 .md { width: 62px; height: 88px; --corner: 18px; }
 
 .inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; border-radius: inherit; }

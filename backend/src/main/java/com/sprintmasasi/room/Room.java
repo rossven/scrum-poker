@@ -54,6 +54,10 @@ public class Room {
     private boolean closed;
     /** Dönüşümlü adalet: bu oturumda kazananların seçilme ağırlığı her kazanımda yarıya iner. */
     private boolean fairRotation;
+    /** Otomatik aç: bağlı herkes oy verince kartlar krupiyesiz açılır. */
+    private boolean autoReveal;
+    /** "Kim alacak?" gönüllü turunun varsayılan süresi (0 = süresiz). */
+    private int volunteerSeconds = AssignmentService.DEFAULT_VOLUNTEER_SECONDS;
     private Assignment assignment;
     private final List<AssignmentRecord> assignmentHistory = new ArrayList<>();
     private final Set<String> kickedTokens = new LinkedHashSet<>();
@@ -232,6 +236,10 @@ public class Room {
 
     boolean fairRotation() { return fairRotation; }
     void setFairRotation(boolean on) { this.fairRotation = on; }
+    boolean autoReveal() { return autoReveal; }
+    void setAutoReveal(boolean on) { this.autoReveal = on; }
+    int volunteerSeconds() { return volunteerSeconds; }
+    void setVolunteerSeconds(int seconds) { this.volunteerSeconds = seconds; }
     Assignment assignment() { return assignment; }
     void setAssignment(Assignment assignment) { this.assignment = assignment; }
     List<AssignmentRecord> assignmentHistory() { return assignmentHistory; }

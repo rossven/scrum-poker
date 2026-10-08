@@ -18,7 +18,7 @@ Arayüzde moderatör **"Krupiye"** olarak geçer (M2.5); kodda ve olay adlarınd
 
 | Yöntem | Yol | Gövde | Yanıt |
 |---|---|---|---|
-| `POST` | `/api/rooms` | `{ name?, deck?, customDeck?, password?, ticketsEnabled? }` | `201 { code, claimToken }` |
+| `POST` | `/api/rooms` | `{ name?, deck?, customDeck?, password?, ticketsEnabled?, autoReveal? }` | `201 { code, claimToken }` |
 | `GET` | `/api/rooms/{code}` | | `{ code, name?, passwordProtected }` |
 | `POST` | `/api/rooms/{code}/join` | `{ nickname, avatar, observer, password?, token?, claimToken?, takeover? }` | `{ code, participantId, token, nickname, rejoined, takenOver }` |
 | `GET` | `/admin/stats` | `Authorization: Bearer <SM_ADMIN_TOKEN>` | sayaçlar (JSON) |
@@ -26,6 +26,7 @@ Arayüzde moderatör **"Krupiye"** olarak geçer (M2.5); kodda ve olay adlarınd
 - `deck`: `modified-fibonacci` (varsayılan), `fibonacci`, `tshirt`, `custom`.
 - `customDeck`: `deck = custom` ise kart listesi. En fazla 20 kart, kart başına en fazla 8 karakter, tekrar yok (büyük/küçük harf duyarsız), virgül ve kontrol karakteri yok. Kurala uymazsa `INVALID_DECK`.
 - `ticketsEnabled`: ticket listesi açık mı başlasın (varsayılan `false`, M2.5). Krupiye odada sonradan açıp kapatabilir.
+- `autoReveal`: "Otomatik aç" oda ayarı açık mı başlasın (varsayılan `false`). Krupiye odada sonradan değiştirebilir.
 - `claimToken`: oda oluşturunca dönen tek kullanımlık anahtar. Katılırken gönderen kişi moderatör olur.
 - `token`: daha önce alınmış oturum token'ı. Geçerliyse aynı koltuğa dönülür, şifre sorulmaz (`rejoined: true`).
 - `takeover` (M3): odada aynı isimde (büyük/küçük harf duyarsız) **çevrimdışı** bir koltuk varsa ve alan yoksa sunucu `409 SEAT_TAKEOVER` döner; istemci "Bu koltuk senin mi?" diye sorar. `true`: koltuk devralınır (isim, avatar, bu turdaki oy, gönüllülük korunur; yeni token verilir, eski token geçersiz olur; **krupiyelik geçmez**, başka krupiye kalmazsa M1 devretme kuralı işler), yanıtta `takenOver: true`. `false`: yeni koltuk ("Ayşe 2"). Çevrimiçi koltuk devralınamaz, soru da sorulmaz. Şifreli odada şifre yine gerekir.
@@ -87,7 +88,9 @@ Başka bir odanın konusuna abone olma isteği reddedilir.
 | `room.close` | `{}` | moderatör | Herkese `room.closed`, oda silinir |
 | `room.kick` | `{ participantId }` | moderatör (kendini atamaz) | Kişi masadan atılır: koltuğu silinir, token'ı geçersiz olur, açılmamış oyu silinir, gönüllü/aday listesinden düşer; geçmiş değişmez. Kişiye `room.kicked`, ardından bağlantıları kapatılır; odaya `room.participant_kicked`. Linkle yeniden katılabilir |
 | `assign.start` | `{ seconds? }` | moderatör | "Kim alacak?" başlar (masadaki ticket ya da serbest turun konusu için). Gönüllü turu süresi 10-300 sn, varsayılan 10; `0` = süresiz (krupiye kapatır). Süren akış varsa yerine geçer |
-| `assign.volunteer` | `{ volunteer }` | katılımcı (gözlemci değil) | "Ben alırım" / vazgeç. Yalnızca gönüllü turunda |
+| `assign.volunteer` | `{ volunteer, pass? }` | katılımcı (gözlemci değil) | "Ben alırım" / vazgeç; `pass: true` = "pas" (üçüncü seçenek, gönüllülükten çıkarır; `volunteer` ile birlikte kullanılmaz). Yalnızca gönüllü turunda |
+| `assign.set_volunteer_seconds` | `{ seconds }` | moderatör | Gönüllü süresi oda ayarı (0 = süresiz). Süren gönüllü turunun süresini de günceller; `assign.start` `seconds` vermezse bu değer kullanılır |
+| `room.set_auto_reveal` | `{ enabled }` | moderatör | "Otomatik aç": bağlı (çevrimiçi) herkes oy verince kartlar kendiliğinden açılır |
 | `assign.close_volunteering` | `{}` | moderatör | Gönüllü turunu erken kapatır (süre dolunca sunucu kendisi kapatır). Tek gönüllü → doğrudan atanır (`game: "volunteer"`); birden çok → adaylar gönüllüler; hiç yok → adaylar bu turda oy verenler (kimse oy vermediyse tüm katılımcılar) |
 | `assign.set_candidate` | `{ participantId, candidate }` | moderatör | Aday ayarında kişiyi çıkar/ekle (gözlemci eklenemez) |
 | `assign.set_fair_rotation` | `{ enabled }` | moderatör | Dönüşümlü adalet: bu oturumda daha önce (geri alınmamış) kazananın seçilme ağırlığı her kazanımda yarıya iner. Görsel olarak dilimler/atlar eşit kalır |
@@ -144,6 +147,8 @@ Oda her değiştiğinde tam durum.
   "timer": { "durationSeconds": 120, "remainingMs": 83000 },
   "sessionHistory": [ { "topic": "Arama", "number": 1, "votes": [...], "stats": {...}, "finalEstimate": "5" } ],
   "fairRotation": false,
+  "autoReveal": false,
+  "volunteerSeconds": 20,
   "assignment": <AssignmentView ya da yok>,
   "assignmentHistory": [ <AssignmentRecord>, ... ]
 }
@@ -195,7 +200,7 @@ Ticket'sız turda `ticketId` yoktur, krupiye yazdıysa `topic` vardır:
 "assignment": {
   "id": "...", "phase": "VOLUNTEERING | CANDIDATES | RESULT", "ticketId": "...", "title": "ABC-7 Ödeme ekranı",
   "volunteerSeconds": 20, "volunteerRemainingMs": 14200,
-  "volunteers": ["..."], "candidates": ["..."],
+  "volunteers": ["..."], "passes": ["..."], "candidates": ["..."],
   "result": <AssignmentRecord>,
   "game": { "type": "horse", "startsInMs": 1500, "durationMs": 8200, "animation": { ... } }
 }

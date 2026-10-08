@@ -12,13 +12,12 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="btn btn-ghost btn-small"
+      className="ib"
       onClick={() => setTheme(next)}
       title={`${t('theme.label')}: ${t(`theme.${theme}`)}`}
       aria-label={`${t('theme.label')}: ${t(`theme.${theme}`)}`}
     >
-      <Icon name={ICON[theme]} />
-      <span>{t(`theme.${theme}`)}</span>
+      <Icon name={ICON[theme]} size={18} />
     </button>
   );
 }

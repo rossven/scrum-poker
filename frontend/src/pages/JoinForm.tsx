@@ -70,7 +70,7 @@ export function JoinForm({ info, onJoined }: Props) {
     <form className={`card ${styles.form}`} onSubmit={submit}>
       <h1 className={styles.title}>{info.name ?? t('join.title')}</h1>
       <p className={styles.subtitle}>
-        {t('room.code')}: <strong>{info.code}</strong>
+        <span className={styles.codePill}>{t('room.code')} <strong>{info.code}</strong></span>
         {info.passwordProtected && <> · <Icon name="lock" size={14} /> {t('room.passwordProtected')}</>}
       </p>
 
@@ -111,7 +111,7 @@ export function JoinForm({ info, onJoined }: Props) {
         </div>
       )}
 
-      <div className={styles.buttons}>
+      <div className={`${styles.buttons} ${styles.sticky}`}>
         <button type="button" className="btn btn-ghost" onClick={() => navigate('/')}>{t('common.back')}</button>
         <button type="submit" className="btn btn-primary" disabled={busy || !valid}>{t('join.submit')}</button>
       </div>

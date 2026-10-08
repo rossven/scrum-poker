@@ -316,4 +316,47 @@ class AssignmentServiceTest {
         expectError(ErrorCode.INVALID_INPUT, () -> assign.start(code, mod.participantId(), 2));
         expectError(ErrorCode.INVALID_INPUT, () -> assign.start(code, mod.participantId(), 9999));
     }
+
+    @Test
+    void volunteerSecondsDefaultToTheRoomSettingAndCanBeChangedMidRound() {
+        assertThat(rooms.toState(roomOf()).volunteerSeconds()).isEqualTo(20);
+        expectError(ErrorCode.FORBIDDEN, () -> assign.setVolunteerSeconds(code, ali.participantId(), 30));
+        expectError(ErrorCode.INVALID_INPUT, () -> assign.setVolunteerSeconds(code, mod.participantId(), 5));
+
+        assign.setVolunteerSeconds(code, mod.participantId(), 30);
+        assertThat(state().volunteerSeconds()).isEqualTo(30);
+        assign.start(code, mod.participantId(), null);
+        assertThat(flow().volunteerSeconds()).isEqualTo(30);
+        assertThat(flow().volunteerRemainingMs()).isEqualTo(30_000);
+
+        clock.advance(Duration.ofSeconds(5));
+        assign.setVolunteerSeconds(code, mod.participantId(), 0); // süresiz
+        assertThat(flow().volunteerRemainingMs()).isNull();
+        assign.setVolunteerSeconds(code, mod.participantId(), 60);
+        assertThat(flow().volunteerRemainingMs()).isEqualTo(55_000);
+
+        clock.advance(Duration.ofSeconds(10));
+        assign.setVolunteerSeconds(code, mod.participantId(), 10); // 15 sn geçti: hemen kapanır
+        assertThat(flow().phase()).isEqualTo("CANDIDATES");
+    }
+
+    @Test
+    void passIsAThirdChoiceBesideVolunteering() {
+        assign.start(code, mod.participantId(), 20);
+        assign.volunteer(code, ali.participantId(), false, true);
+        assign.volunteer(code, bora.participantId(), true, false);
+        assertThat(flow().passes()).containsExactly(ali.participantId());
+        assertThat(flow().volunteers()).containsExactly(bora.participantId());
+
+        assign.volunteer(code, ali.participantId(), true, false); // fikrini değiştirdi
+        assertThat(flow().passes()).isEmpty();
+        assertThat(flow().volunteers()).containsExactlyInAnyOrder(ali.participantId(), bora.participantId());
+        assign.volunteer(code, ali.participantId(), false, false);
+        assertThat(flow().volunteers()).containsExactly(bora.participantId());
+        assertThat(flow().passes()).isEmpty();
+    }
+
+    private Room roomOf() {
+        return rooms.require(code);
+    }
 }

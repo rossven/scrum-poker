@@ -388,4 +388,42 @@ class PokerServiceTest {
         poker.reveal(code, mod.participantId());
         assertThat(state().round().stats().consensus()).isEqualTo(Consensus.UNANIMOUS);
     }
+
+    // ---------------------------------------------------------------- otomatik aç
+
+    @Test
+    void autoRevealOpensTheCardsWhenEveryOnlineVoterHasVoted() {
+        rooms.connected(code, mod.participantId());
+        rooms.connected(code, ali.participantId());
+        rooms.connected(code, bora.participantId());
+        expectError(ErrorCode.FORBIDDEN, () -> poker.setAutoReveal(code, ali.participantId(), true));
+        poker.setAutoReveal(code, mod.participantId(), true);
+        assertThat(state().autoReveal()).isTrue();
+
+        poker.vote(code, mod.participantId(), "3");
+        poker.vote(code, ali.participantId(), "5");
+        assertThat(state().round().state()).isEqualTo("VOTING");
+        rooms.disconnected(code, bora.participantId()); // çevrimdışı kişi beklenmez
+        poker.vote(code, ali.participantId(), "8");
+        assertThat(state().round().state()).isEqualTo("REVEALED");
+    }
+
+    @Test
+    void autoRevealIsOffByDefaultAndCanBeSetWhenCreatingTheRoom() {
+        rooms.connected(code, mod.participantId());
+        poker.vote(code, mod.participantId(), "3");
+        assertThat(state().autoReveal()).isFalse();
+        assertThat(state().round().state()).isEqualTo("VOTING");
+
+        var other = rooms.create("Oto", null, null, null, false, true, "10.0.0.9");
+        var me = rooms.join(other.code(), "Can", "s", false, null, null, other.claimToken(), "10.0.0.9");
+        rooms.connected(other.code(), me.participantId());
+        poker.vote(other.code(), me.participantId(), "3");
+        assertThat(state().autoReveal()).isTrue();
+        assertThat(state().round().state()).isEqualTo("REVEALED");
+    }
+
+    private void expectError(ErrorCode code, Runnable action) {
+        assertThatThrownBy(action::run).isInstanceOf(RoomException.class).extracting("code").isEqualTo(code);
+    }
 }

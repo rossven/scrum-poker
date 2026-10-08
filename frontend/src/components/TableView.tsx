@@ -17,31 +17,33 @@ interface Props {
   revealKey?: number | null;
   emojis?: FlyingEmoji[];
   nudges?: Record<string, number>;
+  /** Koltuğun altındaki durum yazısı (ör. "düşünüyor"). */
+  renderStatus?: (p: ParticipantView) => ReactNode;
+  /** Masanın üstünde ters, altında düz yazılan silik oda adı (karşıdaki de okusun). */
+  roomName?: string;
 }
 
 /** Kalabalıkta avatarlar küçülür; 16 kişiden sonra iki sıra (iç/dış halka) kullanılır. */
-function avatarSize(n: number) {
-  if (n <= 8) return 56;
-  if (n <= 14) return 46;
-  if (n <= 24) return 38;
-  return 32;
+function avatarSize(n: number, narrow: boolean) {
+  const base = n <= 8 ? 46 : n <= 14 ? 40 : n <= 24 ? 34 : 30;
+  return narrow ? Math.min(base, n <= 8 ? 36 : 30) : base;
 }
 
 /** i = 0 masanın altında (kart elinin hemen üstü), diğerleri saat yönünde dizilir. */
-function seatPoint(i: number, n: number) {
+function seatPoint(i: number, n: number, narrow: boolean) {
   const twoRows = n > 16;
   const angle = Math.PI / 2 + (i / n) * Math.PI * 2;
   const outer = !twoRows || i % 2 === 0;
-  const rx = outer ? 47 : 36;
-  const ry = outer ? 42 : 29;
-  return { x: 50 + rx * Math.cos(angle), y: 50 + ry * Math.sin(angle) };
+  const rx = (outer ? 46 : 35) - (narrow ? 8 : 0);
+  const ry = outer ? 40 : 29;
+  return { x: 50 + rx * Math.cos(angle), y: 44 + ry * Math.sin(angle) };
 }
 
 const pct = (p: { x: number; y: number }) => ({ left: `${p.x}%`, top: `${p.y}%` });
 
-/** Dar ekranda (mobil ızgara) koltuk konumu anlamsız: uçuş efektleri masanın ortasından yapılır. */
+/** Dar ekranda (telefon) koltuklar ve kartlar küçülür. */
 function useNarrow() {
-  const query = '(max-width: 640px)';
+  const query = '(max-width: 720px)';
   const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
   useEffect(() => {
     const mq = window.matchMedia(query);
@@ -56,20 +58,19 @@ type Fx = { id: number; kind: 'deal' | 'reveal' };
 let fxSeq = 0;
 
 /**
- * Oval poker masası (yeşil çuha, ahşap kenar). Geniş ekranda koltuklar masanın etrafına dizilir,
- * dar ekranda (mobil) masa üstte, koltuklar altta ızgara olarak görünür.
+ * Oval masa: düz yeşil çuha, ince koyu halka. Koltuklar (telefonda da) masanın etrafına dizilir.
  * Krupiye efektleri (kart dağıtma, açılış) ve uçan emojiler masanın üstünde bir katmanda çizilir.
  */
-export function TableView({ people, youId, renderCard, renderActions, center, dealKey, revealKey, emojis = [], nudges = {} }: Props) {
-  const size = avatarSize(people.length);
+export function TableView({ people, youId, renderCard, renderActions, renderStatus, roomName, center, dealKey, revealKey, emojis = [], nudges = {} }: Props) {
   const reduceMotion = useReducedMotion();
   const narrow = useNarrow();
+  const size = avatarSize(people.length, narrow);
   const [fx, setFx] = useState<Fx[]>([]);
   // Sen her zaman masanın altında, kendi kart elinin yanında oturursun.
   const youIndex = Math.max(0, people.findIndex((p) => p.id === youId));
-  const seatAt = (i: number) => seatPoint((i - youIndex + people.length) % people.length, people.length);
+  const seatAt = (i: number) => seatPoint((i - youIndex + people.length) % people.length, people.length, narrow);
   const dealerIndex = people.findIndex((p) => p.moderator);
-  const dealerPoint = dealerIndex >= 0 && !narrow ? seatAt(dealerIndex) : { x: 50, y: 50 };
+  const dealerPoint = dealerIndex >= 0 ? seatAt(dealerIndex) : { x: 50, y: 50 };
 
   const addFx = (kind: Fx['kind']) => {
     const item = { id: ++fxSeq, kind };
@@ -82,8 +83,8 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
   useEffect(() => {
     if (dealKey === lastDeal.current) return;
     lastDeal.current = dealKey;
-    if (!reduceMotion && !narrow && dealerIndex >= 0) addFx('deal');
-  }, [dealKey, reduceMotion, narrow, dealerIndex]);
+    if (!reduceMotion && dealerIndex >= 0) addFx('deal');
+  }, [dealKey, reduceMotion, dealerIndex]);
 
   const lastReveal = useRef(revealKey);
   useEffect(() => {
@@ -94,7 +95,7 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
 
   const emojiStart = (participantId: string) => {
     const i = people.findIndex((p) => p.id === participantId);
-    if (i < 0 || narrow) return { x: 50, y: 92 };
+    if (i < 0) return { x: 50, y: 92 };
     return seatAt(i);
   };
 
@@ -102,7 +103,15 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
     <div className={styles.wrap}>
       <div className={styles.arena}>
         <div className={styles.table}>
-          <div className={styles.felt}>{center}</div>
+          <div className={styles.felt}>
+            {roomName && (
+              <>
+                <span className={`${styles.roomName} ${styles.nameTop}`} aria-hidden>{roomName}</span>
+                <span className={`${styles.roomName} ${styles.nameBottom}`} aria-hidden>{roomName}</span>
+              </>
+            )}
+            {center}
+          </div>
         </div>
         <ul className={styles.seats}>
           {people.map((p, i) => (
@@ -110,7 +119,7 @@ export function TableView({ people, youId, renderCard, renderActions, center, de
             <li key={p.id} className={styles.seatSlot} style={pct(seatAt(i))}>
               <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
                 <Seat person={p} isYou={p.id === youId} size={size} card={renderCard?.(p)} actions={renderActions?.(p)}
-                  nudge={nudges[p.id] ?? 0} />
+                  nudge={nudges[p.id] ?? 0} status={renderStatus?.(p)} />
               </motion.div>
             </li>
           ))}

@@ -21,8 +21,11 @@ class Assignment {
     private final String ticketId;
     /** Başlatıldığı andaki ticket başlığı ya da serbest turun konusu (boş olabilir). */
     private final String title;
-    private final int volunteerSeconds;
+    private final Instant startedAt;
+    private int volunteerSeconds;
     private final Set<String> volunteers = new LinkedHashSet<>();
+    /** Gönüllü turunda "pas" diyenler (gönüllü değil ama karar verdi). */
+    private final Set<String> passes = new LinkedHashSet<>();
     private final Set<String> candidates = new LinkedHashSet<>();
     private Phase phase = Phase.VOLUNTEERING;
     private Instant volunteerEndsAt;
@@ -33,6 +36,7 @@ class Assignment {
         this.id = id;
         this.ticketId = ticketId;
         this.title = title;
+        this.startedAt = now;
         this.volunteerSeconds = volunteerSeconds;
         this.volunteerEndsAt = volunteerSeconds > 0 ? now.plusSeconds(volunteerSeconds) : null;
     }
@@ -42,11 +46,18 @@ class Assignment {
     String title() { return title; }
     int volunteerSeconds() { return volunteerSeconds; }
     Set<String> volunteers() { return volunteers; }
+    Set<String> passes() { return passes; }
     Set<String> candidates() { return candidates; }
     Phase phase() { return phase; }
     Instant volunteerEndsAt() { return volunteerEndsAt; }
     AssignmentRecord result() { return result; }
     Game game() { return game; }
+
+    /** Gönüllü süresi değişti: bitiş anı başlangıçtan itibaren yeniden hesaplanır (0 = süresiz). */
+    void retime(int seconds) {
+        volunteerSeconds = seconds;
+        volunteerEndsAt = seconds > 0 ? startedAt.plusSeconds(seconds) : null;
+    }
 
     void toCandidates(List<String> ids) {
         phase = Phase.CANDIDATES;
@@ -67,6 +78,7 @@ class Assignment {
     /** Kişi odadan çıktı ya da atıldı: gönüllü ve aday listesinden düşer (geçmiş değişmez). */
     void forget(String participantId) {
         volunteers.remove(participantId);
+        passes.remove(participantId);
         candidates.remove(participantId);
     }
 }

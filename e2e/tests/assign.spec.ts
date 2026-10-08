@@ -7,7 +7,7 @@ async function joinAs(page: Page, nickname: string) {
 
 async function newRoom(page: Page, tickets = false) {
   await page.goto('/yeni');
-  if (tickets) await page.getByLabel('Ticket listesi kullan').check();
+  if (tickets) await page.getByRole('switch', { name: /Ticket listesi kullan/ }).click();
   await page.getByRole('button', { name: 'Odayı oluştur' }).click();
 }
 
@@ -18,6 +18,7 @@ test('gir → oy ver → aç → kim alacak: at yarışı, iki tarayıcıda ayn�
   await joinAs(a, 'Ayşe');
   await b.goto(a.url());
   await joinAs(b, 'Mehmet');
+  await a.getByRole('button', { name: /Ekle ya da yapıştır/ }).click();
   await a.getByLabel('Ticket ekle').fill('ABC-7 Ödeme ekranı');
   await a.getByRole('button', { name: '1 ticket ekle' }).click();
 
@@ -28,10 +29,10 @@ test('gir → oy ver → aç → kim alacak: at yarışı, iki tarayıcıda ayn�
   // Kim alacak? Gönüllü yok → oy veren ikisi aday olur.
   await a.getByRole('button', { name: /Kim alacak\?/ }).click();
   await expect(b.getByRole('button', { name: /Ben alırım/ })).toBeVisible();
-  await a.getByRole('button', { name: 'Gönüllüleri kapat' }).click();
+  await a.getByRole('button', { name: 'Süreyi bitir' }).click();
   await expect(a.getByText('Adaylar (2)')).toBeVisible();
   await expect(b.getByText('Krupiye adayları ve oyunu seçiyor…')).toBeVisible();
-  await a.getByRole('button', { name: /Oyunu başlat/ }).click();
+  await a.getByRole('button', { name: /Yarışı başlat/ }).click();
 
   await expect(a.getByRole('img', { name: 'At yarışı' })).toBeVisible();
   await expect(b.getByRole('img', { name: 'At yarışı' })).toBeVisible();
@@ -39,17 +40,21 @@ test('gir → oy ver → aç → kim alacak: at yarışı, iki tarayıcıda ayn�
   const winnerB = b.getByRole('status').filter({ hasText: 'alıyor!' });
   await expect(winnerA).toBeVisible({ timeout: 15_000 });
   await expect(winnerB).toBeVisible({ timeout: 15_000 });
-  const textA = await winnerA.locator('strong').textContent();
-  expect(await winnerB.locator('strong').textContent()).toBe(textA);
-  const name = textA!.replace('🎉', '').replace('alıyor!', '').trim();
+  const textA = await winnerA.locator('h1').textContent();
+  expect(await winnerB.locator('h1').textContent()).toBe(textA);
+  const name = textA!.replace('alıyor!', '').trim();
 
   await expect(b.getByText(`Atanan: ${name}`)).toBeVisible();
-  await expect(b.getByRole('region', { name: 'Atama geçmişi' })).toContainText(name);
 
-  // Krupiye geri alır: geçmişte "geri alındı" olarak kalır, aday ayarına dönülür.
+  // Krupiye geri alır: aday ayarına dönülür; geçmişte "geri alındı" olarak kalır.
   await a.getByRole('button', { name: /Geri al/ }).click();
-  await expect(b.getByText('geri alındı')).toBeVisible();
+  await expect(a.getByText('Adaylar (2)')).toBeVisible();
+  await a.getByRole('button', { name: 'Kapat' }).click();
   await expect(b.getByText(`Atanan: ${name}`)).toHaveCount(0);
+  await b.getByRole('tab', { name: 'Geçmiş' }).click();
+  const history = b.getByRole('region', { name: 'Atama geçmişi' });
+  await expect(history).toContainText(name);
+  await expect(history).toContainText('geri alındı');
 });
 
 test('tek gönüllü: oyun oynanmadan atanır', async ({ browser }) => {
@@ -62,8 +67,7 @@ test('tek gönüllü: oyun oynanmadan atanır', async ({ browser }) => {
 
   await a.getByRole('button', { name: /Kim alacak\?/ }).click();
   await b.getByRole('button', { name: /Ben alırım/ }).click();
-  await expect(a.getByText('Gönüllü (1)')).toBeVisible();
-  await a.getByRole('button', { name: 'Gönüllüleri kapat' }).click();
+  await a.getByRole('button', { name: 'Süreyi bitir' }).click();
   await expect(a.getByText('Mehmet alıyor!')).toBeVisible();
   await expect(b.getByText('Tek gönüllüydü, oyun oynanmadı.')).toBeVisible();
 });
@@ -100,7 +104,7 @@ test('aynı isimle başka tarayıcıdan dönen kişi çevrimdışı koltuğunu d
   await b.goto(a.url());
   await joinAs(b, 'Mehmet');
   await b.getByRole('button', { name: 'Kart 3', exact: true }).click();
-  await expect(a.getByText('1/2 kişi oy verdi')).toBeVisible();
+  await expect(a.getByRole('button', { name: /Kartları aç/ })).toContainText('1 / 2');
   await bContext.close(); // Mehmet'in tarayıcısı kapandı, koltuk çevrimdışı
 
   const c = await (await browser.newContext()).newPage();
@@ -111,5 +115,5 @@ test('aynı isimle başka tarayıcıdan dönen kişi çevrimdışı koltuğunu d
 
   await expect(c.getByRole('button', { name: 'Kart 3', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(a.getByText('Mehmet 2')).toHaveCount(0);
-  await expect(a.getByText('1/2 kişi oy verdi')).toBeVisible();
+  await expect(a.getByRole('button', { name: /Kartları aç/ })).toContainText('1 / 2');
 });

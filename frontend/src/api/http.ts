@@ -25,7 +25,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  createRoom(body: { name?: string; deck: DeckId; customDeck?: string[]; password?: string; ticketsEnabled: boolean }) {
+  createRoom(body: { name?: string; deck: DeckId; customDeck?: string[]; password?: string; ticketsEnabled: boolean; autoReveal: boolean }) {
     return request<CreateRoomResult>('/api/rooms', { method: 'POST', body: JSON.stringify(body) });
   },
   roomInfo(code: string) {

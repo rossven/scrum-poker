@@ -14,14 +14,15 @@ function cornerScale(value: string) {
 
 interface Props {
   value: string;
-  /** 0 (en düşük) – 1 (en yüksek); renk maviden kırmızıya. null: nötr ("?", "☕"). */
+  /** 0 (en düşük) – 1 (en yüksek); renk mavi → camgöbeği → kehribar → turuncu → kırmızı. null: nötr ("?", "☕"). */
   tone?: number | null;
-  /** Küçük (masadaki) kart: "?"/Mola alt yazısı gösterilmez. */
+  /** Küçük (masadaki) kart: köşe rakamları ve amblem yok, ortada tek büyük rakam. */
   compact?: boolean;
 }
 
 /**
- * Kartın ön yüzü: değer sol üst ve sağ alt köşede (sağ alttaki ters), ortada sprint döngüsü.
+ * Kartın ön yüzü. Elindeki (büyük) kartta rakam sağ üstte ve sol altta (alttaki ters, iskambil gibi),
+ * ortada sprint döngüsü, üst kenarda ton şeridi. Masadaki küçük kartta tek büyük rakam yeter.
  * "?" soru işareti, "☕" Mola (fincan). Uzun değerlerde (4+ karakter) değer ortada da yazılır.
  */
 export function CardFace({ value, tone, compact }: Props) {
@@ -30,30 +31,44 @@ export function CardFace({ value, tone, compact }: Props) {
   const coffee = value === '☕';
   const long = [...value].length >= 4;
   const ink = toneColor(tone);
+  const style = ink ? ({ '--ink': ink } as React.CSSProperties) : undefined;
+  const special = unsure || coffee;
+  const faceClass = `${styles.face} ${unsure ? styles.unsureTone : coffee ? styles.coffeeTone : ''}`;
+
+  if (compact) {
+    return (
+      <span className={faceClass} style={style}>
+        <span className={styles.band} aria-hidden />
+        <span className={styles.single} style={{ fontSize: `calc(var(--corner) * ${special ? 1 : 1.5 * cornerScale(value)})` }}>
+          {unsure ? <UnsureArt /> : coffee ? <CoffeeArt /> : value}
+        </span>
+      </span>
+    );
+  }
+
   const corner = (
     <span className={styles.cornerValue} style={{ fontSize: `calc(var(--corner) * ${cornerScale(value)})` }}>
       {value}
     </span>
   );
   return (
-    <span className={`${styles.face} ${unsure ? styles.unsureTone : coffee ? styles.coffeeTone : ''}`}
-      style={ink ? ({ '--ink': ink } as React.CSSProperties) : undefined}>
+    <span className={faceClass} style={style}>
       <span className={styles.band} aria-hidden />
-      <span className={`${styles.corner} ${styles.tl}`}>{corner}</span>
-      <span className={`${styles.middle} ${unsure || coffee ? styles.special : ''}`}>
+      <span className={`${styles.corner} ${styles.tr}`}>{corner}</span>
+      <span className={`${styles.middle} ${special ? styles.special : ''}`}>
         {unsure ? <UnsureArt /> : coffee ? <CoffeeArt /> : long ? <span className={styles.longValue}>{value}</span> : <SprintEmblem color="var(--ink)" />}
-        {(unsure || coffee) && !compact && <span className={styles.caption}>{unsure ? t('poker.joker') : t('poker.break')}</span>}
+        {special && <span className={styles.caption}>{unsure ? t('poker.joker') : t('poker.break')}</span>}
       </span>
-      <span className={`${styles.corner} ${styles.br}`}>{corner}</span>
+      <span className={`${styles.corner} ${styles.bl}`}>{corner}</span>
     </span>
   );
 }
 
-/** Kartın arka yüzü: düz yeşil zemin, ortada beyaz sprint döngüsü. */
+/** Kartın arka yüzü: turuncu-kırmızı zemin, beyaz kenar, ortada beyaz sprint döngüsü. */
 export function CardBack() {
   return (
     <span className={styles.back}>
-      <span className={styles.backEmblem}><SprintEmblem color="rgba(255,255,255,0.9)" /></span>
+      <span className={styles.backEmblem}><SprintEmblem color="rgba(255,255,255,0.85)" /></span>
     </span>
   );
 }

@@ -1,4 +1,4 @@
-/* Kart yüzleri. Boyut kapsayıcıdan gelir; köşe yazısı --corner ile ölçeklenir, renk --ink ile (maviden kırmızıya). */
+/* Kart yüzleri. Boyut kapsayıcıdan gelir; köşe yazısı --corner ile ölçeklenir, renk --ink ile. */
 .face, .back {
   position: absolute; inset: 0; border-radius: inherit; overflow: hidden;
   display: block; user-select: none;
@@ -6,23 +6,32 @@
 .face {
   --ink: var(--card-ink);
   background: var(--card-face); color: var(--ink);
-  border: 1px solid #e3e7ec;
+  border: 1px solid rgba(20, 40, 30, 0.08);
 }
-/* Üstte ince renk şeridi: kartın tonunu uzaktan da belli eder. */
-.band { position: absolute; left: 0; right: 0; top: 0; height: 5%; min-height: 3px; background: var(--ink); opacity: 0.9; }
+/* Üstte ton şeridi: kartın tonunu uzaktan da belli eder. */
+.band { position: absolute; left: 0; right: 0; top: 0; height: 7%; min-height: 3px; background: var(--ink); }
 .unsureTone { --ink: #5b4bb7; }
 .coffeeTone { --ink: #6b4429; }
 
 .corner {
   position: absolute; display: flex; flex-direction: column; align-items: center;
   line-height: 0.95; font-family: var(--font-card); font-weight: 800; letter-spacing: -0.03em; max-width: 72%;
+  color: color-mix(in oklab, var(--ink) var(--ink-mix), #000);
 }
-.tl { top: 8%; left: 8%; }
-.br { bottom: 5%; right: 8%; transform: rotate(180deg); }
+.tr { top: 13%; right: 11%; }
+.bl { bottom: 8%; left: 11%; transform: rotate(180deg); }
 .cornerValue { font-size: var(--corner); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
+/* Masadaki küçük kart: ortada tek büyük rakam. */
+.single {
+  position: absolute; inset: 6% 0 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-card); font-weight: 800; letter-spacing: -0.03em; line-height: 1;
+  color: color-mix(in oklab, var(--ink) var(--ink-mix), #000);
+}
+.single svg { width: 62%; height: auto; max-height: 70%; }
+
 .middle {
-  position: absolute; inset: 28% 22%; display: flex; flex-direction: column;
+  position: absolute; inset: 30% 24%; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 2%; opacity: 0.9;
 }
 .middle > svg { width: 100%; height: auto; max-height: 100%; flex: 1 1 auto; min-height: 0; }
@@ -35,10 +44,10 @@
   font-size: calc(var(--corner) * 0.42); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
 }
 
-/* Sırt: düz yeşil, beyaz kenar, ortada döngü. Desen yok. */
+/* Sırt: turuncu-kırmızı, beyaz kenar, ortada döngü. Masanın yeşilinden net ayrılır. */
 .back {
-  border: 3px solid var(--card-face);
-  background: radial-gradient(circle at 50% 35%, #1f9a6e, #0e5a42);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(150deg, var(--card-back-1), var(--card-back-2));
   display: flex; align-items: center; justify-content: center;
 }
-.backEmblem { width: 56%; aspect-ratio: 1; display: block; }
+.backEmblem { width: 50%; aspect-ratio: 1; display: block; }

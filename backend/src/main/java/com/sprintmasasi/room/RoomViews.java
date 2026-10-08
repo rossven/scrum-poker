@@ -30,12 +30,15 @@ public final class RoomViews {
      * @param fairRotation      dönüşümlü adalet modu açık mı (M3)
      * @param assignment        süren "Kim alacak?" akışı; yoksa null
      * @param assignmentHistory atama sonuçları, en eskiden yeniye (geri alınanlar dahil)
+     * @param autoReveal        otomatik aç: bağlı herkes oy verince kartlar kendiliğinden açılır
+     * @param volunteerSeconds  "Kim alacak?" gönüllü turunun oda ayarı (0 = süresiz)
      */
     public record RoomState(String code, String name, String deck, List<String> deckCards, List<String> customDeck,
                             boolean passwordProtected, int maxParticipants, List<ParticipantView> participants,
                             boolean ticketsEnabled, List<TicketView> tickets, String currentTicketId, RoundView round,
                             TimerView timer, List<SessionRoundView> sessionHistory, boolean fairRotation,
-                            AssignmentView assignment, List<AssignmentRecordView> assignmentHistory) {}
+                            AssignmentView assignment, List<AssignmentRecordView> assignmentHistory,
+                            boolean autoReveal, int volunteerSeconds) {}
 
     /** Kişiye özel tam durum: yeniden bağlanınca gönderilir. yourVote yalnızca bu kişinin oyu. */
     public record RoomSnapshot(String youId, RoomState room, YourVote yourVote) {}
@@ -86,11 +89,12 @@ public final class RoomViews {
     /**
      * Süren "Kim alacak?" akışı. phase: VOLUNTEERING | CANDIDATES | RESULT.
      * volunteerRemainingMs yalnızca süre sınırlı gönüllü turunda; result ve game yalnızca RESULT'ta.
+     * passes: gönüllü turunda "pas" diyenler.
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record AssignmentView(String id, String phase, String ticketId, String title, int volunteerSeconds,
                                  Long volunteerRemainingMs, List<String> volunteers, List<String> candidates,
-                                 AssignmentRecordView result, GameView game) {}
+                                 AssignmentRecordView result, GameView game, List<String> passes) {}
 
     /** remainingMs gönderim anındaki kalan süre; istemci kendi saatiyle geri sayar (saat farkından etkilenmez). */
     public record TimerView(int durationSeconds, long remainingMs) {}

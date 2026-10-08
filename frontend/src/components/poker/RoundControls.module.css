@@ -1,44 +1,12 @@
-/* Krupiye tepsisi: üst satırda tur düğmeleri, alt satırda isteğe bağlı konu ve zamanlayıcı. */
-.bar {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'tag timer' 'primary primary' 'topic topic';
-  align-items: center; gap: 12px 14px;
-  padding: 14px 16px; border-radius: var(--radius);
-  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
+/* Araç çubuğu: masanın altında ortalı, küçük ve ikincil düğmeler (44 px dokunma hedefi). */
+.bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.tool {
+  min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; border-radius: 11px;
+  background: var(--surface); border: 1px solid var(--border); font-size: 13.5px; font-weight: 600; cursor: pointer;
 }
-.tag {
-  display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px;
-  font-family: var(--font-display); font-weight: 700; font-size: 14px;
-  background: var(--surface-2); border: 1px solid var(--border);
-}
-.dealerChip {
-  width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 800; font-size: 12px; color: var(--accent-contrast); background: var(--accent);
-}
-.group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.tag { grid-area: tag; justify-self: start; }
-.primary { grid-area: primary; }
-.timer { grid-area: timer; justify-self: end; gap: 2px; }
-.label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-soft); margin-right: 2px; }
-
-/* "Kim alacak?" + süre seçimi tek bir bütün gibi: aynı yükseklik, ortak kenar. */
-.assign { display: inline-flex; align-items: stretch; }
-.assignButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.assignSelect {
-  min-height: 44px; padding: 0 30px 0 12px; font-size: 14px; font-weight: 600; cursor: pointer;
-  border: 1px solid var(--border); border-left: 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  background: var(--surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6660' stroke-width='2.5' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right 10px center;
-  appearance: none; -webkit-appearance: none; line-height: 1;
-}
-.assignSelect:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.assignButton:global(.btn-primary) + .assignSelect { border-color: var(--accent); }
-
-.topic {
-  grid-area: topic; display: flex; align-items: center; gap: 8px; min-width: 0;
-  padding-top: 12px; border-top: 1px solid var(--border);
-}
-.topicIcon { color: var(--text-soft); }
-.topicInput { flex: 1; min-width: 0; min-height: 38px; border-color: transparent; background: var(--surface-2); }
-@media (max-width: 640px) {
-  .bar { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'tag' 'primary' 'timer' 'topic'; }
-  .timer { justify-self: start; }
+.tool:hover { background: var(--surface-2); }
+.tool small { color: var(--text-soft); font-weight: 600; font-size: 12.5px; }
+.tool:disabled { opacity: 0.5; cursor: default; }
+@media (max-width: 720px) {
+  .tool small { display: none; }
 }

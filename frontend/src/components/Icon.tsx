@@ -153,6 +153,27 @@ const ICONS = {
   ),
   chart: <path d="M4 20.5h16M7 17V11M12 17V6M17 17v-8" />,
   plus: <path d="M12 5v14M5 12h14" />,
+  more: (
+    <>
+      <circle {...f} cx="5" cy="12" r="1.6" />
+      <circle {...f} cx="12" cy="12" r="1.6" />
+      <circle {...f} cx="19" cy="12" r="1.6" />
+    </>
+  ),
+  close: <path d="M6 6l12 12M18 6 6 18" />,
+  share: <path d="M12 3.5v12M7 8.5l5-5 5 5M5 14v5.5h14V14" />,
+  back: <path d="M15 5l-7 7 7 7" />,
+  grip: (
+    <>
+      <circle {...f} cx="9" cy="6" r="1.4" />
+      <circle {...f} cx="15" cy="6" r="1.4" />
+      <circle {...f} cx="9" cy="12" r="1.4" />
+      <circle {...f} cx="15" cy="12" r="1.4" />
+      <circle {...f} cx="9" cy="18" r="1.4" />
+      <circle {...f} cx="15" cy="18" r="1.4" />
+    </>
+  ),
+  flag: <path d="M5.5 21V4M5.5 4.5h12l-2.5 4 2.5 4h-12" />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof ICONS;

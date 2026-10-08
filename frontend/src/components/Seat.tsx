@@ -14,15 +14,17 @@ interface Props {
   actions?: ReactNode;
   /** Dürtme sayacı: arttıkça koltuk kısa bir süre titrer. */
   nudge?: number;
+  /** Koltuğun altındaki kısa durum (ör. "düşünüyor"). */
+  status?: ReactNode;
 }
 
 const SHAKE: Keyframe[] = [0, -7, 7, -5, 5, -2, 0].map((x) => ({ transform: `translateX(${x}px)` }));
 
 /** Masadaki bir koltuk: kart, avatar, isim, rozetler. Krupiyenin önünde "D" düğmesi durur. */
-export function Seat({ person, isYou, size, card, actions, nudge = 0 }: Props) {
+export function Seat({ person, isYou, size, card, actions, nudge = 0, status }: Props) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
-  const status = person.online ? t('room.online') : t('room.offline');
+  const online = person.online ? t('room.online') : t('room.offline');
 
   const seen = useRef(nudge);
   useEffect(() => {
@@ -35,26 +37,26 @@ export function Seat({ person, isYou, size, card, actions, nudge = 0 }: Props) {
   return (
     <div
       ref={ref}
-      className={`${styles.seat} ${person.online ? '' : styles.away}`}
-      title={`${person.nickname} · ${status}`}
+      className={`${styles.seat} ${person.online ? '' : styles.away} ${status ? styles.waiting : ''}`}
+      title={`${person.nickname} · ${online}`}
       tabIndex={actions ? 0 : undefined}
     >
       {card && <div className={styles.card}>{card}</div>}
       <span className={styles.avatar}>
         <Avatar seed={person.avatar} size={size} online={person.online} alt={person.nickname} dealer={person.moderator} />
         {person.moderator && (
-          <span className={styles.dealerButton} title={t('room.dealerButton')} aria-hidden>D</span>
+          <span className={styles.dealerButton} title={t('room.dealerButton')} aria-hidden>K</span>
         )}
       </span>
       <span className={styles.name}>
         {person.nickname}
-        {isYou && <span className={styles.you}> ({t('room.you')})</span>}
+        {isYou && <span className={styles.you}> {t('room.you')}</span>}
       </span>
+      {status && <span className={styles.status}>{status}</span>}
       <span className={styles.badges}>
-        {person.moderator && <span className={styles.badge}>{t('room.moderator')}</span>}
         {person.observer && <span className={`${styles.badge} ${styles.observer}`}>{t('room.observer')}</span>}
       </span>
-      <span className="visually-hidden">{status}</span>
+      <span className="visually-hidden">{online}{person.moderator ? `, ${t('room.moderator')}` : ''}</span>
       {actions && <div className={styles.actions}>{actions}</div>}
     </div>
   );

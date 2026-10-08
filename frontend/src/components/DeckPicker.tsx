@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PRESET_DECKS, type DeckId } from '../api/types';
-import { parseCustomDeck } from '../lib/deck';
+import { cardTone, parseCustomDeck, toneColor } from '../lib/deck';
 import styles from './DeckPicker.module.css';
 
 export interface DeckChoice {
@@ -15,41 +15,57 @@ const PRESET_PREVIEW: Record<Exclude<DeckId, 'custom'>, string[]> = {
   tshirt: ['XS', 'S', 'M', 'L', 'XL', '?', '☕'],
 };
 
-/** Deste seçimi + özel deste girişi ve canlı önizleme. */
+/** Önizleme kartı: odadaki kartla aynı renk ölçeği (küçük hâli). */
+function MiniCards({ cards, label }: { cards: string[]; label: string }) {
+  return (
+    <ul className={styles.preview} aria-label={label}>
+      {cards.map((c, i) => {
+        const color = toneColor(cardTone(cards, c)) ?? '#77837d';
+        return (
+          <li key={`${c}-${i}`} style={{ ['--t' as string]: color }}>{c}</li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Deste seçimi: önizlemeli seçim kartları + özel deste girişi. */
 export function DeckPicker({ id, value, onChange }: { id: string; value: DeckChoice; onChange: (v: DeckChoice) => void }) {
   const { t } = useTranslation();
   const custom = parseCustomDeck(value.customText);
-  const preview = value.deck === 'custom' ? custom.cards : PRESET_PREVIEW[value.deck];
+  const choices: DeckId[] = [...PRESET_DECKS, 'custom'];
 
   return (
-    <div className={styles.picker}>
-      <select id={id} className="input" value={value.deck} onChange={(e) => onChange({ ...value, deck: e.target.value as DeckId })}>
-        {PRESET_DECKS.map((d) => (
-          <option key={d} value={d}>{t(`decks.${d}`)}</option>
-        ))}
-        <option value="custom">{t('decks.custom')}</option>
-      </select>
-      {value.deck === 'custom' && (
-        <>
-          <input
-            className="input"
-            aria-label={t('decks.customLabel')}
-            placeholder={t('decks.customPlaceholder')}
-            value={value.customText}
-            onChange={(e) => onChange({ ...value, customText: e.target.value })}
-          />
-          <small className={custom.error ? 'error-text' : 'muted'}>
-            {custom.error ? t(`decks.error.${custom.error}`, { card: custom.offending }) : t('decks.customHint')}
-          </small>
-        </>
-      )}
-      {preview.length > 0 && (
-        <ul className={styles.preview} aria-label={t('decks.preview')}>
-          {preview.map((c, i) => (
-            <li key={`${c}-${i}`}>{c}</li>
-          ))}
-        </ul>
-      )}
+    <div className={styles.picker} id={id} role="radiogroup" aria-label={t('decks.title')}>
+      {choices.map((d) => {
+        const on = value.deck === d;
+        const cards = d === 'custom' ? custom.cards : PRESET_PREVIEW[d];
+        return (
+          <div key={d} className={`${styles.option} ${on ? styles.on : ''}`}>
+            <button type="button" role="radio" aria-checked={on} className={styles.optionButton} onClick={() => onChange({ ...value, deck: d })}>
+              <span className={styles.radio} aria-hidden />
+              <span className={styles.name}>{t(`decks.${d}`)}</span>
+              {d !== 'custom' && <MiniCards cards={cards} label={t('decks.preview')} />}
+              {d === 'custom' && cards.length > 0 && !on && <MiniCards cards={cards} label={t('decks.preview')} />}
+            </button>
+            {d === 'custom' && on && (
+              <div className={styles.custom}>
+                <input
+                  className="input"
+                  aria-label={t('decks.customLabel')}
+                  placeholder={t('decks.customPlaceholder')}
+                  value={value.customText}
+                  onChange={(e) => onChange({ ...value, customText: e.target.value })}
+                />
+                <small className={custom.error ? 'error-text' : 'muted'}>
+                  {custom.error ? t(`decks.error.${custom.error}`, { card: custom.offending }) : t('decks.customHint')}
+                </small>
+                {cards.length > 0 && <MiniCards cards={cards} label={t('decks.preview')} />}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

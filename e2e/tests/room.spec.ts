@@ -16,7 +16,7 @@ test('iki tarayıcı aynı odaya girer, birbirini görür, yenileyince aynı kol
   await a.getByRole('button', { name: 'Odayı oluştur' }).click();
   await joinAs(a, 'Ayşe');
   await expect(a.getByRole('heading', { name: 'Sprint 42' })).toBeVisible();
-  await expect(a.getByText('Krupiye', { exact: true })).toBeVisible();
+  await expect(a.getByTitle('Krupiye (dağıtıcı düğmesi)')).toBeVisible();
 
   // B linkle girer
   await b.goto(a.url());
@@ -28,16 +28,20 @@ test('iki tarayıcı aynı odaya girer, birbirini görür, yenileyince aynı kol
 
   // B yeniler: form yok, aynı koltuk, A'da hâlâ 2 kişi
   await b.reload();
-  await expect(b.getByText('(sen)')).toBeVisible();
+  await expect(b.getByText('sen', { exact: true })).toBeVisible();
   await expect(b.getByLabel('Takma ad')).toHaveCount(0);
   await expect(a.getByText(/· 2 kişi/)).toBeVisible();
 
-  // Krupiye olmayan B'de ayarlar düğmesi yok
-  await expect(b.getByRole('button', { name: /Oda ayarları/ })).toHaveCount(0);
+  // Krupiye olmayan B'de menüde ayarlar yok
+  await b.getByRole('banner').getByRole('button', { name: 'Daha fazla' }).click();
+  await expect(b.getByText('Odadan çık')).toBeVisible();
+  await expect(b.getByText('Oda ayarları')).toHaveCount(0);
+  await b.keyboard.press('Escape');
 
   // A odayı kapatır, B bilgilendirilir
   a.on('dialog', (d) => void d.accept());
-  await a.getByRole('button', { name: /Oda ayarları/ }).click();
+  await a.getByRole('banner').getByRole('button', { name: 'Daha fazla' }).click();
+  await a.getByText('Oda ayarları').click();
   await a.getByRole('button', { name: 'Odayı kapat' }).click();
   await expect(b.getByText('Oda kapatıldı')).toBeVisible();
 });

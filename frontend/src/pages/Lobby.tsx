@@ -2,23 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ParticipantView, RoomState } from '../api/types';
 import { Avatar } from '../components/Avatar';
-import { CopyLinkButton } from '../components/CopyLinkButton';
+import { Dialog } from '../components/Dialog';
+import { RoomHeader } from '../components/RoomHeader';
+import { Sidebar } from '../components/Sidebar';
 import { Icon } from '../components/Icon';
 import { RoomSettings } from '../components/RoomSettings';
-import { SoundToggle } from '../components/SoundToggle';
 import { TableView } from '../components/TableView';
-import { AssignmentHistory } from '../components/assign/AssignmentHistory';
 import { AssignmentPanel } from '../components/assign/AssignmentPanel';
 import { CardHand } from '../components/poker/CardHand';
 import { EmojiBar } from '../components/poker/EmojiBar';
 import { isRoyalFlush, RoyalFlushCelebration } from '../components/poker/FunFx';
-import { SessionHistory } from '../components/poker/SessionHistory';
+import { TopicField } from '../components/poker/TopicField';
+import { Timer } from '../components/poker/Timer';
 import { EmptyCardSlot, PlayingCard } from '../components/poker/PlayingCard';
 import { ResultsPanel } from '../components/poker/ResultsPanel';
 import { RoundControls } from '../components/poker/RoundControls';
 import { TableCenter } from '../components/poker/TableCenter';
-import { TicketQueue } from '../components/poker/TicketQueue';
-import { cardTone } from '../lib/deck';
+import { cardTone, splitTicketTitle } from '../lib/deck';
 import { useGameTiming } from '../lib/gameClock';
 import { play } from '../lib/sound';
 import { navigate } from '../lib/router';
@@ -28,8 +28,10 @@ import styles from './Lobby.module.css';
 /** Oda ekranı: masa, kart eli, sonuçlar; ticket listesi açıksa yanda kuyruk. */
 export function Lobby({ room, youId }: { room: RoomState; youId: string | null }) {
   const { t } = useTranslation();
-  const { promote, leave, vote, setObserver, nudge, kick, yourVote, flyingEmojis, nudges } = useRoomStore();
+  const { promote, leave, vote, setObserver, nudge, kick, reveal, newRound, yourVote, flyingEmojis, nudges } = useRoomStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
   const [celebrate, setCelebrate] = useState(0);
 
   const me = room.participants.find((p) => p.id === youId);
@@ -44,6 +46,8 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
   // Kendi oyum yalnızca bu tura aitse geçerli (yeni turda/deste değişince sıfırlanır).
   const myCard = yourVote && yourVote.roundId === round.id ? (yourVote.card ?? null) : null;
   const iVoted = !!youId && voted.has(youId);
+  const ticket = round.ticketId ? room.tickets.find((tk) => tk.id === round.ticketId) : undefined;
+  const hasPending = room.ticketsEnabled && room.tickets.some((tk) => tk.status === 'PENDING' && tk.id !== round.ticketId);
   const onlineVoters = seated.filter((p) => p.online);
   const allVoted = onlineVoters.length > 0 && onlineVoters.every((p) => voted.has(p.id));
   // "Kim alacak?" oyunu sürerken sonuç ticket listesinde ve geçmişte görünmez (sürprizi bozmasın).
@@ -111,9 +115,34 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
     );
   };
 
+  // 'R': krupiye için kartları aç / yeni tur (yazı alanındayken çalışmaz).
+  useEffect(() => {
+    if (!isModerator) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'r' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      if (settingsOpen || assignment) return;
+      if (voting) {
+        if (round.votedIds.length > 0) reveal();
+      } else {
+        newRound();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isModerator, voting, round.votedIds.length, settingsOpen, assignment, reveal, newRound]);
+
+  // Ekran okuyucu: oylama ve açılış duyuruları.
+  useEffect(() => {
+    if (voting) setAnnouncement(t('a11y.votes', { voted: round.votedIds.length, total: seated.length }));
+    else setAnnouncement(stats ? t('a11y.revealed') : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round.votedIds.length, round.state, round.id]);
+
   const observerList = observers.length > 0 && (
     <section className={styles.observers} aria-label={t('room.observers')}>
-      <h2 className={`panel-title ${styles.sectionTitle}`}><Icon name="eye" size={16} />{t('room.observers')}</h2>
+      <h2 className={styles.sectionTitle}><Icon name="eye" size={14} />{t('room.observers')}</h2>
       <ul>
         {observers.map((o) => (
           <li key={o.id} className={o.online ? '' : styles.away}>
@@ -126,16 +155,10 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
             {isModerator && o.id !== youId && (
               <span className={styles.observerTools}>
                 {!o.moderator && (
-                  <button type="button" className="btn btn-ghost btn-small" onClick={() => promote(o.id)}>
-                    {t('room.makeModerator')}
-                  </button>
+                  <button type="button" className="btn btn-ghost btn-small" onClick={() => promote(o.id)}>{t('room.makeModerator')}</button>
                 )}
-                <button type="button" className="btn btn-ghost btn-small" onClick={() => setObserver(o.id, false)}>
-                  {t('room.makeParticipant')}
-                </button>
-                <button type="button" className="btn btn-ghost btn-small btn-danger" onClick={() => confirmKick(o)}>
-                  {t('room.kick')}
-                </button>
+                <button type="button" className="btn btn-ghost btn-small" onClick={() => setObserver(o.id, false)}>{t('room.makeParticipant')}</button>
+                <button type="button" className="btn btn-ghost btn-small btn-danger" onClick={() => confirmKick(o)}>{t('room.kick')}</button>
               </span>
             )}
           </li>
@@ -144,100 +167,100 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
     </section>
   );
 
+  const renderStatus = (p: ParticipantView) => {
+    if (!voting) return null;
+    return voted.has(p.id) ? t('seat.voted') : t('seat.thinking');
+  };
+
+  const sidebar = (
+    <Sidebar room={room} isModerator={isModerator} hiddenResultId={hiddenResultId} observers={observerList || null} />
+  );
+  const hasSidebar = true;
+  const parts = ticket ? splitTicketTitle(ticket.title) : null;
+  const queueLabel = room.ticketsEnabled
+    ? t('tickets.progress', { done: room.tickets.filter((tk) => tk.status === 'ESTIMATED').length, total: room.tickets.length })
+    : t('sidebar.history');
+
   return (
-    <div className={styles.lobby}>
-      <div className={styles.topbar}>
-        <div className={styles.heading}>
-          <h1 className={styles.title}>{room.name ?? t('app.name')}</h1>
-          <p className={styles.meta}>
-            <span className={styles.codeChip}>
-              <span className="visually-hidden">{t('room.code')}: </span>
-              <span aria-hidden className={styles.codeLabel}>{t('room.code')}</span>
-              <strong className={styles.code}>{room.code}</strong>
-            </span>
-            <span className={styles.metaItem}>· {t('room.count', { count: room.participants.length })}</span>
-            <span className={styles.metaItem}>· {t(`decks.${room.deck}`)}</span>
-            {room.passwordProtected && <span className={styles.metaItem}>· <Icon name="lock" size={14} /> {t('room.passwordProtected')}</span>}
-          </p>
-          {!round.ticketId && round.topic && (
-            <p className={styles.topic}><span className={styles.topicLabel}>{t('room.topic')}</span> {round.topic}</p>
-          )}
-        </div>
-        <div className={styles.tools}>
-          <CopyLinkButton code={room.code} />
-          <SoundToggle />
-          {me && (
-            me.observer ? (
-              <button type="button" className="btn btn-small" onClick={() => setObserver(null, false)}>
-                <Icon name="cards" size={16} />{t('room.becomeParticipant')}
-              </button>
+    <div className={styles.room}>
+      <RoomHeader
+        room={room}
+        me={me}
+        isModerator={isModerator}
+        waiting={seated.filter((p) => !voted.has(p.id)).length}
+        voting={voting}
+        hasSidebar={hasSidebar}
+        onSettings={() => setSettingsOpen(true)}
+        onSidebar={() => setSheetOpen(true)}
+        onLeave={onLeave}
+        onObserver={(o) => setObserver(null, o)}
+        observerLocked={voting && iVoted}
+      />
+
+      <div className={styles.body}>
+        <main className={styles.stage}>
+          <div className={styles.heading}>
+            {parts ? (
+              <h2 className={styles.ticket}>
+                {parts.key && <span className={styles.key}>{parts.key}</span>}
+                <span>{parts.text}</span>
+              </h2>
+            ) : isModerator && voting ? (
+              <TopicField topic={round.topic} />
             ) : (
-              <button type="button" className="btn btn-ghost btn-small" disabled={voting && iVoted}
-                title={voting && iVoted ? t('errors.ALREADY_VOTED') : undefined}
-                onClick={() => setObserver(null, true)}>
-                <Icon name="eye" size={16} />{t('room.becomeObserver')}
+              <h2 className={styles.ticket}>{round.topic ? <span>{round.topic}</span> : <span className={styles.free}>{t('poker.freeRound')}</span>}</h2>
+            )}
+            <div className={styles.headingTools}>
+              {room.timer && <Timer timer={room.timer} />}
+              <button type="button" className={`btn btn-small ${styles.phoneOnly}`} onClick={() => setSheetOpen(true)}>
+                <Icon name="ticket" size={16} />{queueLabel}
               </button>
-            )
-          )}
-          {isModerator && (
-            <button type="button" className="btn btn-small" onClick={() => setSettingsOpen((v) => !v)} aria-expanded={settingsOpen}>
-              <Icon name="gear" size={16} />{t('room.settings')}
-            </button>
-          )}
-          <button type="button" className="btn btn-ghost btn-small" onClick={onLeave}>
-            <Icon name="door" size={16} />{t('room.leave')}
-          </button>
-        </div>
-      </div>
-
-      {settingsOpen && isModerator && <RoomSettings room={room} onClose={() => setSettingsOpen(false)} />}
-
-      <div className={`${styles.layout} ${room.ticketsEnabled ? '' : styles.solo}`}>
-        <div className={styles.main}>
-          {isModerator && <RoundControls room={room} allVoted={allVoted} youId={youId} />}
-
-          {assignment && (
-            <AssignmentPanel room={room} assignment={assignment} youId={youId} isModerator={isModerator} timing={timing} />
-          )}
+            </div>
+          </div>
 
           <TableView
             people={seated}
             youId={youId}
             renderCard={renderCard}
             renderActions={renderActions}
-            center={<TableCenter room={room} seatedCount={seated.length} allVoted={allVoted} />}
+            renderStatus={renderStatus}
+            roomName={room.name ?? undefined}
+            center={<TableCenter room={room} seatedCount={seated.length} allVoted={allVoted} isModerator={isModerator} />}
             dealKey={round.id}
             revealKey={voting ? null : round.id}
             emojis={flyingEmojis}
             nudges={nudges}
           />
 
-          {me && !me.observer && (
-            <CardHand cards={room.deckCards} selected={myCard} disabled={!voting} onVote={vote} dealKey={round.id} />
-          )}
-          {me?.observer && <p className={`muted ${styles.observerNote}`}>{t('poker.observerNote')}</p>}
-          {me && <EmojiBar />}
+          <div className={styles.toolbar}>
+            {isModerator && <RoundControls room={room} youId={youId} hasPending={hasPending} />}
+            {me && <EmojiBar />}
+          </div>
 
-          {!voting && stats && <ResultsPanel room={room} round={round} isModerator={isModerator} />}
+          <div className={`${styles.dock} ${!voting && stats ? '' : styles.dockHand}`}>
+            {!voting && stats ? (
+              <ResultsPanel room={room} round={round} isModerator={isModerator} hasPending={hasPending} />
+            ) : me && !me.observer ? (
+              <CardHand cards={room.deckCards} selected={myCard} disabled={!voting} onVote={vote} dealKey={round.id} />
+            ) : (
+              <p className={`muted ${styles.observerNote}`}>{me?.observer ? t('poker.observerNote') : ''}</p>
+            )}
+          </div>
+        </main>
 
-          {!room.ticketsEnabled && (
-            <>
-              <SessionHistory rounds={room.sessionHistory} />
-              <AssignmentHistory records={room.assignmentHistory} hiddenId={hiddenResultId} />
-              {observerList}
-            </>
-          )}
-        </div>
-
-        {room.ticketsEnabled && (
-          <aside className={styles.side}>
-            <TicketQueue room={room} isModerator={isModerator} hiddenResultId={hiddenResultId} />
-            <SessionHistory rounds={room.sessionHistory} />
-            <AssignmentHistory records={room.assignmentHistory} hiddenId={hiddenResultId} />
-            {observerList}
-          </aside>
-        )}
+        <aside className={styles.side} aria-label={t('sidebar.label')}>{sidebar}</aside>
       </div>
+
+      {sheetOpen && (
+        <Dialog title={room.ticketsEnabled ? t('tickets.title') : t('sidebar.history')} onClose={() => setSheetOpen(false)}>
+          <div className={styles.sheet}>{sidebar}</div>
+        </Dialog>
+      )}
+      {settingsOpen && isModerator && <RoomSettings room={room} onClose={() => setSettingsOpen(false)} />}
+      {assignment && (
+        <AssignmentPanel room={room} assignment={assignment} youId={youId} isModerator={isModerator} timing={timing} hasPending={hasPending} />
+      )}
+      <div className="visually-hidden" role="status" aria-live="polite">{announcement}</div>
       {celebrate > 0 && <RoyalFlushCelebration key={celebrate} />}
     </div>
   );

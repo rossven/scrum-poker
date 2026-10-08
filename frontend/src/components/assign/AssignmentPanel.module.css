@@ -1,43 +1,108 @@
-.panel {
-  padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent), var(--shadow);
+.dialog { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+.stepsRow { display: flex; align-items: center; gap: 12px; padding: 16px 24px 0; }
+.steps { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; flex: 1; flex-wrap: wrap; }
+.steps li {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; color: var(--text-soft); background: var(--surface-2);
 }
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.title { font-size: 21px; }
-.subject { margin: 2px 0 0; color: var(--text-soft); font-size: 14px; overflow-wrap: anywhere; }
-.body { display: flex; flex-direction: column; gap: 12px; }
-.lead { margin: 0; font-size: 15px; }
-.countdown { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
-.bigButton { align-self: flex-start; min-height: 48px; font-size: 17px; }
-.people { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.people li {
-  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 999px;
-  background: var(--surface-2); font-size: 14px; font-weight: 600;
+.steps li b {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px;
+  background: var(--surface); color: var(--text-soft);
 }
-.checkList { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
-.checkList label {
-  display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: var(--radius-sm);
-  background: var(--surface-2); cursor: pointer; font-size: 14px;
+.steps li.on { background: var(--accent-soft); color: var(--accent-strong); }
+.steps li.on b { background: var(--accent); color: var(--accent-contrast); }
+.steps li.ok b { background: var(--accent-soft); color: var(--accent-strong); }
+.close {
+  width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 12px;
+  background: none; color: var(--text-soft); cursor: pointer;
 }
-.checkList input, .fair input { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
-.tools { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
-.note { margin: 0; font-size: 14px; color: var(--text-soft); display: flex; align-items: center; gap: 6px; }
-.games { border: 0; padding: 0; margin: 0; display: flex; gap: 8px; flex-wrap: wrap; }
-.games legend { margin-bottom: 6px; }
-.gameOption {
-  display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px 8px 10px; border-radius: 999px;
-  border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-weight: 600;
+.close:hover { background: var(--surface-2); }
+
+.head { padding: 18px 24px 8px; display: flex; flex-direction: column; gap: 4px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--text-soft); }
+.head h1, .result h1 { margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 1.2; font-weight: 800; }
+.head p, .result p { margin: 0; color: var(--text-soft); font-size: 15px; }
+
+.split { display: grid; grid-template-columns: 260px 1fr; gap: 28px; padding: 12px 24px 8px; align-items: start; }
+.timerCol { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.ring { position: relative; width: 190px; height: 190px; }
+.ring svg { width: 100%; height: 100%; }
+.ringText { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ringText b { font-family: var(--font-display); font-size: 40px; font-variant-numeric: tabular-nums; }
+.ringText span { font-size: 13px; color: var(--text-soft); }
+.big { min-height: 52px; padding: 0 28px; font-size: 16px; width: 100%; justify-content: center; }
+.passBtn { padding: 0 20px; }
+.note { font-size: 13px; color: var(--text-soft); text-align: center; }
+.lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-soft); }
+.listCol { display: flex; flex-direction: column; gap: 8px; }
+.person { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 14px; background: var(--surface-2); }
+.person b { flex: 1; font-weight: 600; }
+.you { color: var(--text-soft); font-weight: 500; }
+.tag { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.tagYes { background: var(--accent); color: var(--accent-contrast); }
+.tagNo { background: var(--surface); color: var(--text-soft); border: 1px solid var(--border); }
+.tagWait { background: transparent; color: var(--text-soft); border: 1px dashed var(--border); }
+
+.foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 16px 24px 20px; border-top: 1px solid var(--border); margin-top: 12px; }
+.grow { flex: 1; }
+.chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer;
 }
-.gameOption input { position: absolute; opacity: 0; pointer-events: none; }
-.gameOption:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chosen { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
-.gameIcon { display: inline-flex; color: var(--accent-strong); }
-.fair { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 14px; }
-.winner {
-  display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-sm);
-  background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+.chipOn { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+.bigAction { min-height: 48px; padding: 0 26px; font-size: 15px; }
+
+.cols { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; padding: 12px 24px 8px; }
+.col { display: flex; flex-direction: column; gap: 10px; }
+.cand { padding: 12px 14px; border-radius: 16px; background: var(--surface-2); display: flex; flex-direction: column; gap: 10px; }
+.candTop { display: flex; align-items: center; gap: 12px; }
+.candName { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.candName b { font-size: 16px; }
+.candName span { font-size: 12px; color: var(--text-soft); }
+.pct { font-family: var(--font-display); font-size: 20px; font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.3s; }
+.addRow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.addChip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 8px; border-radius: 999px;
+  border: 1px dashed var(--border); background: transparent; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
 }
-.winner p { margin: 2px 0 0; font-size: 13px; }
-.winnerName { font-family: var(--font-display); font-size: 24px; display: inline-flex; align-items: center; gap: 8px; }
-.winnerName :global(.icon) { color: var(--gold); }
-.ranking { margin: 0; padding-left: 22px; display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 14px; color: var(--text-soft); }
+.addChip:hover { border-style: solid; background: var(--surface-2); }
+.game {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; text-align: left;
+  border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+}
+.game:disabled { cursor: default; }
+.gameOn { border-color: var(--accent); background: var(--accent-soft); }
+.gameIcon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-2); color: var(--accent-strong); }
+.gameText { display: flex; flex-direction: column; gap: 2px; }
+.gameText b { font-size: 16px; }
+.gameText span { font-size: 13px; color: var(--text-soft); }
+
+.stage { padding: 12px 24px 8px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.progress { width: 100%; display: flex; flex-direction: column; gap: 6px; align-items: center; font-weight: 600; }
+.progressBar { width: 100%; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.progressBar i { display: block; height: 100%; background: var(--accent); }
+
+.result { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 36px 24px 28px; text-align: center; overflow: hidden; }
+.winnerAvatar { border-radius: 50%; padding: 6px; background: var(--gold-soft); box-shadow: 0 0 0 6px var(--accent-soft); }
+.ranking { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 0; padding: 0; list-style: none; counter-reset: r; }
+.ranking li { counter-increment: r; padding: 4px 12px; border-radius: 999px; background: var(--surface-2); font-size: 13px; font-weight: 600; }
+.ranking li::before { content: counter(r) '. '; color: var(--text-soft); }
+.resultActions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.confetti { position: absolute; font-size: 28px; animation: float 3s ease-in-out infinite; pointer-events: none; }
+.c1 { top: 24px; left: 14%; }
+.c2 { top: 60px; right: 18%; animation-delay: 0.4s; }
+.c3 { bottom: 40px; left: 22%; animation-delay: 0.8s; }
+.c4 { bottom: 70px; right: 12%; animation-delay: 1.2s; }
+@keyframes float { 50% { transform: translateY(-10px) rotate(8deg); } }
+
+@media (max-width: 720px) {
+  .split, .cols { grid-template-columns: 1fr; gap: 18px; padding-inline: 16px; }
+  .stepsRow, .head, .foot, .stage { padding-inline: 16px; }
+  .steps li { font-size: 0; gap: 0; padding: 6px; }
+  .steps li.on { font-size: 13px; gap: 8px; padding-right: 14px; }
+  .head h1, .result h1 { font-size: 22px; }
+  .foot { position: sticky; bottom: 0; background: var(--surface); }
+}

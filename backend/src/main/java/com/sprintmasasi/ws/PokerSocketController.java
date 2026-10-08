@@ -38,6 +38,8 @@ public class PokerSocketController {
 
     public record TicketsEnabledPayload(boolean enabled) {}
 
+    public record AutoRevealPayload(boolean enabled) {}
+
     public record TopicPayload(String topic) {}
 
     public record NudgePayload(String participantId) {}
@@ -139,6 +141,12 @@ public class PokerSocketController {
     public void setObserver(@Payload ObserverPayload body, Principal principal) {
         var p = (RoomPrincipal) principal;
         poker.setObserver(p.roomCode(), p.participantId(), body.participantId(), body.observer());
+    }
+
+    @MessageMapping("room.set_auto_reveal")
+    public void setAutoReveal(@Payload AutoRevealPayload body, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        poker.setAutoReveal(p.roomCode(), p.participantId(), body.enabled());
     }
 
     @MessageMapping("room.set_tickets_enabled")

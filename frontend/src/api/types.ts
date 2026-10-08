@@ -138,6 +138,8 @@ export interface AssignmentView {
   volunteerSeconds: number;
   volunteerRemainingMs?: number;
   volunteers: string[];
+  /** Gönüllü turunda "pas" diyenler. */
+  passes?: string[];
   candidates: string[];
   result?: AssignmentRecord;
   game?: GameView;
@@ -168,6 +170,10 @@ export interface RoomState {
   fairRotation: boolean;
   assignment?: AssignmentView;
   assignmentHistory: AssignmentRecord[];
+  /** Otomatik aç: bağlı herkes oy verince kartlar kendiliğinden açılır. */
+  autoReveal: boolean;
+  /** "Kim alacak?" gönüllü süresi oda ayarı (sn; 0 = süresiz). */
+  volunteerSeconds: number;
 }
 
 /** Kişinin kendi oyu; yalnızca ona gelir. card yoksa oy geri çekildi. */

@@ -78,6 +78,12 @@ public class RoomService {
 
     public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
                                    boolean ticketsEnabled, String clientIp) {
+        return create(rawName, rawDeck, customCards, rawPassword, ticketsEnabled, false, clientIp);
+    }
+
+    /** autoReveal: oda kurarken "Otomatik aç" anahtarı. */
+    public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
+                                   boolean ticketsEnabled, boolean autoReveal, String clientIp) {
         if (!roomCreation.tryAcquire(clientIp)) {
             throw new RoomException(ErrorCode.RATE_LIMITED);
         }
@@ -89,6 +95,7 @@ public class RoomService {
         // Çakışma olasılığı çok düşük ama yine de yeni kod dene.
         for (int attempt = 0; attempt < 10; attempt++) {
             Room room = new Room(ids.roomCode(), name, deck, hash, claim, ticketsEnabled, clock.instant());
+            room.setAutoReveal(autoReveal);
             if (repository.saveIfAbsent(room)) {
                 stats.roomCreated();
                 if (ticketsEnabled) {
@@ -426,7 +433,8 @@ public class RoomService {
                 custom == null ? null : custom.cards(), room.passwordProtected(), props.maxParticipants(), people,
                 room.ticketsEnabled(), tickets, room.currentTicketId(), roundView(room), timerView(room),
                 List.copyOf(room.sessionHistory()), room.fairRotation(), assignmentView(room),
-                room.assignmentHistory().stream().map(AssignmentRecord::view).toList());
+                room.assignmentHistory().stream().map(AssignmentRecord::view).toList(), room.autoReveal(),
+                room.volunteerSeconds());
     }
 
     /** Süren "Kim alacak?" akışı; zamanlar gönderim anına göre göreli (istemci kendi saatiyle sayar). */
@@ -442,7 +450,7 @@ public class RoomService {
         GameView game = a.game() == null ? null : new GameView(a.game().type(),
                 Duration.between(now, a.game().startsAt()).toMillis(), a.game().durationMs(), a.game().animation());
         return new AssignmentView(a.id(), a.phase().name(), a.ticketId(), a.title(), a.volunteerSeconds(), remaining,
-                List.copyOf(a.volunteers()), List.copyOf(a.candidates()), result, game);
+                List.copyOf(a.volunteers()), List.copyOf(a.candidates()), result, game, List.copyOf(a.passes()));
     }
 
     /**

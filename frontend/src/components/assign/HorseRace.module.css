@@ -1,20 +1,21 @@
-.track {
-  display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, var(--felt-light), var(--felt-dark)); color: var(--table-text);
+/* Kum rengi pist, şeritler kesik çizgiyle ayrılır; bitiş çizgisi sağda dama deseni. */
+.track { position: relative; width: 100%; box-sizing: border-box; border-radius: 18px; background: linear-gradient(180deg, #c9a46b, #b48a52); padding: 14px 0; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25); overflow: hidden; }
+.finish { position: absolute; right: 70px; top: 0; bottom: 0; width: 18px; background: repeating-conic-gradient(#fff 0 25%, #1b1b1b 0 50%) 0 0 / 9px 9px; opacity: 0.92; }
+.lane { position: relative; height: 96px; }
+.lane + .lane { border-top: 2px dashed rgba(255, 255, 255, 0.55); }
+.label { position: absolute; left: 14px; top: 8px; font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, 0.92); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+/* Yol: atın sağ ucu ilerlemeye göre; başlangıçta at çizginin solunda durur. */
+.road { position: absolute; left: 150px; right: 88px; top: 0; bottom: 0; }
+.runner { position: absolute; top: 34px; transform: translateX(-100%); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.horse { font-size: 46px; line-height: 1; transform: scaleX(-1); display: inline-block; }
+.runner > span:last-child { border: 3px solid #fff; border-radius: 50%; }
+.winner .label { color: #fff3c4; }
+.winner .runner { filter: drop-shadow(0 0 8px #ffe08a); }
+@media (max-width: 720px) {
+  .lane { height: 74px; }
+  .road { left: 108px; right: 62px; }
+  .finish { right: 44px; width: 14px; }
+  .runner { top: 28px; }
+  .horse { font-size: 32px; }
+  .label { font-size: 10.5px; left: 10px; top: 6px; }
 }
-.lane { display: grid; grid-template-columns: minmax(60px, 110px) 1fr 28px; align-items: center; gap: 8px; }
-.name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Bitiş çizgisi sağda: dama deseni */
-.road {
-  position: relative; height: 38px; border-bottom: 1px dashed color-mix(in srgb, var(--table-text) 35%, transparent);
-  margin-left: 58px; /* başlangıçta atlar çizginin solunda durur */
-}
-.road::after {
-  content: ''; position: absolute; right: -2px; top: 0; bottom: 0; width: 6px;
-  background: repeating-linear-gradient(0deg, #fff 0 6px, #111 6px 12px); opacity: 0.85;
-}
-.runner { position: absolute; top: 50%; transform: translate(-100%, -50%); display: flex; align-items: center; gap: 2px; white-space: nowrap; }
-.horse { font-size: 24px; transform: scaleX(-1); display: inline-block; }
-.place { font-weight: 800; text-align: right; }
-.winner .name, .winner .place { color: #ffe08a; }
-.winner .runner { filter: drop-shadow(0 0 6px #ffe08a); }

@@ -4,39 +4,38 @@
  * Masa ve kart yüzleri iki temada da aynı kalır; değişen zemin ve paneller.
  */
 :root {
-  --bg: #f4f6f4;
-  --bg-soft: #e9ede9;
+  --bg: #f4f6f3;
+  --bg-soft: #e9eee9;
   --surface: #ffffff;
-  --surface-2: #f3f5f3;
-  --border: #e0e5e0;
-  --text: #131c17;
-  --text-soft: #5a6660;
-  --accent: #12775a;        /* birincil düğmeler */
-  --accent-strong: #0c5c45; /* link ve rozet metni */
+  --surface-2: #eef2ee;
+  --border: #dfe6e1;
+  --text: #121b16;
+  --text-soft: #56635c;
+  --accent: #0f7656;        /* birincil düğmeler */
+  --accent-strong: #0b5a42; /* link ve rozet metni */
   --accent-contrast: #ffffff;
-  --accent-soft: #e3f2ec;
+  --accent-soft: #e0f1e9;
   --gold: #e3a52c;          /* yalnızca küçük vurgular (krupiye, kazanan) */
   --gold-soft: #f5d48a;
-  --sage: #22a06b;          /* çevrimiçi */
+  --sage: #2fbf7a;          /* çevrimiçi */
   --danger: #c2333f;
-  --tone-low: #2f6fe0;      /* düşük puan */
-  --tone-high: #d93a3a;     /* yüksek puan */
-  --felt: #1c6b46;
-  --felt-light: #237850;    /* çuhanın aydınlık ortası; üstündeki metinle kontrast ≥ 4.5 */
-  --felt-dark: #0e4a2f;
-  --rail: #5b2e1d;
-  --rail-dark: #3a1b10;
-  --table: var(--felt);
-  --table-edge: var(--rail);
-  --table-text: #f5f0e1;
+  --tone-low: #2f62d8;      /* düşük puan (kart tonları lib/deck.ts'te) */
+  --tone-high: #a3213a;     /* yüksek puan */
+  --felt: #22855a;
+  --felt-light: #22855a;
+  --felt-dark: #145f3e;
+  --ring: #0d4a30;          /* masanın ince koyu halkası */
+  --table-text: #f4f8f5;
   --card-face: #ffffff;
   --card-ink: #1b2430;
-  --card-red: #d93a3a;
-  --card-back: #12775a;
+  --card-back-1: #f26a3d;   /* kapalı kart: turuncu → kırmızı */
+  --card-back-2: #b92d1c;
   --plate: #17211c;         /* koltuk isim plakası */
   --plate-text: #f3f6f4;
-  --shadow: 0 1px 2px rgba(16, 24, 20, 0.05), 0 8px 24px rgba(16, 24, 20, 0.07);
-  --shadow-lg: 0 2px 6px rgba(16, 24, 20, 0.06), 0 18px 40px rgba(16, 24, 20, 0.12);
+  --ink-mix: 74%;           /* kart rakamı: tonun koyulaştırılmış hâli */
+  --shadow: 0 1px 2px rgba(16, 30, 22, 0.06), 0 8px 22px rgba(16, 30, 22, 0.08);
+  --shadow-lg: 0 2px 6px rgba(16, 30, 22, 0.06), 0 18px 40px rgba(16, 30, 22, 0.12);
+  --scrim: rgba(14, 22, 18, 0.55);
   --radius: 18px;
   --radius-sm: 12px;
   --font: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -48,47 +47,63 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0c1210;
+    --bg: #0b100e;
     --bg-soft: #141c18;
-    --surface: #151d19;
-    --surface-2: #1b2520;
-    --border: #26322c;
-    --text: #e9eeeb;
-    --text-soft: #9daaa3;
-    --accent: #3fcf96;
-    --accent-strong: #7ee0b5;
-    --accent-contrast: #062118;
-    --accent-soft: #163128;
+    --surface: #141b18;
+    --surface-2: #1a231f;
+    --border: #26312c;
+    --text: #e8eee9;
+    --text-soft: #9aa8a1;
+    --accent: #45d39b;
+    --accent-strong: #8ae6bf;
+    --accent-contrast: #05231a;
+    --accent-soft: #16302a;
     --gold: #f0b94a;
     --gold-soft: #b8903f;
-    --sage: #3fcf96;
+    --sage: #45d39b;
     --danger: #f07a85;
+    --felt: #1a6b48;
+    --felt-light: #1a6b48;
+    --felt-dark: #0f4630;
+    --ring: #0a3021;
+    --table-text: #eef5f0;
+    --card-face: #eef1ec;
     --plate: #2a3832;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --ink-mix: 80%;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 26px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.4), 0 18px 40px rgba(0, 0, 0, 0.5);
+    --scrim: rgba(0, 0, 0, 0.62);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #0c1210;
+  --bg: #0b100e;
   --bg-soft: #141c18;
-  --surface: #151d19;
-  --surface-2: #1b2520;
-  --border: #26322c;
-  --text: #e9eeeb;
-  --text-soft: #9daaa3;
-  --accent: #3fcf96;
-  --accent-strong: #7ee0b5;
-  --accent-contrast: #062118;
-  --accent-soft: #163128;
+  --surface: #141b18;
+  --surface-2: #1a231f;
+  --border: #26312c;
+  --text: #e8eee9;
+  --text-soft: #9aa8a1;
+  --accent: #45d39b;
+  --accent-strong: #8ae6bf;
+  --accent-contrast: #05231a;
+  --accent-soft: #16302a;
   --gold: #f0b94a;
   --gold-soft: #b8903f;
-  --sage: #3fcf96;
+  --sage: #45d39b;
   --danger: #f07a85;
+  --felt: #1a6b48;
+  --felt-light: #1a6b48;
+  --felt-dark: #0f4630;
+  --ring: #0a3021;
+  --table-text: #eef5f0;
+  --card-face: #eef1ec;
   --plate: #2a3832;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --ink-mix: 80%;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 26px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.4), 0 18px 40px rgba(0, 0, 0, 0.5);
+  --scrim: rgba(0, 0, 0, 0.62);
   color-scheme: dark;
 }
 
@@ -99,10 +114,7 @@ html, body, #root { height: 100%; }
 body {
   margin: 0;
   /* Zemin: düz renk, üstte çok hafif yeşil ışık. Desen yok. */
-  background:
-    radial-gradient(1100px 480px at 50% -12%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 16px;
@@ -177,3 +189,19 @@ h1 { font-weight: 800; letter-spacing: -0.025em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* Simge düğmesi: 44 px dokunma hedefi (başlık, panel kapatma vb.) */
+.ib {
+  width: 44px; height: 44px; flex-shrink: 0; display: inline-grid; place-items: center; padding: 0;
+  border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text-soft); cursor: pointer;
+}
+.ib:hover { background: var(--surface-2); color: var(--text); }
+.ib[aria-pressed='true'] { color: var(--accent-strong); }
+
+/* Anahtar (switch) görünümü: oda ayarları ve oda kurma */
+.sw { width: 46px; height: 28px; border-radius: 99px; background: var(--border); position: relative; flex-shrink: 0; transition: background 0.15s; }
+.sw::after { content: ''; position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: left 0.15s; }
+.sw.on { background: var(--accent); }
+.sw.on::after { left: 21px; }
+
+.kbd { display: inline-block; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; font-size: 11.5px; color: var(--text-soft); background: var(--surface-2); }

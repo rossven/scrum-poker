@@ -1,45 +1,69 @@
 import { useTranslation } from 'react-i18next';
 import type { RoomState } from '../../api/types';
 import { formatNumber } from '../../lib/deck';
-import { Timer } from './Timer';
+import { useRoomStore } from '../../store/roomStore';
 import styles from './TableCenter.module.css';
 
 interface Props {
   room: RoomState;
   seatedCount: number;
   allVoted: boolean;
+  isModerator: boolean;
 }
 
 /**
- * Masanın ortası: ticket listesi açıksa masadaki ticket, tur durumu, zamanlayıcı ve açılınca kısa sonuç.
- * Ticket'sız turda başlık yok (ekip çoğunlukla yalnızca puanlıyor); konu krupiye tepsisinden isteğe bağlı yazılır.
+ * Masanın ortası, tek ana işlem: oy verirken krupiyede "Kartları aç 3 / 5", diğerlerinde oy sayacı;
+ * kartlar açılınca büyük öneri; final kaydedilince final tahmin. Ticket başlığı masada değil, masanın üstündedir.
  */
-export function TableCenter({ room, seatedCount, allVoted }: Props) {
+export function TableCenter({ room, seatedCount, allVoted, isModerator }: Props) {
   const { t } = useTranslation();
+  const reveal = useRoomStore((s) => s.reveal);
   const round = room.round;
-  const ticket = room.tickets.find((tk) => tk.id === room.currentTicketId);
   const stats = round.stats;
+  const voted = round.votedIds.length;
 
-  let status: string;
   if (round.state === 'VOTING') {
-    status = allVoted ? t('poker.everyoneVoted') : t('poker.votedCount', { voted: round.votedIds.length, total: seatedCount });
-  } else if (round.state === 'FINALIZED') {
-    status = t('poker.finalSaved', { value: round.finalEstimate });
-  } else if (stats?.average !== undefined) {
-    status = t('poker.revealedAverage', { value: formatNumber(stats.average) });
-  } else {
-    status = t('poker.revealed');
+    const progress = `${voted} / ${seatedCount}`;
+    return (
+      <div className={styles.center}>
+        {isModerator ? (
+          <button type="button" className={styles.reveal} onClick={reveal} disabled={voted === 0}
+            title={voted === 0 ? t('poker.noVotesYet') : allVoted ? t('poker.everyoneVoted') : undefined}>
+            {t('poker.reveal')} <span>{progress}</span>
+          </button>
+        ) : (
+          <span className={styles.status} aria-live="polite">
+            {allVoted ? t('poker.everyoneVoted') : t('poker.votedCount', { voted, total: seatedCount })}
+          </span>
+        )}
+        {isModerator && allVoted && !room.autoReveal && <span className={styles.hint} aria-live="polite">{t('poker.everyoneVoted')}</span>}
+        {!isModerator && <span className={styles.hint}>{t('poker.waitingDealer')}</span>}
+      </div>
+    );
   }
 
+  if (round.state === 'FINALIZED') {
+    return (
+      <div className={styles.center} aria-live="polite">
+        <span className={styles.eyebrow}>{t('poker.finalLabel')}</span>
+        <span className={styles.big}>{round.finalEstimate}</span>
+      </div>
+    );
+  }
+
+  const suggested = stats?.suggested;
   return (
-    <div className={styles.center}>
-      {ticket && (
-        <strong className={styles.ticket}>
-          {ticket.link ? <a href={ticket.link} target="_blank" rel="noopener noreferrer">{ticket.title}</a> : ticket.title}
-        </strong>
+    <div className={styles.center} aria-live="polite">
+      {suggested ? (
+        <>
+          <span className={styles.eyebrow}>{t('poker.suggestionTitle')}</span>
+          <span className={styles.big}>{suggested}</span>
+        </>
+      ) : (
+        <span className={styles.status}>
+          {stats?.average !== undefined ? t('poker.revealedAverage', { value: formatNumber(stats.average) }) : t('poker.revealed')}
+        </span>
       )}
-      <span className={styles.status} aria-live="polite">{status}</span>
-      {room.timer && <Timer timer={room.timer} />}
     </div>
   );
 }

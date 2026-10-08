@@ -1,8 +1,7 @@
-.bar { display: flex; align-items: center; justify-content: center; gap: 2px; flex-wrap: wrap; }
-.label { font-size: 13px; color: var(--text-soft); margin-right: 6px; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px; }
 .button {
-  width: 38px; height: 38px; border-radius: 50%; border: 1px solid transparent; background: transparent;
-  font-size: 20px; line-height: 1; cursor: pointer; transition: transform 0.12s, background 0.12s;
+  width: 48px; height: 48px; border-radius: 12px; border: 0; background: transparent;
+  font-size: 24px; line-height: 1; cursor: pointer; transition: transform 0.12s, background 0.12s;
 }
-.button:hover:not(:disabled) { transform: translateY(-2px) scale(1.12); background: var(--bg-soft); }
+.button:hover:not(:disabled) { transform: translateY(-2px) scale(1.1); background: var(--surface-2); }
 .button:disabled { opacity: 0.5; cursor: default; }

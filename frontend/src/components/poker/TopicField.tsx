@@ -2,11 +2,11 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRoomStore } from '../../store/roomStore';
 import { Icon } from '../Icon';
-import styles from './RoundControls.module.css';
+import styles from './TopicField.module.css';
 
 /**
- * Ticket'sız turda isteğe bağlı konu (krupiye tepsisinde). Boşsa hiçbir yerde görünmez;
- * yazılırsa oturum geçmişine ve odadaki herkesin başlık satırına düşer.
+ * Ticket'sız turda isteğe bağlı konu (yalnızca krupiye yazar). Boşsa hiçbir yerde görünmez;
+ * yazılırsa masanın üstündeki başlığa, oturum geçmişine ve odadaki herkese düşer.
  */
 export function TopicField({ topic }: { topic?: string }) {
   const { t } = useTranslation();
@@ -23,9 +23,9 @@ export function TopicField({ topic }: { topic?: string }) {
 
   return (
     <form className={styles.topic} onSubmit={save}>
-      <Icon name="pencil" size={15} className={styles.topicIcon} />
+      <Icon name="pencil" size={18} className={styles.icon} />
       <input
-        className={`input ${styles.topicInput}`}
+        className={styles.input}
         aria-label={t('poker.topicLabel')}
         placeholder={t('poker.topicOptional')}
         maxLength={120}

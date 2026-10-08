@@ -60,8 +60,10 @@ interface RoomStore {
   nudge: (participantId: string) => void;
   throwEmoji: (emoji: string) => void;
   kick: (participantId: string) => void;
-  startAssignment: (seconds: number) => void;
-  setVolunteer: (volunteer: boolean) => void;
+  startAssignment: (seconds?: number) => void;
+  setVolunteer: (volunteer: boolean, pass?: boolean) => void;
+  setVolunteerSeconds: (seconds: number) => void;
+  setAutoReveal: (enabled: boolean) => void;
   closeVolunteering: () => void;
   setCandidate: (participantId: string, candidate: boolean) => void;
   setFairRotation: (enabled: boolean) => void;
@@ -220,7 +222,9 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     throwEmoji: (emoji) => socket?.send('table.emoji', { emoji }),
     kick: (participantId) => socket?.send('room.kick', { participantId }),
     startAssignment: (seconds) => socket?.send('assign.start', { seconds }),
-    setVolunteer: (volunteer) => socket?.send('assign.volunteer', { volunteer }),
+    setVolunteer: (volunteer, pass = false) => socket?.send('assign.volunteer', { volunteer, pass }),
+    setVolunteerSeconds: (seconds) => socket?.send('assign.set_volunteer_seconds', { seconds }),
+    setAutoReveal: (enabled) => socket?.send('room.set_auto_reveal', { enabled }),
     closeVolunteering: () => socket?.send('assign.close_volunteering'),
     setCandidate: (participantId, candidate) => socket?.send('assign.set_candidate', { participantId, candidate }),
     setFairRotation: (enabled) => socket?.send('assign.set_fair_rotation', { enabled }),

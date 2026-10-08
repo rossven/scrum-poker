@@ -9,3 +9,18 @@
   background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
 }
 .takeover p { margin: 0; }
+
+.codePill { display: inline-flex; gap: 8px; align-items: center; padding: 2px 12px; border-radius: 999px; background: var(--surface-2); font-size: 13px; }
+.codePill strong { font-family: var(--font-display); letter-spacing: 0.12em; color: var(--accent-strong); }
+.switches { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.switches > * + * { border-top: 1px solid var(--border); }
+.advancedToggle {
+  align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 11px; border: 1px dashed var(--border);
+  background: none; color: var(--text-soft); font-weight: 600; cursor: pointer;
+}
+.advancedToggle::after { content: ' ▾'; }
+.advancedToggle[aria-expanded='true']::after { content: ' ▴'; }
+@media (max-width: 720px) {
+  .sticky { position: sticky; bottom: 0; background: var(--surface); margin: 0 calc(-1 * clamp(18px, 4vw, 28px)); padding: 12px clamp(18px, 4vw, 28px) 0; }
+  .sticky .btn-primary { flex: 1; }
+}

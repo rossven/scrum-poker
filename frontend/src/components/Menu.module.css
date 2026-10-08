@@ -1,0 +1,17 @@
+.wrap { position: relative; display: inline-flex; }
+.panel {
+  position: absolute; top: calc(100% + 6px); z-index: 30; min-width: 220px; padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
+}
+.end { right: 0; }
+.start { left: 0; }
+.up { top: auto; bottom: calc(100% + 6px); }
+.item {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px;
+  background: none; text-align: left; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.item:hover:not(:disabled), .item:focus-visible { background: var(--surface-2); }
+.item:disabled { opacity: 0.5; cursor: default; }
+.danger { color: var(--danger); }
+.label { margin: 6px 12px 2px; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); }

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CardFace } from './CardFace';
 import styles from './CardHand.module.css';
-import { cardTone } from '../../lib/deck';
+import { cardTone, toneColor } from '../../lib/deck';
 
 interface Props {
   cards: string[];
@@ -12,6 +12,14 @@ interface Props {
   onVote: (card: string | null) => void;
   /** Değişince (yeni tur) kartlar krupiyeden ele yeniden dağıtılır. */
   dealKey?: number;
+}
+
+/** Ekran okuyucu için kart adı: ½, ? ve ☕ okunur bir ad alır. */
+function cardName(card: string, t: (k: string, o?: Record<string, string>) => string) {
+  if (card === '½') return t('poker.cardHalf');
+  if (card === '?') return t('poker.cardUnsure');
+  if (card === '☕') return t('poker.cardBreak');
+  return t('poker.cardLabel', { card });
 }
 
 const isTyping = (el: Element | null) =>
@@ -68,7 +76,6 @@ export function CardHand({ cards, selected, disabled, onVote, dealKey }: Props) 
 
   return (
     <div className={styles.dock}>
-      <p className={styles.hint}>{disabled ? t('poker.handLocked') : t('poker.handHint')}</p>
       <div className={styles.hand} role="group" aria-label={t('poker.yourCards')} key={dealKey}>
         {cards.map((card, i) => {
           const isSelected = card === selected;
@@ -86,7 +93,8 @@ export function CardHand({ cards, selected, disabled, onVote, dealKey }: Props) 
                 className={`${styles.card} ${isSelected ? styles.selected : ''} ${i === cursor ? styles.cursor : ''}`}
                 disabled={disabled}
                 aria-pressed={isSelected}
-                aria-label={t('poker.cardLabel', { card })}
+                aria-label={cardName(card, t)}
+                style={isSelected ? ({ '--ink-ring': toneColor(cardTone(cards, card)) ?? 'var(--accent)' } as React.CSSProperties) : undefined}
                 onClick={() => onVote(isSelected ? null : card)}
               >
                 <CardFace value={card} tone={cardTone(cards, card)} />

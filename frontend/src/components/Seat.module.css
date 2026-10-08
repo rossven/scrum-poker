@@ -1,32 +1,38 @@
-.seat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; max-width: 120px; }
+/* Koltuk: kart, avatar, isim plakası, durum. */
+.seat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; max-width: 110px; }
 .away { opacity: 0.55; }
 .name {
-  font-weight: 600; font-size: 13.5px; line-height: 1.2; overflow-wrap: anywhere;
-  padding: 4px 10px; border-radius: 999px; color: var(--plate-text); background: var(--plate);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  font-weight: 600; font-size: 12.5px; line-height: 1.2; overflow-wrap: anywhere; white-space: nowrap;
+  padding: 2px 9px; border-radius: 999px; color: var(--text); background: var(--surface); border: 1px solid var(--border);
 }
-.you { font-weight: 400; color: color-mix(in srgb, var(--plate-text) 75%, transparent); }
+.you { font-weight: 500; color: var(--text-soft); }
+.status { font-size: 11px; color: var(--text-soft); margin-top: -3px; }
 .badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; min-height: 0; }
 .badge {
   font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px;
   background: var(--accent-soft); color: var(--accent-strong);
 }
 .avatar { position: relative; display: inline-flex; }
-/* Poker masasındaki dağıtıcı düğmesi */
+.waiting .avatar { opacity: 0.8; }
+/* Krupiye rozeti: avatarın köşesinde altın "K" */
 .dealerButton {
-  position: absolute; right: -10px; top: -4px; width: 22px; height: 22px; border-radius: 50%;
+  position: absolute; right: -8px; top: -5px; height: 18px; min-width: 18px; padding: 0 5px; border-radius: 99px;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-card); font-size: 12px; font-weight: 800; color: var(--accent-contrast); background: var(--accent);
-  border: 2px solid var(--surface); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: var(--font); font-size: 10px; font-weight: 800; color: #2b1d00; background: var(--gold);
+  border: 2px solid var(--bg);
 }
 .observer { background: var(--bg-soft); color: var(--text-soft); }
-.card { margin-bottom: 2px; min-height: 48px; display: flex; align-items: flex-end; }
+.card { margin-bottom: 0; min-height: 0; display: flex; align-items: flex-end; }
 .actions {
   position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 3;
   display: flex; flex-direction: column; gap: 4px; padding: 4px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
   opacity: 0; pointer-events: none; transition: opacity 0.15s;
 }
-.actions :global(.btn) { font-size: 12px; min-height: 28px; padding: 0 10px; white-space: nowrap; justify-content: flex-start; gap: 6px; }
+.actions :global(.btn) { font-size: 12px; min-height: 36px; padding: 0 10px; white-space: nowrap; justify-content: flex-start; gap: 6px; }
 /* Moderatör eylemleri yalnızca üzerine gelince/odaklanınca görünür; dokunmatik ekranda koltuğa dokununca. */
 .seat:hover .actions, .seat:focus-within .actions { opacity: 1; pointer-events: auto; }
+@media (max-width: 720px) {
+  .name { font-size: 11.5px; padding: 1px 7px; }
+  .status { display: none; }
+}

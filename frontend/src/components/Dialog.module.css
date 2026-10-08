@@ -1,0 +1,18 @@
+.scrim { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.dialog {
+  width: 100%; max-height: calc(100dvh - 32px); display: flex; flex-direction: column; overflow: hidden;
+  background: var(--surface); border-radius: 22px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35); outline: none;
+}
+.wide { max-width: 860px; }
+.narrow { max-width: 560px; }
+.head { display: flex; align-items: center; padding: 22px 24px 14px; }
+.title { flex: 1; font-size: 22px; font-weight: 800; }
+.close {
+  width: 44px; height: 44px; margin: -8px -10px -8px 0; display: grid; place-items: center; border: 0; border-radius: 12px;
+  background: none; color: var(--text-soft); cursor: pointer;
+}
+.close:hover { background: var(--surface-2); }
+@media (max-width: 720px) {
+  .scrim { place-items: end center; padding: 0; }
+  .dialog { max-width: none; border-radius: 24px 24px 0 0; max-height: 94dvh; }
+}

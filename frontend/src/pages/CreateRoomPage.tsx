@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/http';
 import { DeckPicker, deckChoiceCards, deckChoiceValid, type DeckChoice } from '../components/DeckPicker';
+import { SwitchRow } from '../components/RoomSettings';
 import { Shell } from '../components/Shell';
 import { navigate, roomPath } from '../lib/router';
 import { sessions } from '../lib/session';
@@ -13,6 +14,8 @@ export function CreateRoomPage() {
   const [deck, setDeck] = useState<DeckChoice>({ deck: 'modified-fibonacci', customText: '' });
   const [password, setPassword] = useState('');
   const [ticketsEnabled, setTicketsEnabled] = useState(false);
+  const [autoReveal, setAutoReveal] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -28,6 +31,7 @@ export function CreateRoomPage() {
         customDeck: deckChoiceCards(deck),
         password: password || undefined,
         ticketsEnabled,
+        autoReveal,
       });
       sessions.setClaim(room.code, room.claimToken);
       navigate(roomPath(room.code));
@@ -55,26 +59,28 @@ export function CreateRoomPage() {
           <DeckPicker id="deck" value={deck} onChange={setDeck} />
         </div>
 
-        <div className="field">
-          <label htmlFor="password">
-            {t('create.password')} <span className="muted">({t('common.optional')})</span>
-          </label>
-          <input id="password" className="input" type="password" maxLength={64} autoComplete="new-password"
-            value={password} onChange={(e) => setPassword(e.target.value)} />
-          <small>{t('create.passwordHint')}</small>
+        <div className={styles.switches}>
+          <SwitchRow title={t('settings.autoReveal')} hint={t('settings.autoRevealHint')} on={autoReveal} onChange={setAutoReveal} />
+          <SwitchRow title={t('tickets.enable')} hint={t('create.ticketsHint')} on={ticketsEnabled} onChange={setTicketsEnabled} />
         </div>
 
-        <div className="field">
-          <label className={styles.checkbox}>
-            <input type="checkbox" checked={ticketsEnabled} onChange={(e) => setTicketsEnabled(e.target.checked)} />
-            <span>{t('tickets.enable')}</span>
-          </label>
-          <small>{t('create.ticketsHint')}</small>
-        </div>
+        <button type="button" className={styles.advancedToggle} aria-expanded={advanced} onClick={() => setAdvanced((v) => !v)}>
+          {t('create.advanced')}
+        </button>
+        {advanced && (
+          <div className="field">
+            <label htmlFor="password">
+              {t('create.password')} <span className="muted">({t('common.optional')})</span>
+            </label>
+            <input id="password" className="input" type="password" maxLength={64} autoComplete="new-password"
+              value={password} onChange={(e) => setPassword(e.target.value)} />
+            <small>{t('create.passwordHint')}</small>
+          </div>
+        )}
 
         {error && <p className="error-text">{t(`errors.${error}`)}</p>}
 
-        <div className={styles.buttons}>
+        <div className={`${styles.buttons} ${styles.sticky}`}>
           <button type="button" className="btn btn-ghost" onClick={() => navigate('/')}>{t('common.back')}</button>
           <button type="submit" className="btn btn-primary" disabled={busy || !deckChoiceValid(deck)}>{t('create.submit')}</button>
         </div>

@@ -9,7 +9,7 @@ interface Props {
   done: boolean;
 }
 
-const COLORS = ['#12775a', '#2f6fe0', '#7b5cd6', '#d93a3a', '#e08a1e', '#0e8fa3', '#c2408a', '#4a6b2f'];
+const COLORS = ['#0f7656', '#2f62d8', '#7b5cd6', '#e0581f', '#d49a12', '#149fb8', '#c2408a', '#4a6b2f'];
 const SIZE = 260;
 const R = SIZE / 2 - 6;
 

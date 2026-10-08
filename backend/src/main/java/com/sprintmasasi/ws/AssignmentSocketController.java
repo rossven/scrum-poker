@@ -12,7 +12,10 @@ public class AssignmentSocketController {
 
     public record StartPayload(Integer seconds) {}
 
-    public record VolunteerPayload(boolean volunteer) {}
+    /** pass: "Pas" (volunteer=false ile); verilmezse vazgeçme anlamına gelir. */
+    public record VolunteerPayload(boolean volunteer, boolean pass) {}
+
+    public record SecondsPayload(int seconds) {}
 
     public record CandidatePayload(String participantId, boolean candidate) {}
 
@@ -35,7 +38,13 @@ public class AssignmentSocketController {
     @MessageMapping("assign.volunteer")
     public void volunteer(@Payload VolunteerPayload body, Principal principal) {
         var p = (RoomPrincipal) principal;
-        assignments.volunteer(p.roomCode(), p.participantId(), body.volunteer());
+        assignments.volunteer(p.roomCode(), p.participantId(), body.volunteer(), body.pass());
+    }
+
+    @MessageMapping("assign.set_volunteer_seconds")
+    public void setVolunteerSeconds(@Payload SecondsPayload body, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        assignments.setVolunteerSeconds(p.roomCode(), p.participantId(), body.seconds());
     }
 
     @MessageMapping("assign.close_volunteering")
