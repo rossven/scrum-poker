@@ -33,7 +33,15 @@ export const api = {
   },
   join(
     code: string,
-    body: { nickname: string; avatar: string; observer: boolean; password?: string; claimToken?: string },
+    body: {
+      nickname: string;
+      avatar: string;
+      observer: boolean;
+      password?: string;
+      claimToken?: string;
+      /** Aynı isimli çevrimdışı koltuk: true devral, false yeni koltuk, yoksa sunucu SEAT_TAKEOVER ile sorar. */
+      takeover?: boolean;
+    },
   ) {
     return request<JoinResult>(`/api/rooms/${encodeURIComponent(code)}/join`, {
       method: 'POST',

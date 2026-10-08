@@ -56,7 +56,11 @@
     "observer": "Gözlemci olarak katıl (oy vermeden izle)",
     "password": "Oda şifresi",
     "submit": "Masaya otur",
-    "renamed": "Bu isim odada vardı, sen “{{name}}” olarak katıldın."
+    "renamed": "Bu isim odada vardı, sen “{{name}}” olarak katıldın.",
+    "takeoverQuestion": "“{{name}}” koltuğu masada boş duruyor. Bu koltuk senin mi?",
+    "takeoverHint": "Devralırsan aynı koltuğa, avatarına ve bu turdaki oyuna dönersin. Krupiyelik devralınmaz.",
+    "takeover": "Devral",
+    "newSeat": "Yeni koltuk aç"
   },
   "room": {
     "code": "Oda kodu",
@@ -88,7 +92,10 @@
     "becomeParticipant": "Masaya otur",
     "dealerButton": "Krupiye (dağıtıcı düğmesi)",
     "dealerNow": "Krupiye artık {{name}}",
-    "dealerNowYou": "Krupiye artık sensin"
+    "dealerNowYou": "Krupiye artık sensin",
+    "kick": "Masadan at",
+    "kickConfirm": "{{name}} masadan çıkarılsın mı? Açılmamış oyu silinir; link ile yeniden katılabilir.",
+    "kickedToast": "{{name}} masadan çıkarıldı"
   },
   "status": {
     "connecting": "Bağlanıyor…",
@@ -101,7 +108,10 @@
     "closedTitle": "Oda kapatıldı",
     "closedBody": "Krupiye odayı kapattı.",
     "expiredBody": "Oda uzun süre kullanılmadığı için kapatıldı.",
-    "newRoom": "Yeni oda aç"
+    "newRoom": "Yeni oda aç",
+    "kickedTitle": "Masadan çıkarıldın",
+    "kickedBody": "Krupiye seni masadan çıkardı. İstersen oda linkiyle yeniden katılabilirsin.",
+    "rejoin": "Yeniden katıl"
   },
   "theme": {
     "label": "Tema",
@@ -130,7 +140,9 @@
     "ALREADY_VOTED": "Oy verdin; izleyiciye geçmek için önce oyunu geri al.",
     "TICKET_LIMIT": "Bir odada en fazla 100 ticket olabilir.",
     "FEATURE_DISABLED": "Ticket listesi bu odada kapalı.",
-    "NO_VOTES": "Henüz kimse oy vermedi, kartlar açılamaz."
+    "NO_VOTES": "Henüz kimse oy vermedi, kartlar açılamaz.",
+    "SEAT_TAKEOVER": "Bu isimde boşta bir koltuk var.",
+    "KICKED": "Krupiye seni masadan çıkardı."
   },
   "sound": {
     "label": "Ses",
@@ -224,7 +236,8 @@
     "fieldNote": "Not",
     "enable": "Ticket listesi kullan",
     "enableHint": "Açınca masanın yanında ticket kuyruğu çıkar.",
-    "disableHint": "Kapatırsan ticket'lar silinmez, gizlenir; tekrar açınca geri gelir."
+    "disableHint": "Kapatırsan ticket'lar silinmez, gizlenir; tekrar açınca geri gelir.",
+    "assignee": "Atanan: {{name}}"
   },
   "avatar": {
     "preview": "Seçtiğin karakter",
@@ -272,5 +285,50 @@
   "emoji": {
     "title": "Masaya at",
     "throw": "Masaya {{emoji}} at"
+  },
+  "assign": {
+    "title": "Kim alacak?",
+    "startButton": "Kim alacak?",
+    "volunteerTime": "Gönüllü süresi",
+    "noLimit": "Süresiz",
+    "seconds_one": "{{count}} sn",
+    "seconds_other": "{{count}} sn",
+    "close": "Kapat",
+    "done": "Tamam",
+    "volunteerLead": "İşi almak isteyen “Ben alırım” desin.",
+    "volunteer": "Ben alırım",
+    "unvolunteer": "Vazgeç",
+    "volunteers_one": "Gönüllü ({{count}})",
+    "volunteers_other": "Gönüllüler ({{count}})",
+    "noVolunteers": "Henüz gönüllü yok.",
+    "closeVolunteering": "Gönüllüleri kapat",
+    "volunteerRules": "Tek gönüllü varsa iş ona atanır. Hiç yoksa oy veren herkes aday olur.",
+    "candidates_one": "Aday ({{count}})",
+    "candidates_other": "Adaylar ({{count}})",
+    "chooseGame": "Oyun",
+    "games": {
+      "horse": "At yarışı",
+      "wheel": "Şans çarkı",
+      "volunteer": "Gönüllü",
+      "direct": "Tek aday"
+    },
+    "fairRotation": "Dönüşümlü adalet",
+    "fairRotationHint": "Bu oturumda daha önce iş alanların şansı her seferinde yarıya iner.",
+    "weightedOn": "Ağırlıklı mod açık",
+    "start": "Oyunu başlat",
+    "assignDirect": "{{name}} alsın",
+    "waitingDealer": "Krupiye adayları ve oyunu seçiyor…",
+    "getReady": "Hazır ol…",
+    "horseRace": "At yarışı",
+    "wheel": "Şans çarkı",
+    "winner": "{{name}} alıyor!",
+    "byVolunteer": "Tek gönüllüydü, oyun oynanmadı.",
+    "byDirect": "Tek aday kalmıştı.",
+    "byGame": "{{game}} ile belirlendi.",
+    "ranking": "Sıralama",
+    "undo": "Geri al, yeniden oyna",
+    "history": "Atama geçmişi",
+    "amongN": "{{count}} aday",
+    "undone": "geri alındı"
   }
 }

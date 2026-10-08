@@ -1,9 +1,9 @@
 # SprintMasası
 
 Ekibin sprint planlamada kullandığı, hesapsız ve ücretsiz bir planning poker aracı.
-Linkle girilen oda, avatarlı masa, ve (sonraki adımlarda) poker + "kim alacak?" akışı.
+Linkle girilen oda, avatarlı poker masası, planning poker ve işi kimin alacağını belirleyen "Kim alacak?" akışı.
 
-Durum: **M1 (iskelet ve oda)**, **M2 (planning poker masası)** ve **M2.5 (poker masası teması, isteğe bağlı ticket)** tamam. M3 (atama oyunları) sırada.
+Durum: **M1 (iskelet ve oda)**, **M2 (planning poker masası)**, **M2.5 (poker masası teması, isteğe bağlı ticket)** ve **M3 ("Kim alacak?": gönüllü + at yarışı / şans çarkı, masadan atma, koltuk devralma)** tamam.
 
 ## Hızlı başlangıç
 
@@ -43,7 +43,7 @@ java -jar build/libs/sprintmasasi-0.1.0.jar
 ## Testler
 
 ```bash
-cd backend && ./gradlew test          # birim + WebSocket entegrasyon (30 sahte istemci, 4 istemcili oy sızıntı testi dahil)
+cd backend && ./gradlew test          # birim + WebSocket entegrasyon (30 sahte istemci, 4 istemcili oy sızıntı testi, 10.000 denemelik oyun adaleti dahil)
 
 # uçtan uca (uygulama 8080'de çalışırken)
 cd e2e && npm install && npx playwright install chromium && npm test
@@ -103,10 +103,14 @@ e2e/       Playwright senaryoları
 - **Tema ve görseller (M2.5).** Yeşil çuha masa, ahşap kenar, altın detay. İskambil kartları, logo ve karakter
   avatarları bizim çizdiğimiz SVG'ler (`components/poker/CardFace.tsx`, `components/brand/Logo.tsx`, `lib/avatar.ts`);
   dış görsel kütüphanesi ya da lisanslı varlık yok. Sesler Web Audio ile üretilir, varsayılan kapalı.
+- **"Kim alacak?" adaleti (M3).** Kazananı ve tam sıralamayı yalnızca sunucu `SecureRandom` ile çeker
+  (`games/WeightedDraw`). Oyunlar (`TieBreakerGame`) sıralamaya uygun animasyon parametreleri üretir; istemci yalnızca
+  bunları çizer, sonuç belirlemede `Math.random` kullanmaz (yalnızca konfeti ve ses gibi süslerde var).
+  Yeni oyun eklemek: `TieBreakerGame`'i uygulayan bir `@Component` + `frontend/src/components/assign` altında bir bileşen.
 - **Çeviri.** Tüm arayüz metinleri `frontend/src/i18n/locales/tr.json` içinde. Yeni dil için `en.json` ekleyip
   `i18n/index.ts`'e kaydetmek yeterli.
 
-Önemli sınıflar: `room/RoomService` (oda kuralları), `room/PokerService` (oylama, ticket, serbest tur, deste, zamanlayıcı, dürtme, emoji),
+Önemli sınıflar: `room/RoomService` (oda kuralları, masadan atma, koltuk devralma), `room/AssignmentService` ("Kim alacak?"), `games/TieBreakerGame` (oyun arayüzü; `HorseRaceGame`, `WheelGame`), `room/PokerService` (oylama, ticket, serbest tur, deste, zamanlayıcı, dürtme, emoji),
 `poker/VoteStatistics` (istatistik, saf hesap), `poker/Deck` (desteler, kart → sayı), `room/Room` (durum + kilit), `ws/StompAuthInterceptor`
 (CONNECT/SUBSCRIBE güvenliği), `ws/StompRoomEvents` (yayın), `frontend/src/store/roomStore.ts` (istemci durumu),
 `frontend/src/api/socket.ts` (yeniden bağlanan STOMP istemcisi).

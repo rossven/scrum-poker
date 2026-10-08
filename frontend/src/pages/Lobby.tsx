@@ -6,6 +6,8 @@ import { CopyLinkButton } from '../components/CopyLinkButton';
 import { RoomSettings } from '../components/RoomSettings';
 import { SoundToggle } from '../components/SoundToggle';
 import { TableView } from '../components/TableView';
+import { AssignmentHistory } from '../components/assign/AssignmentHistory';
+import { AssignmentPanel } from '../components/assign/AssignmentPanel';
 import { CardHand } from '../components/poker/CardHand';
 import { EmojiBar } from '../components/poker/EmojiBar';
 import { isRoyalFlush, RoyalFlushCelebration } from '../components/poker/FunFx';
@@ -15,6 +17,7 @@ import { ResultsPanel } from '../components/poker/ResultsPanel';
 import { RoundControls } from '../components/poker/RoundControls';
 import { TableCenter } from '../components/poker/TableCenter';
 import { TicketQueue } from '../components/poker/TicketQueue';
+import { useGameTiming } from '../lib/gameClock';
 import { play } from '../lib/sound';
 import { navigate } from '../lib/router';
 import { useRoomStore } from '../store/roomStore';
@@ -23,7 +26,7 @@ import styles from './Lobby.module.css';
 /** Oda ekranı: masa, kart eli, sonuçlar; ticket listesi açıksa yanda kuyruk. */
 export function Lobby({ room, youId }: { room: RoomState; youId: string | null }) {
   const { t } = useTranslation();
-  const { promote, leave, vote, setObserver, nudge, yourVote, flyingEmojis, nudges } = useRoomStore();
+  const { promote, leave, vote, setObserver, nudge, kick, yourVote, flyingEmojis, nudges } = useRoomStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [celebrate, setCelebrate] = useState(0);
 
@@ -41,6 +44,15 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
   const iVoted = !!youId && voted.has(youId);
   const onlineVoters = seated.filter((p) => p.online);
   const allVoted = onlineVoters.length > 0 && onlineVoters.every((p) => voted.has(p.id));
+  // "Kim alacak?" oyunu sürerken sonuç ticket listesinde ve geçmişte görünmez (sürprizi bozmasın).
+  const assignment = room.assignment;
+  const timing = useGameTiming(assignment);
+  const hiddenResultId = timing.stage === 'waiting' || timing.stage === 'running' ? assignment?.result?.id ?? null : null;
+
+  // Masadan at: yanlış tıklamaya karşı yalnızca krupiyenin ekranında onay.
+  const confirmKick = (p: ParticipantView) => {
+    if (window.confirm(t('room.kickConfirm', { name: p.nickname }))) kick(p.id);
+  };
 
   // Kartlar açılınca (ses açıksa) fiş sesi; herkes aynı kartı seçtiyse Royal Flush kutlaması.
   // Yeni turda kartlar dağıtılırken karıştırma sesi.
@@ -92,6 +104,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
         {canObserve && (
           <button type="button" className="btn btn-ghost" onClick={() => setObserver(p.id, true)}>{t('room.makeObserver')}</button>
         )}
+        <button type="button" className="btn btn-ghost btn-danger" onClick={() => confirmKick(p)}>{t('room.kick')}</button>
       </>
     );
   };
@@ -117,6 +130,9 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
                 )}
                 <button type="button" className="btn btn-ghost btn-small" onClick={() => setObserver(o.id, false)}>
                   {t('room.makeParticipant')}
+                </button>
+                <button type="button" className="btn btn-ghost btn-small btn-danger" onClick={() => confirmKick(o)}>
+                  {t('room.kick')}
                 </button>
               </span>
             )}
@@ -169,6 +185,10 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
         <div className={styles.main}>
           {isModerator && <RoundControls room={room} allVoted={allVoted} youId={youId} />}
 
+          {assignment && (
+            <AssignmentPanel room={room} assignment={assignment} youId={youId} isModerator={isModerator} timing={timing} />
+          )}
+
           <TableView
             people={seated}
             youId={youId}
@@ -192,6 +212,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
           {!room.ticketsEnabled && (
             <>
               <SessionHistory rounds={room.sessionHistory} />
+              <AssignmentHistory records={room.assignmentHistory} hiddenId={hiddenResultId} />
               {observerList}
             </>
           )}
@@ -199,8 +220,9 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
 
         {room.ticketsEnabled && (
           <aside className={styles.side}>
-            <TicketQueue room={room} isModerator={isModerator} />
+            <TicketQueue room={room} isModerator={isModerator} hiddenResultId={hiddenResultId} />
             <SessionHistory rounds={room.sessionHistory} />
+            <AssignmentHistory records={room.assignmentHistory} hiddenId={hiddenResultId} />
             {observerList}
           </aside>
         )}

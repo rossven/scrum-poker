@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { RoomSocket, type SocketStatus } from '../api/socket';
-import type { DeckId, RoomState, ServerEvent, YourVote } from '../api/types';
+import type { DeckId, PlayableGame, RoomState, ServerEvent, YourVote } from '../api/types';
 import { sessions, type StoredSession } from '../lib/session';
 import { play } from '../lib/sound';
 
-export type GoneReason = 'not_found' | 'closed_by_moderator' | 'expired';
+export type GoneReason = 'not_found' | 'closed_by_moderator' | 'expired' | 'kicked';
 
 export interface Toast {
   id: number;
@@ -59,6 +59,15 @@ interface RoomStore {
   setTopic: (topic: string) => void;
   nudge: (participantId: string) => void;
   throwEmoji: (emoji: string) => void;
+  kick: (participantId: string) => void;
+  startAssignment: (seconds: number) => void;
+  setVolunteer: (volunteer: boolean) => void;
+  closeVolunteering: () => void;
+  setCandidate: (participantId: string, candidate: boolean) => void;
+  setFairRotation: (enabled: boolean) => void;
+  playGame: (game: PlayableGame) => void;
+  undoAssignment: () => void;
+  closeAssignment: () => void;
   toast: (key: string, params?: Record<string, string>) => void;
   dismissToast: (id: number) => void;
 }
@@ -119,6 +128,15 @@ export const useRoomStore = create<RoomStore>((set, get) => {
       case 'room.participant_left':
         if (event.data.participantId !== get().youId) get().toast('room.leftToast');
         break;
+      case 'room.participant_kicked':
+        if (event.data.participantId !== get().youId) get().toast('room.kickedToast', { name: event.data.nickname });
+        break;
+      case 'room.kicked':
+        socket?.disconnect();
+        socket = null;
+        if (get().code) sessions.clear(get().code!);
+        set({ gone: 'kicked' });
+        break;
       case 'room.closed':
         socket?.disconnect();
         socket = null;
@@ -155,6 +173,9 @@ export const useRoomStore = create<RoomStore>((set, get) => {
           if (error === 'INVALID_TOKEN') {
             sessions.clear(code);
             set({ needsJoin: true });
+          } else if (error === 'KICKED') {
+            sessions.clear(code);
+            set({ gone: 'kicked' });
           } else {
             set({ gone: 'not_found' });
           }
@@ -197,6 +218,15 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     setTopic: (topic) => socket?.send('poker.set_topic', { topic }),
     nudge: (participantId) => socket?.send('poker.nudge', { participantId }),
     throwEmoji: (emoji) => socket?.send('table.emoji', { emoji }),
+    kick: (participantId) => socket?.send('room.kick', { participantId }),
+    startAssignment: (seconds) => socket?.send('assign.start', { seconds }),
+    setVolunteer: (volunteer) => socket?.send('assign.volunteer', { volunteer }),
+    closeVolunteering: () => socket?.send('assign.close_volunteering'),
+    setCandidate: (participantId, candidate) => socket?.send('assign.set_candidate', { participantId, candidate }),
+    setFairRotation: (enabled) => socket?.send('assign.set_fair_rotation', { enabled }),
+    playGame: (game) => socket?.send('assign.play', { game }),
+    undoAssignment: () => socket?.send('assign.undo'),
+    closeAssignment: () => socket?.send('assign.close'),
 
     leave() {
       const { code } = get();

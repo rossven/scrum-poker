@@ -10,7 +10,7 @@ export interface RoomSocketHandlers {
   onFatal: (code: string) => void;
 }
 
-const FATAL_CODES = new Set(['ROOM_NOT_FOUND', 'INVALID_TOKEN']);
+const FATAL_CODES = new Set(['ROOM_NOT_FOUND', 'INVALID_TOKEN', 'KICKED']);
 
 /**
  * Bir odaya STOMP bağlantısı. Bağlantı koparsa üstel bekleme ile tekrar dener;

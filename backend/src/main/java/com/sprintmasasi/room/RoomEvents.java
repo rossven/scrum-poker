@@ -27,6 +27,12 @@ public interface RoomEvents {
 
     void participantLeft(String code, String participantId);
 
+    /** Kişi masadan atıldı: odaya "X masadan çıkarıldı" bildirimi. */
+    void participantKicked(String code, String participantId, String nickname);
+
+    /** Atılan kişiye özel bildirim; ardından bağlantıları kapatılır. */
+    void kicked(String code, String participantId);
+
     void closed(String code, String reason);
 
     void error(String code, String participantId, ErrorCode error);

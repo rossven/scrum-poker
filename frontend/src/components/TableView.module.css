@@ -27,7 +27,9 @@
   pointer-events: none;
 }
 .seats { list-style: none; margin: 0; padding: 0; }
-.seatSlot { position: absolute; transform: translate(-50%, -50%); }
+.seatSlot { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
+/* Krupiye menüsü açık koltuk her şeyin (masa ortası, komşu koltuklar) üstünde kalsın. */
+.seatSlot:hover, .seatSlot:focus-within { z-index: 5; }
 
 .fx { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
 .flyingCard {

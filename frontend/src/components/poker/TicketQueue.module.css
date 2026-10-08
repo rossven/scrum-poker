@@ -19,3 +19,4 @@
 .textarea { min-height: 72px; padding: 10px 14px; resize: vertical; font: inherit; }
 .editor { gap: 8px; }
 .editForm { display: flex; flex-direction: column; gap: 8px; }
+.assignee { margin: 4px 0 0; font-size: 13px; font-weight: 600; color: var(--accent-strong); }

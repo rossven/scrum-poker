@@ -24,7 +24,12 @@ export function parseTicketLines(text: string) {
 }
 
 /** Ticket kuyruğu: herkes görür, moderatör ekler/sıralar/siler/masaya getirir. */
-export function TicketQueue({ room, isModerator }: { room: RoomState; isModerator: boolean }) {
+export function TicketQueue({ room, isModerator, hiddenResultId }: {
+  room: RoomState;
+  isModerator: boolean;
+  /** Oyun sürerken bu sonucun ataması henüz gösterilmez. */
+  hiddenResultId?: string | null;
+}) {
   const { t } = useTranslation();
   const { addTickets, moveTicket, removeTicket, selectTicket } = useRoomStore();
   const [text, setText] = useState('');
@@ -39,6 +44,7 @@ export function TicketQueue({ room, isModerator }: { room: RoomState; isModerato
   };
 
   const estimated = room.tickets.filter((tk) => tk.status === 'ESTIMATED').length;
+  const hiddenTicketId = hiddenResultId ? room.assignment?.result?.ticketId : undefined;
 
   return (
     <section className={`card ${styles.panel}`} aria-label={t('tickets.title')}>
@@ -68,6 +74,9 @@ export function TicketQueue({ room, isModerator }: { room: RoomState; isModerato
                 {tk.status === 'ESTIMATED' && <span className={styles.final} title={t('tickets.final')}>{tk.finalEstimate}</span>}
                 {tk.id === room.currentTicketId && <span className={styles.nowBadge}>{t('tickets.onTable')}</span>}
               </div>
+              {tk.assignee && tk.id !== hiddenTicketId && (
+                <p className={styles.assignee}>🙋 {t('tickets.assignee', { name: tk.assignee.nickname })}</p>
+              )}
               {tk.note && <p className={styles.note}>{tk.note}</p>}
               {tk.history.length > 0 && (
                 <details className={styles.history}>

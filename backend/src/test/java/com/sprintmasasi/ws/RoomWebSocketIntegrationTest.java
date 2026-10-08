@@ -252,4 +252,79 @@ class RoomWebSocketIntegrationTest {
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(res.getBody()).containsEntry("error", "ROOM_NOT_FOUND");
     }
+
+    /** M3: krupiye atınca kişinin bağlantısı kapanır, eski token'la yeniden bağlanamaz, odaya bildirim gider. */
+    @Test
+    void kickedPersonIsDisconnectedAndCannotReconnect() throws Exception {
+        var room = createRoom(null);
+        String code = (String) room.get("code");
+        var mod = join(code, "Krupiye", Map.of("claimToken", room.get("claimToken"))).getBody();
+        var ali = join(code, "Ali", Map.of()).getBody();
+        var modClient = connect(code, (String) mod.get("token"));
+        var aliClient = connect(code, (String) ali.get("token"));
+        await().atMost(Duration.ofSeconds(5)).until(() -> modClient.lastParticipants().stream()
+                .allMatch(p -> Boolean.TRUE.equals(p.get("online"))) && modClient.lastParticipants().size() == 2);
+
+        aliClient.send("room.kick", Map.of("participantId", mod.get("participantId"))); // yetkisiz
+        await().atMost(Duration.ofSeconds(5)).until(() -> aliClient.lastOfType("error") != null);
+        assertThat(aliClient.lastOfType("error")).containsEntry("code", "FORBIDDEN");
+
+        modClient.send("room.kick", Map.of("participantId", ali.get("participantId")));
+
+        await().atMost(Duration.ofSeconds(5)).until(() -> aliClient.lastOfType("room.kicked") != null);
+        await().atMost(Duration.ofSeconds(5)).until(() -> !aliClient.session.isConnected());
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+            assertThat(modClient.lastParticipants()).hasSize(1);
+            assertThat(modClient.lastOfType("room.participant_kicked")).containsEntry("nickname", "Ali");
+        });
+        assertThatThrownBy(() -> TestStompClient.connect(port, code, (String) ali.get("token")))
+                .isInstanceOf(Exception.class);
+    }
+
+    /** M3: aynı isimle dönen kişi çevrimdışı koltuğu devralır; önce sorulur. */
+    @Test
+    void offlineSeatCanBeTakenOverByName() {
+        var room = createRoom(null);
+        String code = (String) room.get("code");
+        var first = join(code, "Ayşe", Map.of()).getBody();
+
+        var ask = join(code, "ayşe", Map.of());
+        assertThat(ask.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(ask.getBody()).containsEntry("error", "SEAT_TAKEOVER");
+
+        var taken = join(code, "ayşe", Map.of("takeover", true));
+        assertThat(taken.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(taken.getBody()).containsEntry("participantId", first.get("participantId"))
+                .containsEntry("takenOver", true).containsEntry("nickname", "Ayşe");
+    }
+
+    /** Kabul kriteri: aynı odadaki herkes aynı kazananı, aynı başlangıç anına göre görür. */
+    @Test
+    @SuppressWarnings("unchecked")
+    void everyClientGetsTheSameGameResult() throws Exception {
+        var room = createRoom(null);
+        String code = (String) room.get("code");
+        List<TestStompClient> players = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            var extra = i == 0 ? Map.<String, Object>of("claimToken", room.get("claimToken")) : Map.<String, Object>of();
+            players.add(connect(code, (String) join(code, "Oyuncu " + i, extra).getBody().get("token")));
+        }
+        var dealer = players.getFirst();
+        dealer.send("assign.start", Map.of("seconds", 0));
+        dealer.send("assign.close_volunteering", null);
+        dealer.send("assign.play", Map.of("game", "wheel"));
+
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+            for (TestStompClient c : players) {
+                var a = (Map<String, Object>) c.lastOfType("room.state").get("assignment");
+                assertThat(a).containsEntry("phase", "RESULT");
+            }
+        });
+        var results = players.stream()
+                .map(c -> (Map<String, Object>) ((Map<String, Object>) c.lastOfType("room.state").get("assignment")).get("result"))
+                .toList();
+        assertThat(results).allSatisfy(r -> assertThat(r).isEqualTo(results.getFirst()));
+        var game = (Map<String, Object>) ((Map<String, Object>) players.get(2).lastOfType("room.state").get("assignment")).get("game");
+        assertThat(game).containsEntry("type", "wheel").containsKey("startsInMs").containsKey("animation");
+    }
 }

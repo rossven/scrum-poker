@@ -1,6 +1,11 @@
 package com.sprintmasasi.config;
 
+import com.sprintmasasi.ws.SessionRegistry;
 import com.sprintmasasi.ws.StompAuthInterceptor;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
+import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -14,10 +19,30 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final AppProperties props;
     private final StompAuthInterceptor authInterceptor;
+    private final SessionRegistry sessions;
 
-    public WebSocketConfig(AppProperties props, StompAuthInterceptor authInterceptor) {
+    public WebSocketConfig(AppProperties props, StompAuthInterceptor authInterceptor, SessionRegistry sessions) {
         this.props = props;
         this.authInterceptor = authInterceptor;
+        this.sessions = sessions;
+    }
+
+    /** Açık oturumları kaydet: masadan atılan kişinin bağlantısı sunucudan kapatılabilsin (M3). */
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.addDecoratorFactory(handler -> new WebSocketHandlerDecorator(handler) {
+            @Override
+            public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+                sessions.opened(session);
+                super.afterConnectionEstablished(session);
+            }
+
+            @Override
+            public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+                sessions.closed(session.getId());
+                super.afterConnectionClosed(session, status);
+            }
+        });
     }
 
     @Override

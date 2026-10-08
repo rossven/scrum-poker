@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomState } from '../../api/types';
 import { useRoomStore } from '../../store/roomStore';
@@ -10,7 +10,8 @@ const NUDGE_INTERVAL_MS = 30_000;
 /** Krupiyenin tur düğmeleri: aç, tekrar oyla / yeni tur, sıradaki ticket, bekleyenleri dürt, zamanlayıcı. */
 export function RoundControls({ room, allVoted, youId }: { room: RoomState; allVoted: boolean; youId: string | null }) {
   const { t } = useTranslation();
-  const { reveal, newRound, nextTicket, startTimer, stopTimer, nudge } = useRoomStore();
+  const { reveal, newRound, nextTicket, startTimer, stopTimer, nudge, startAssignment } = useRoomStore();
+  const [volunteerSeconds, setVolunteerSeconds] = useState(20);
   const round = room.round;
   const voting = round.state === 'VOTING';
   const freeFinalized = round.state === 'FINALIZED' && !round.ticketId;
@@ -55,6 +56,20 @@ export function RoundControls({ room, allVoted, youId }: { room: RoomState; allV
         )}
         {voting && waiting.length > 0 && round.votedIds.length > 0 && (
           <button type="button" className="btn btn-ghost btn-small" onClick={nudgeWaiting}>👉 {t('poker.nudgeAll')}</button>
+        )}
+        {!room.assignment && (
+          <span className={styles.assign}>
+            <button type="button" className={`btn ${voting ? 'btn-ghost' : 'btn-primary'}`}
+              onClick={() => startAssignment(volunteerSeconds)}>
+              🙋 {t('assign.startButton')}
+            </button>
+            <select className={`input ${styles.assignSelect}`} aria-label={t('assign.volunteerTime')}
+              value={volunteerSeconds} onChange={(e) => setVolunteerSeconds(Number(e.target.value))}>
+              {[20, 30, 60, 0].map((s) => (
+                <option key={s} value={s}>{s ? t('assign.seconds', { count: s }) : t('assign.noLimit')}</option>
+              ))}
+            </select>
+          </span>
         )}
         {hasPending && (
           <button type="button" className={`btn ${round.state === 'FINALIZED' ? 'btn-primary' : 'btn-ghost'}`} onClick={nextTicket}>

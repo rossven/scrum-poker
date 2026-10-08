@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -23,6 +25,9 @@ import java.util.function.Supplier;
 public class Room {
 
     static final int MAX_SESSION_HISTORY = 20;
+    static final int MAX_ASSIGNMENT_HISTORY = 50;
+    /** Atılan kişilerin token'ları (eski token'la yeniden bağlanamasınlar diye); en eskisi düşer. */
+    static final int MAX_KICKED_TOKENS = 500;
 
     private final ReentrantLock lock = new ReentrantLock();
     private final String code;
@@ -47,6 +52,11 @@ public class Room {
     private Instant lastActivity;
     private long joinCounter;
     private boolean closed;
+    /** Dönüşümlü adalet: bu oturumda kazananların seçilme ağırlığı her kazanımda yarıya iner. */
+    private boolean fairRotation;
+    private Assignment assignment;
+    private final List<AssignmentRecord> assignmentHistory = new ArrayList<>();
+    private final Set<String> kickedTokens = new LinkedHashSet<>();
 
     public Room(String code, String name, Deck deck, String passwordHash, String creatorClaimToken, Instant now) {
         this(code, name, deck, passwordHash, creatorClaimToken, false, now);
@@ -187,8 +197,50 @@ public class Room {
         return p;
     }
 
+    /** Koltuk silinir; süren atama akışında gönüllü/aday listesinden de düşer. */
     void removeParticipant(String id) {
         participants.remove(id);
+        if (assignment != null) {
+            assignment.forget(id);
+        }
+    }
+
+    /** Krupiye kişiyi masadan atar: koltuk silinir, token'ı kalıcı olarak geçersiz sayılır. */
+    void kick(Participant p) {
+        kickedTokens.add(p.token());
+        if (kickedTokens.size() > MAX_KICKED_TOKENS) {
+            kickedTokens.remove(kickedTokens.iterator().next());
+        }
+        removeParticipant(p.id());
+    }
+
+    boolean isKickedToken(String token) {
+        if (token == null || token.isEmpty()) {
+            return false;
+        }
+        byte[] given = token.getBytes(StandardCharsets.UTF_8);
+        return kickedTokens.stream().anyMatch(t -> MessageDigest.isEqual(given, t.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /** Aynı isimde (büyük/küçük harf duyarsız) çevrimdışı koltuk; devralma önerisi için. */
+    Optional<Participant> offlineSeatNamed(String nickname) {
+        String key = nickname.toLowerCase(Locale.ROOT);
+        return participants.values().stream()
+                .filter(p -> !p.online() && p.nickname().toLowerCase(Locale.ROOT).equals(key))
+                .findFirst();
+    }
+
+    boolean fairRotation() { return fairRotation; }
+    void setFairRotation(boolean on) { this.fairRotation = on; }
+    Assignment assignment() { return assignment; }
+    void setAssignment(Assignment assignment) { this.assignment = assignment; }
+    List<AssignmentRecord> assignmentHistory() { return assignmentHistory; }
+
+    void addAssignmentRecord(AssignmentRecord record) {
+        assignmentHistory.add(record);
+        if (assignmentHistory.size() > MAX_ASSIGNMENT_HISTORY) {
+            assignmentHistory.removeFirst();
+        }
     }
 
     /** İsim çakışırsa sonuna numara ekler: "Ayşe", "Ayşe 2", "Ayşe 3"... */

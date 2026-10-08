@@ -54,6 +54,16 @@ class RecordingEvents implements RoomEvents {
     }
 
     @Override
+    public synchronized void participantKicked(String code, String participantId, String nickname) {
+        events.add(new Event("room.participant_kicked", code, participantId, nickname));
+    }
+
+    @Override
+    public synchronized void kicked(String code, String participantId) {
+        events.add(new Event("room.kicked", code, participantId, null));
+    }
+
+    @Override
     public synchronized void closed(String code, String reason) {
         events.add(new Event("room.closed", code, null, reason));
     }

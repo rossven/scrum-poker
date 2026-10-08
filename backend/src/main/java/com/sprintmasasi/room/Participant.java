@@ -9,7 +9,7 @@ import java.time.Instant;
 public class Participant {
 
     private final String id;
-    private final String token;
+    private String token;
     private final long joinOrder;
     private final Instant joinedAt;
     private String nickname;
@@ -43,6 +43,8 @@ public class Participant {
     Instant offlineSince() { return offlineSince; }
 
     void setModerator(boolean moderator) { this.moderator = moderator; }
+    /** Koltuk isimle devralındı: eski token geçersiz olur. */
+    void replaceToken(String token) { this.token = token; }
     void setObserver(boolean observer) { this.observer = observer; }
     void connect() {
         connections++;

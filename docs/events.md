@@ -20,7 +20,7 @@ Arayüzde moderatör **"Krupiye"** olarak geçer (M2.5); kodda ve olay adlarınd
 |---|---|---|---|
 | `POST` | `/api/rooms` | `{ name?, deck?, customDeck?, password?, ticketsEnabled? }` | `201 { code, claimToken }` |
 | `GET` | `/api/rooms/{code}` | | `{ code, name?, passwordProtected }` |
-| `POST` | `/api/rooms/{code}/join` | `{ nickname, avatar, observer, password?, token?, claimToken? }` | `{ code, participantId, token, nickname, rejoined }` |
+| `POST` | `/api/rooms/{code}/join` | `{ nickname, avatar, observer, password?, token?, claimToken?, takeover? }` | `{ code, participantId, token, nickname, rejoined, takenOver }` |
 | `GET` | `/admin/stats` | `Authorization: Bearer <SM_ADMIN_TOKEN>` | sayaçlar (JSON) |
 
 - `deck`: `modified-fibonacci` (varsayılan), `fibonacci`, `tshirt`, `custom`.
@@ -28,6 +28,7 @@ Arayüzde moderatör **"Krupiye"** olarak geçer (M2.5); kodda ve olay adlarınd
 - `ticketsEnabled`: ticket listesi açık mı başlasın (varsayılan `false`, M2.5). Krupiye odada sonradan açıp kapatabilir.
 - `claimToken`: oda oluşturunca dönen tek kullanımlık anahtar. Katılırken gönderen kişi moderatör olur.
 - `token`: daha önce alınmış oturum token'ı. Geçerliyse aynı koltuğa dönülür, şifre sorulmaz (`rejoined: true`).
+- `takeover` (M3): odada aynı isimde (büyük/küçük harf duyarsız) **çevrimdışı** bir koltuk varsa ve alan yoksa sunucu `409 SEAT_TAKEOVER` döner; istemci "Bu koltuk senin mi?" diye sorar. `true`: koltuk devralınır (isim, avatar, bu turdaki oy, gönüllülük korunur; yeni token verilir, eski token geçersiz olur; **krupiyelik geçmez**, başka krupiye kalmazsa M1 devretme kuralı işler), yanıtta `takenOver: true`. `false`: yeni koltuk ("Ayşe 2"). Çevrimiçi koltuk devralınamaz, soru da sorulmaz. Şifreli odada şifre yine gerekir.
 - `nickname`: 1-24 karakter, kontrol karakteri yok. Odada aynısı varsa sonuna numara eklenir (`"Ayşe 2"`); yanıttaki `nickname` geçerli olandır.
 - `avatar`: `tohum` ya da `tohum.HGBK` (M2.5). Tohum `[A-Za-z0-9_-]{1,32}`, yüzü belirler. Kodlar: `H` şapka 0-4 (yok, kovboy, fötr, silindir, krupiye vizörü), `G` gözlük 0-3 (yok, gözlük, güneş, monokl), `B` bıyık/sakal 0-3 (yok, bıyık, sakal, keçi sakalı), `K` kıyafet rengi 0-7. Görsel tarayıcıda çizilir; bilinmeyen kod `INVALID_AVATAR`.
 
@@ -48,6 +49,8 @@ Hata yanıtı: `{ "error": "KOD" }`
 | `TICKET_LIMIT` | 409 | Odada en fazla 100 ticket |
 | `FEATURE_DISABLED` | 409 | Özellik bu odada kapalı (ticket listesi kapalıyken `ticket.*`) |
 | `NO_VOTES` | 409 | Hiç oy yokken `poker.reveal` |
+| `SEAT_TAKEOVER` | 409 | Aynı isimde çevrimdışı koltuk var; `takeover` ile yeniden gönder |
+| `KICKED` | 403 | Krupiye bu kişiyi masadan attı; eski token'la bağlanılamaz (STOMP `ERROR` mesajı) |
 | `TOO_MANY_ATTEMPTS` | 429 | IP + oda başına yanlış şifre sınırı |
 | `RATE_LIMITED` | 429 | Hız sınırı |
 
@@ -61,14 +64,14 @@ token: <oturum token'ı>
 ```
 
 Token geçersizse veya oda yoksa sunucu `ERROR` çerçevesi döner; `message` başlığı hata kodudur
-(`INVALID_TOKEN`, `ROOM_NOT_FOUND`). İstemci bu durumda yeniden denemeyi bırakır.
+(`INVALID_TOKEN`, `ROOM_NOT_FOUND`, `KICKED`). İstemci bu durumda yeniden denemeyi bırakır.
 
 ### Abonelikler
 
 | Hedef | İçerik |
 |---|---|
 | `/topic/room/{code}` | Odadaki herkese giden olaylar |
-| `/user/queue/room` | Yalnızca bu kişiye: `room.state_snapshot`, `poker.your_vote` |
+| `/user/queue/room` | Yalnızca bu kişiye: `room.state_snapshot`, `poker.your_vote`, `room.kicked` |
 | `/user/queue/errors` | Yalnızca bu kişiye: `error` |
 
 Başka bir odanın konusuna abone olma isteği reddedilir.
@@ -82,6 +85,15 @@ Başka bir odanın konusuna abone olma isteği reddedilir.
 | `room.set_password` | `{ password }` | moderatör | Şifre değişir; boş metin şifreyi kaldırır. İçerideki koltuklar etkilenmez. |
 | `room.leave` | `{}` | herkes | Koltuk silinir. Moderatör kalmazsa en eski bağlı kişiye devredilir. |
 | `room.close` | `{}` | moderatör | Herkese `room.closed`, oda silinir |
+| `room.kick` | `{ participantId }` | moderatör (kendini atamaz) | Kişi masadan atılır: koltuğu silinir, token'ı geçersiz olur, açılmamış oyu silinir, gönüllü/aday listesinden düşer; geçmiş değişmez. Kişiye `room.kicked`, ardından bağlantıları kapatılır; odaya `room.participant_kicked`. Linkle yeniden katılabilir |
+| `assign.start` | `{ seconds? }` | moderatör | "Kim alacak?" başlar (masadaki ticket ya da serbest turun konusu için). Gönüllü turu süresi 5-300 sn, varsayılan 20; `0` = süresiz (krupiye kapatır). Süren akış varsa yerine geçer |
+| `assign.volunteer` | `{ volunteer }` | katılımcı (gözlemci değil) | "Ben alırım" / vazgeç. Yalnızca gönüllü turunda |
+| `assign.close_volunteering` | `{}` | moderatör | Gönüllü turunu erken kapatır (süre dolunca sunucu kendisi kapatır). Tek gönüllü → doğrudan atanır (`game: "volunteer"`); birden çok → adaylar gönüllüler; hiç yok → adaylar bu turda oy verenler (kimse oy vermediyse tüm katılımcılar) |
+| `assign.set_candidate` | `{ participantId, candidate }` | moderatör | Aday ayarında kişiyi çıkar/ekle (gözlemci eklenemez) |
+| `assign.set_fair_rotation` | `{ enabled }` | moderatör | Dönüşümlü adalet: bu oturumda daha önce (geri alınmamış) kazananın seçilme ağırlığı her kazanımda yarıya iner. Görsel olarak dilimler/atlar eşit kalır |
+| `assign.play` | `{ game: "horse" \| "wheel" }` | moderatör | Kazanan ve tam sıralama sunucuda `SecureRandom` ile çekilir. Tek aday kaldıysa oyun oynanmadan atanır (`game: "direct"`) |
+| `assign.undo` | `{}` | moderatör | Sonuç geri alınır: geçmişte `undone: true` kalır, ticket ataması kalkar, aday ayarına dönülür (tek gönüllüye yapılan atama geri alınırsa adaylar tüm havuza genişler) |
+| `assign.close` | `{}` | moderatör | Akışı kapatır; sonuçlar ve geçmiş kalır |
 | `poker.vote` | `{ card }` | katılımcı (gözlemci değil) | Oy ver/değiştir. `card: null` oyu geri çeker. Yalnızca `VOTING`. Kişiye `poker.your_vote` |
 | `poker.reveal` | `{}` | moderatör | En az bir oy gerekir (yoksa `NO_VOTES`). Tur `REVEALED` olur, oylar ve istatistik herkese gider |
 | `poker.new_round` | `{}` | moderatör | Aynı ticket/konu için yeni tur. Açılmış tur geçmişe yazılır. Finallenmiş ticket'sız turdan sonra konusu boş 1. tur başlar |
@@ -130,7 +142,10 @@ Oda her değiştiğinde tam durum.
   "currentTicketId": "t9Xk2...",
   "round": <RoundView>,
   "timer": { "durationSeconds": 120, "remainingMs": 83000 },
-  "sessionHistory": [ { "topic": "Arama", "number": 1, "votes": [...], "stats": {...}, "finalEstimate": "5" } ]
+  "sessionHistory": [ { "topic": "Arama", "number": 1, "votes": [...], "stats": {...}, "finalEstimate": "5" } ],
+  "fairRotation": false,
+  "assignment": <AssignmentView ya da yok>,
+  "assignmentHistory": [ <AssignmentRecord>, ... ]
 }
 ```
 
@@ -174,6 +189,26 @@ Ticket'sız turda `ticketId` yoktur, krupiye yazdıysa `topic` vardır:
 - `id` her yeni turda değişir. İstemci kendi oyunu (`poker.your_vote`) bu kimlikle eşleştirir.
 - `RoundRecord` (ticket geçmişi): `{ number, votes, stats, finalEstimate? }`.
 
+**"Kim alacak?" (M3).** Ticket'ta `assignee: { participantId, nickname, avatar }` (atanmadıysa yok).
+
+```json
+"assignment": {
+  "id": "...", "phase": "VOLUNTEERING | CANDIDATES | RESULT", "ticketId": "...", "title": "ABC-7 Ödeme ekranı",
+  "volunteerSeconds": 20, "volunteerRemainingMs": 14200,
+  "volunteers": ["..."], "candidates": ["..."],
+  "result": <AssignmentRecord>,
+  "game": { "type": "horse", "startsInMs": 1500, "durationMs": 8200, "animation": { ... } }
+}
+```
+
+- `volunteerRemainingMs` yalnızca süre sınırlı gönüllü turunda; `result` ve `game` yalnızca `RESULT`'ta (`game`, `volunteer`/`direct` sonuçlarında yok).
+- `startsInMs`: gönderim anından oyunun başlamasına kalan süre (negatifse başlayalı geçen). İstemci kendi saatiyle sayar; herkes aynı anda başlatır (sunucu sonucu 1,5 sn sonrasına zamanlar).
+- `animation` (at yarışı): `{ "tracks": { "<participantId>": [0.08, 0.17, ... 1.0] } }`. Her at için eşit aralıklı 10 ara nokta (0..1 ilerleme); son nokta bitiş konumu. Atlar sunucunun sıralamasıyla çizgiye varır.
+- `animation` (şans çarkı): `{ "slices": ["<id>", ...], "winnerSlice": 2, "turns": 5, "offset": 0.42 }`. Dilimler eşit, tepeden saat yönünde; çark `turns` tur dönüp ok kazananın diliminin `offset` (0..1) noktasında durur.
+
+`AssignmentRecord`: `{ id, ticketId?, title?, game: "horse"|"wheel"|"volunteer"|"direct", winner, ranking: [Person], candidates: [Person], weighted, at: "ISO-8601", undone }`.
+Odada son 50 sonuç saklanır. İstemci tarafında rastgelelik yoktur: animasyon tamamen bu alanlardan çizilir.
+
 #### `room.state_snapshot` (kişisel)
 `{ "youId": "<participantId>", "room": <room.state verisi>, "yourVote": { "roundId": 7, "card": "5" } }`.
 Yeniden bağlanınca tam durumu almak için. `yourVote` yalnızca kişinin kendi oyudur, oy yoksa alan yoktur.
@@ -192,6 +227,12 @@ Yeniden bağlanınca tam durumu almak için. `yourVote` yalnızca kişinin kendi
 
 #### `room.participant_joined` / `room.participant_left` (konu)
 `{ "participantId": "..." }`. Bilgi amaçlıdır (bildirim için); güncel liste her zaman `room.state` ile gelir.
+
+#### `room.participant_kicked` (konu)
+`{ "participantId": "...", "nickname": "Ali" }`. Krupiye bu kişiyi masadan çıkardı (bildirim için).
+
+#### `room.kicked` (kişisel)
+`{}`. Krupiye seni masadan çıkardı; bağlantı kısa süre sonra sunucu tarafından kapatılır. İstemci oturumu siler ve mesajı gösterir.
 
 #### `room.closed` (konu)
 `{ "reason": "closed_by_moderator" | "expired" }`

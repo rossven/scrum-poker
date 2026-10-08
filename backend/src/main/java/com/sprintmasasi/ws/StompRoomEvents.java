@@ -5,18 +5,30 @@ import com.sprintmasasi.room.RoomEvents;
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
 import com.sprintmasasi.room.RoomViews.RoomState;
 import com.sprintmasasi.room.RoomViews.YourVote;
+import java.time.Clock;
 import java.util.Map;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StompRoomEvents implements RoomEvents {
 
-    private final SimpMessagingTemplate template;
+    /** Atılan kişiye bildirim ulaşsın diye bağlantı bu kadar sonra kapatılır. */
+    private static final long KICK_CLOSE_DELAY_MS = 500;
 
-    public StompRoomEvents(@Lazy SimpMessagingTemplate template) {
+    private final SimpMessagingTemplate template;
+    private final SessionRegistry sessions;
+    private final TaskScheduler scheduler;
+    private final Clock clock;
+
+    public StompRoomEvents(@Lazy SimpMessagingTemplate template, SessionRegistry sessions,
+                           @Lazy TaskScheduler scheduler, Clock clock) {
         this.template = template;
+        this.sessions = sessions;
+        this.scheduler = scheduler;
+        this.clock = clock;
     }
 
     @Override
@@ -62,6 +74,19 @@ public class StompRoomEvents implements RoomEvents {
     public void participantLeft(String code, String participantId) {
         template.convertAndSend(Destinations.roomTopic(code),
                 ServerEvent.of("room.participant_left", Map.of("participantId", participantId)));
+    }
+
+    @Override
+    public void participantKicked(String code, String participantId, String nickname) {
+        template.convertAndSend(Destinations.roomTopic(code), ServerEvent.of("room.participant_kicked",
+                Map.of("participantId", participantId, "nickname", nickname)));
+    }
+
+    @Override
+    public void kicked(String code, String participantId) {
+        String principal = new RoomPrincipal(code, participantId).getName();
+        toUser(code, participantId, Destinations.USER_ROOM_QUEUE, ServerEvent.of("room.kicked", Map.of()));
+        scheduler.schedule(() -> sessions.closeAll(principal), clock.instant().plusMillis(KICK_CLOSE_DELAY_MS));
     }
 
     @Override

@@ -1,0 +1,20 @@
+.track {
+  display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, var(--felt-light), var(--felt-dark)); color: var(--table-text);
+}
+.lane { display: grid; grid-template-columns: minmax(60px, 110px) 1fr 28px; align-items: center; gap: 8px; }
+.name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Bitiş çizgisi sağda: dama deseni */
+.road {
+  position: relative; height: 38px; border-bottom: 1px dashed color-mix(in srgb, var(--table-text) 35%, transparent);
+  margin-left: 58px; /* başlangıçta atlar çizginin solunda durur */
+}
+.road::after {
+  content: ''; position: absolute; right: -2px; top: 0; bottom: 0; width: 6px;
+  background: repeating-linear-gradient(0deg, #fff 0 6px, #111 6px 12px); opacity: 0.85;
+}
+.runner { position: absolute; top: 50%; transform: translate(-100%, -50%); display: flex; align-items: center; gap: 2px; white-space: nowrap; }
+.horse { font-size: 24px; transform: scaleX(-1); display: inline-block; }
+.place { font-weight: 800; text-align: right; }
+.winner .name, .winner .place { color: var(--gold-soft); }
+.winner .runner { filter: drop-shadow(0 0 6px var(--gold)); }

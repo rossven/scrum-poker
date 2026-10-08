@@ -13,17 +13,20 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 class ConnectionListener {
 
     private final RoomService rooms;
+    private final SessionRegistry registry;
     // Spring aynı oturum için disconnect olayını birden fazla kez yayınlayabilir.
     private final Set<String> liveSessions = ConcurrentHashMap.newKeySet();
 
-    ConnectionListener(RoomService rooms) {
+    ConnectionListener(RoomService rooms, SessionRegistry registry) {
         this.rooms = rooms;
+        this.registry = registry;
     }
 
     @EventListener
     void onConnected(SessionConnectedEvent event) {
         String sessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
         if (event.getUser() instanceof RoomPrincipal p && liveSessions.add(sessionId)) {
+            registry.bind(p.getName(), sessionId);
             rooms.connected(p.roomCode(), p.participantId());
         }
     }

@@ -3,6 +3,7 @@ package com.sprintmasasi.room;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sprintmasasi.poker.VoteStatistics;
 import java.util.List;
+import java.util.Map;
 
 /**
  * İstemciye giden görünümler. Burada asla token, şifre veya şifre hash'i bulunmaz.
@@ -25,10 +26,16 @@ public final class RoomViews {
      * @param ticketsEnabled ticket listesi açık mı; kapalıyken tickets boş gider (ticket'lar sunucuda saklanır)
      * @param sessionHistory ticket'sız (serbest) turların kaydı, en eskiden yeniye
      */
+    /**
+     * @param fairRotation      dönüşümlü adalet modu açık mı (M3)
+     * @param assignment        süren "Kim alacak?" akışı; yoksa null
+     * @param assignmentHistory atama sonuçları, en eskiden yeniye (geri alınanlar dahil)
+     */
     public record RoomState(String code, String name, String deck, List<String> deckCards, List<String> customDeck,
                             boolean passwordProtected, int maxParticipants, List<ParticipantView> participants,
                             boolean ticketsEnabled, List<TicketView> tickets, String currentTicketId, RoundView round,
-                            TimerView timer, List<SessionRoundView> sessionHistory) {}
+                            TimerView timer, List<SessionRoundView> sessionHistory, boolean fairRotation,
+                            AssignmentView assignment, List<AssignmentRecordView> assignmentHistory) {}
 
     /** Kişiye özel tam durum: yeniden bağlanınca gönderilir. yourVote yalnızca bu kişinin oyu. */
     public record RoomSnapshot(String youId, RoomState room, YourVote yourVote) {}
@@ -54,8 +61,36 @@ public final class RoomViews {
     public record SessionRoundView(String topic, int number, List<VoteView> votes, VoteStatistics.Result stats,
                                    String finalEstimate) {}
 
+    /** assignee: "Kim alacak?" sonucunda işi alan kişi (yoksa null). */
     public record TicketView(String id, String title, String link, String note, String status, String finalEstimate,
-                             List<RoundRecordView> history) {}
+                             List<RoundRecordView> history, PersonView assignee) {}
+
+    /** Bir kişinin o anki adı ve avatarı (geçmişte saklanır; kişi sonradan çıksa da görünür). */
+    public record PersonView(String participantId, String nickname, String avatar) {}
+
+    /**
+     * Atama sonucu. game: "horse" | "wheel" | "volunteer" (tek gönüllü) | "direct" (tek aday).
+     * at: ISO-8601 zaman damgası (sunucu). weighted: dönüşümlü adalet modu açıkken oynandı.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record AssignmentRecordView(String id, String ticketId, String title, String game, PersonView winner,
+                                       List<PersonView> ranking, List<PersonView> candidates, boolean weighted,
+                                       String at, boolean undone) {}
+
+    /**
+     * Oyunun canlı gösterimi. startsInMs: gönderim anından oyunun başlamasına kalan süre (negatifse başlayalı
+     * geçen süre); istemci kendi saatiyle sayar, böylece herkes aynı anda başlatır. animation: oyuna özel.
+     */
+    public record GameView(String type, long startsInMs, int durationMs, Map<String, Object> animation) {}
+
+    /**
+     * Süren "Kim alacak?" akışı. phase: VOLUNTEERING | CANDIDATES | RESULT.
+     * volunteerRemainingMs yalnızca süre sınırlı gönüllü turunda; result ve game yalnızca RESULT'ta.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record AssignmentView(String id, String phase, String ticketId, String title, int volunteerSeconds,
+                                 Long volunteerRemainingMs, List<String> volunteers, List<String> candidates,
+                                 AssignmentRecordView result, GameView game) {}
 
     /** remainingMs gönderim anındaki kalan süre; istemci kendi saatiyle geri sayar (saat farkından etkilenmez). */
     public record TimerView(int durationSeconds, long remainingMs) {}
@@ -64,5 +99,12 @@ public final class RoomViews {
 
     public record CreateRoomResult(String code, String claimToken) {}
 
-    public record JoinResult(String code, String participantId, String token, String nickname, boolean rejoined) {}
+    /** takenOver: aynı isimli çevrimdışı koltuk devralındı (M3). */
+    public record JoinResult(String code, String participantId, String token, String nickname, boolean rejoined,
+                             boolean takenOver) {
+
+        public JoinResult(String code, String participantId, String token, String nickname, boolean rejoined) {
+            this(code, participantId, token, nickname, rejoined, false);
+        }
+    }
 }

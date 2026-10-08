@@ -1,5 +1,6 @@
 package com.sprintmasasi.room;
 
+import com.sprintmasasi.room.RoomViews.PersonView;
 import com.sprintmasasi.room.RoomViews.RoundRecordView;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,8 @@ class Ticket {
     private String finalEstimate;
     /** Açılmış turların kaydı (en eskiden yeniye). */
     private final List<RoundRecordView> history = new ArrayList<>();
+    /** "Kim alacak?" sonucu işi alan kişi; null = atanmadı. */
+    private PersonView assignee;
 
     Ticket(String id, String title, String link, String note) {
         this.id = id;
@@ -34,6 +37,8 @@ class Ticket {
     Status status() { return status; }
     String finalEstimate() { return finalEstimate; }
     List<RoundRecordView> history() { return history; }
+    PersonView assignee() { return assignee; }
+    void assign(PersonView person) { this.assignee = person; }
 
     void edit(String title, String link, String note) {
         this.title = title;

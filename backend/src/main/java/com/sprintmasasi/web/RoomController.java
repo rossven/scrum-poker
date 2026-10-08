@@ -22,8 +22,9 @@ public class RoomController {
     public record CreateRoomRequest(String name, String deck, List<String> customDeck, String password,
                                     boolean ticketsEnabled) {}
 
+    /** takeover: aynı isimli çevrimdışı koltuk için yanıt (null = henüz sorulmadı; bkz. SEAT_TAKEOVER). */
     public record JoinRequest(String nickname, String avatar, boolean observer, String password, String token,
-                              String claimToken) {}
+                              String claimToken, Boolean takeover) {}
 
     private final RoomService rooms;
 
@@ -46,6 +47,6 @@ public class RoomController {
     @PostMapping("/{code}/join")
     public JoinResult join(@PathVariable String code, @RequestBody JoinRequest body, HttpServletRequest request) {
         return rooms.join(code, body.nickname(), body.avatar(), body.observer(), body.password(), body.token(),
-                body.claimToken(), ClientIp.of(request));
+                body.claimToken(), body.takeover(), ClientIp.of(request));
     }
 }

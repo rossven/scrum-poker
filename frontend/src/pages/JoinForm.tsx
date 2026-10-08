@@ -25,20 +25,28 @@ export function JoinForm({ info, onJoined }: Props) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Aynı isimde çevrimdışı bir koltuk var: "Bu koltuk senin mi?" sorusu.
+  const [askTakeover, setAskTakeover] = useState(false);
 
   const trimmed = nickname.trim();
   const valid = [...trimmed].length >= 1 && [...trimmed].length <= 24;
 
-  const submit = async (e: FormEvent) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!valid) {
       setError('INVALID_NICKNAME');
       return;
     }
+    void send(undefined);
+  };
+
+  const send = async (takeover: boolean | undefined) => {
     setBusy(true);
     setError(null);
+    setAskTakeover(false);
     try {
       const result = await api.join(info.code, {
+        takeover,
         nickname: trimmed,
         avatar,
         observer,
@@ -50,7 +58,9 @@ export function JoinForm({ info, onJoined }: Props) {
       preferences.set('avatar', avatar);
       onJoined(result);
     } catch (err) {
-      setError(err instanceof ApiError ? err.code : 'UNKNOWN');
+      const code = err instanceof ApiError ? err.code : 'UNKNOWN';
+      if (code === 'SEAT_TAKEOVER') setAskTakeover(true);
+      else setError(code);
       setBusy(false);
     }
   };
@@ -88,6 +98,17 @@ export function JoinForm({ info, onJoined }: Props) {
       </label>
 
       {error && <p className="error-text">{t(`errors.${error}`)}</p>}
+
+      {askTakeover && (
+        <div className={styles.takeover} role="alertdialog" aria-labelledby="takeover-q">
+          <p id="takeover-q"><strong>{t('join.takeoverQuestion', { name: trimmed })}</strong></p>
+          <p className="muted">{t('join.takeoverHint')}</p>
+          <div className={styles.buttons}>
+            <button type="button" className="btn" onClick={() => void send(false)}>{t('join.newSeat')}</button>
+            <button type="button" className="btn btn-primary" onClick={() => void send(true)}>{t('join.takeover')}</button>
+          </div>
+        </div>
+      )}
 
       <div className={styles.buttons}>
         <button type="button" className="btn btn-ghost" onClick={() => navigate('/')}>{t('common.back')}</button>

@@ -5,6 +5,9 @@ import com.sprintmasasi.poker.Deck;
 import com.sprintmasasi.poker.VoteStatistics;
 import com.sprintmasasi.room.RoomViews.CreateRoomResult;
 import com.sprintmasasi.room.RoomViews.JoinResult;
+import com.sprintmasasi.room.RoomViews.AssignmentRecordView;
+import com.sprintmasasi.room.RoomViews.AssignmentView;
+import com.sprintmasasi.room.RoomViews.GameView;
 import com.sprintmasasi.room.RoomViews.ParticipantView;
 import com.sprintmasasi.room.RoomViews.RoomInfo;
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
@@ -109,6 +112,15 @@ public class RoomService {
      */
     public JoinResult join(String code, String rawNickname, String rawAvatar, boolean observer, String password,
                            String existingToken, String claimToken, String clientIp) {
+        return join(code, rawNickname, rawAvatar, observer, password, existingToken, claimToken, false, clientIp);
+    }
+
+    /**
+     * takeover (M3): aynı isimde çevrimdışı bir koltuk varsa null → SEAT_TAKEOVER (istemci sorar),
+     * true → koltuk devralınır, false → yeni koltuk ("Ayşe 2"). Çevrimiçi koltuk devralınamaz.
+     */
+    public JoinResult join(String code, String rawNickname, String rawAvatar, boolean observer, String password,
+                           String existingToken, String claimToken, Boolean takeover, String clientIp) {
         Room room = require(code);
 
         var rejoin = room.withLock(() -> room.findByToken(existingToken));
@@ -120,6 +132,25 @@ public class RoomService {
         String nickname = Validation.nickname(rawNickname);
         String avatar = Validation.avatar(rawAvatar);
         checkPassword(room, password, clientIp);
+
+        if (!Boolean.FALSE.equals(takeover)) {
+            JoinResult takenOver = room.withLock(() -> {
+                ensureOpen(room);
+                var seat = room.offlineSeatNamed(nickname);
+                if (seat.isEmpty()) {
+                    return null; // koltuk bu arada doldu ya da yok: normal katılım
+                }
+                if (takeover == null) {
+                    throw new RoomException(ErrorCode.SEAT_TAKEOVER);
+                }
+                return takeOver(room, seat.get());
+            });
+            if (takenOver != null) {
+                log.info("event=room.seat_takeover room={}", room.code());
+                broadcast(room);
+                return takenOver;
+            }
+        }
 
         JoinResult result = room.withLock(() -> {
             ensureOpen(room);
@@ -141,6 +172,22 @@ public class RoomService {
         events.participantJoined(room.code(), result.participantId());
         broadcast(room);
         return result;
+    }
+
+    /**
+     * Çevrimdışı koltuğu isimle devralma: koltuk (isim, avatar, oy, gönüllülük) aynen kalır, yeni token verilir,
+     * eski token geçersiz olur. Krupiyelik devralınmaz; başka krupiye kalmazsa M1'deki devretme kuralı işler.
+     * Oda kilidi altında çağrılır.
+     */
+    private JoinResult takeOver(Room room, Participant seat) {
+        String token = ids.token();
+        seat.replaceToken(token);
+        if (seat.moderator()) {
+            seat.setModerator(false);
+            room.handOverModeratorIfNeeded(graceCutoff());
+        }
+        room.touch(clock.instant());
+        return new JoinResult(room.code(), seat.id(), token, seat.nickname(), false, true);
     }
 
     private void checkPassword(Room room, String password, String clientIp) {
@@ -169,8 +216,12 @@ public class RoomService {
     public String authenticate(String code, String token) {
         Room room = repository.find(SecureIds.normalizeCode(code))
                 .orElseThrow(() -> new RoomException(ErrorCode.ROOM_NOT_FOUND));
-        return room.withLock(() -> room.findByToken(token).map(Participant::id))
-                .orElseThrow(() -> new RoomException(ErrorCode.INVALID_TOKEN));
+        return room.withLock(() -> {
+            if (room.isKickedToken(token)) {
+                throw new RoomException(ErrorCode.KICKED);
+            }
+            return room.findByToken(token).map(Participant::id);
+        }).orElseThrow(() -> new RoomException(ErrorCode.INVALID_TOKEN));
     }
 
     public void connected(String code, String participantId) {
@@ -255,6 +306,33 @@ public class RoomService {
         }
     }
 
+    /**
+     * Krupiye birini masadan atar (oylama yok, kendini atamaz). Açılmamış oyu silinir, gönüllü/aday listesinden
+     * düşer; yapılmış atamalar ve geçmiş değişmez. Token'ı geçersiz olur ve bağlantıları kapatılır.
+     */
+    public void kick(String code, String actorId, String targetId) {
+        Room room = require(code);
+        String nickname = room.withLock(() -> {
+            requireModerator(room, actorId);
+            if (targetId == null || targetId.equals(actorId)) {
+                throw new RoomException(ErrorCode.INVALID_INPUT);
+            }
+            Participant target = room.participant(targetId)
+                    .orElseThrow(() -> new RoomException(ErrorCode.INVALID_INPUT));
+            if (room.round().isVoting()) {
+                room.round().withdraw(targetId);
+            }
+            room.kick(target);
+            room.handOverModeratorIfNeeded(graceCutoff());
+            room.touch(clock.instant());
+            return target.nickname();
+        });
+        log.info("event=room.kick room={}", room.code());
+        events.kicked(room.code(), targetId);
+        events.participantKicked(room.code(), targetId, nickname);
+        broadcast(room);
+    }
+
     /** Moderatör şifreyi değiştirir; boş/null şifreyi kaldırır. Mevcut koltuklar etkilenmez. */
     public void setPassword(String code, String actorId, String rawPassword) {
         Room room = require(code);
@@ -316,12 +394,15 @@ public class RoomService {
         }
     }
 
+    /**
+     * Durumu kilit altında hesaplayıp yine kilit altında yayınlar: aynı anda gelen iki niyetin durumları
+     * hesaplandıkları sırayla gönderilir (eski bir durum yenisinin üstüne yazılmaz).
+     */
     void broadcast(Room room) {
-        RoomState state = room.withLock(() -> toState(room));
-        events.state(room.code(), state);
+        room.withLock(() -> events.state(room.code(), toState(room)));
     }
 
-    private Instant graceCutoff() {
+    Instant graceCutoff() {
         return clock.instant().minusSeconds(props.moderatorGraceSeconds());
     }
 
@@ -338,13 +419,30 @@ public class RoomService {
         // Ticket listesi kapalıyken ticket'lar sunucuda saklanır ama istemciye gitmez.
         List<TicketView> tickets = !room.ticketsEnabled() ? List.of() : room.tickets().stream()
                 .map(t -> new TicketView(t.id(), t.title(), t.link(), t.note(), t.status().name(), t.finalEstimate(),
-                        List.copyOf(t.history())))
+                        List.copyOf(t.history()), t.assignee()))
                 .toList();
         Deck custom = room.customDeck();
         return new RoomState(room.code(), room.name(), room.deckId(), room.deck().cards(),
                 custom == null ? null : custom.cards(), room.passwordProtected(), props.maxParticipants(), people,
                 room.ticketsEnabled(), tickets, room.currentTicketId(), roundView(room), timerView(room),
-                List.copyOf(room.sessionHistory()));
+                List.copyOf(room.sessionHistory()), room.fairRotation(), assignmentView(room),
+                room.assignmentHistory().stream().map(AssignmentRecord::view).toList());
+    }
+
+    /** Süren "Kim alacak?" akışı; zamanlar gönderim anına göre göreli (istemci kendi saatiyle sayar). */
+    private AssignmentView assignmentView(Room room) {
+        Assignment a = room.assignment();
+        if (a == null) {
+            return null;
+        }
+        Instant now = clock.instant();
+        Long remaining = a.volunteerEndsAt() == null ? null
+                : Math.max(0, Duration.between(now, a.volunteerEndsAt()).toMillis());
+        AssignmentRecordView result = a.result() == null ? null : a.result().view();
+        GameView game = a.game() == null ? null : new GameView(a.game().type(),
+                Duration.between(now, a.game().startsAt()).toMillis(), a.game().durationMs(), a.game().animation());
+        return new AssignmentView(a.id(), a.phase().name(), a.ticketId(), a.title(), a.volunteerSeconds(), remaining,
+                List.copyOf(a.volunteers()), List.copyOf(a.candidates()), result, game);
     }
 
     /**

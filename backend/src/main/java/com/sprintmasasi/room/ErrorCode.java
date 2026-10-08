@@ -23,6 +23,10 @@ public enum ErrorCode {
     TICKET_LIMIT(409),
     /** Özellik bu odada kapalı (ör. ticket listesi kapalıyken ticket.* niyetleri). */
     FEATURE_DISABLED(409),
+    /** Aynı isimde çevrimdışı bir koltuk var: istemci "Devral / Yeni koltuk aç" diye sorar (M3). */
+    SEAT_TAKEOVER(409),
+    /** Krupiye bu kişiyi masadan attı; eski token'la bağlanılamaz (M3). */
+    KICKED(403),
     TOO_MANY_ATTEMPTS(429),
     RATE_LIMITED(429);
 

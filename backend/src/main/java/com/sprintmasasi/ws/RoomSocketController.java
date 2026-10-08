@@ -14,6 +14,8 @@ public class RoomSocketController {
 
     public record PasswordPayload(String password) {}
 
+    public record KickPayload(String participantId) {}
+
     private final RoomService rooms;
 
     public RoomSocketController(RoomService rooms) {
@@ -42,6 +44,12 @@ public class RoomSocketController {
     public void leave(Principal principal) {
         var p = (RoomPrincipal) principal;
         rooms.leave(p.roomCode(), p.participantId());
+    }
+
+    @MessageMapping("room.kick")
+    public void kick(@Payload KickPayload payload, Principal principal) {
+        var p = (RoomPrincipal) principal;
+        rooms.kick(p.roomCode(), p.participantId(), payload.participantId());
     }
 
     @MessageMapping("room.close")
