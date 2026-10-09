@@ -93,4 +93,13 @@ class SiteAndHeadersTest {
         assertThat(headers.getFirst("X-Content-Type-Options")).isEqualTo("nosniff");
         assertThat(headers.getFirst("Strict-Transport-Security")).isNull(); // http üzerinde gönderilmez
     }
+
+    @Test
+    void textResponsesAreCompressed() {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("Accept-Encoding", "gzip");
+        var res = http.exchange("/sitemap.xml", org.springframework.http.HttpMethod.GET,
+                new org.springframework.http.HttpEntity<>(headers), byte[].class);
+        assertThat(res.getHeaders().getFirst("Content-Encoding")).isEqualTo("gzip");
+    }
 }
