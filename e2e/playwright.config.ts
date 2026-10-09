@@ -6,6 +6,7 @@ export default defineConfig({
   timeout: 30_000,
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
+    locale: 'tr-TR', // uygulama tarayıcı diline göre açılır; testler Türkçe metinleri bekler
     trace: 'retain-on-failure',
   },
 });

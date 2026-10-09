@@ -4,6 +4,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { Shell } from '../components/Shell';
 import { CardFace } from '../components/poker/CardFace';
 import { cardTone } from '../lib/deck';
+import { SITE_PAGES, useLanguage } from '../lib/language';
 import { navigate, roomPath } from '../lib/router';
 import styles from './HomePage.module.css';
 
@@ -17,6 +18,8 @@ const FEATURES: { key: string; icon: IconName }[] = [
 
 export function HomePage() {
   const { t } = useTranslation();
+  const lang = useLanguage();
+  const pages = SITE_PAGES[lang];
   const [code, setCode] = useState('');
 
   const join = (e: FormEvent) => {
@@ -93,6 +96,14 @@ export function HomePage() {
           </li>
         ))}
       </ul>
+
+      {/* Gerçek bağlantılar: rehber ve gizlilik sayfaları sunucudan gelir, tam sayfa yüklenir. */}
+      <nav className={styles.links} aria-label="SprintMasası">
+        <a href={pages.guide}>{t('footer.guide')}</a>
+        <a href={pages.storyPoints}>{t('footer.storyPoints')}</a>
+        <a href={pages.privacy}>{t('footer.privacy')}</a>
+        <a href="https://github.com/rossven/scrum-poker" target="_blank" rel="noopener noreferrer">{t('footer.source')}</a>
+      </nav>
     </Shell>
   );
 }

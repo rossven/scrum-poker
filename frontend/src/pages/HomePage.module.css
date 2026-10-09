@@ -58,3 +58,8 @@
   .tagline { margin-inline: auto; }
   .features { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Alt bağlantılar: rehber, gizlilik, kaynak kod. */
+.links { display: flex; flex-wrap: wrap; gap: 6px 22px; justify-content: center; margin: 36px 0 8px; font-size: 14px; }
+.links a { color: var(--text-soft); text-decoration: none; }
+.links a:hover { color: var(--accent-strong); text-decoration: underline; }

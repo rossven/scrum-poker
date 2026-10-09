@@ -72,6 +72,10 @@ cd e2e && npm install && npx playwright install chromium && npm test
 Ters vekil (nginx, Caddy, PaaS) arkasında çalışırken gerçek istemci IP'si için
 `SERVER_FORWARD_HEADERS_STRATEGY=native` ekle; vekilin WebSocket yükseltmesini (`Upgrade` başlığı) geçirdiğinden emin ol.
 
+## Diller ve içerik sayfaları
+
+Arayüz Türkçe ve İngilizce. Dil sırası: `/en` adresi, `?lang=`, kayıtlı tercih, tarayıcı dili (botlar Türkçe görür). Rehber ve gizlilik sayfaları `frontend/content/site.mjs` içindeki metinlerden `npm run build` sırasında `dist/pages/` altına hazır HTML olarak üretilir; `SiteController` bunları ve `manifest.json`'u servis eder, sitemap hreflang karşılıklarıyla birlikte oluşur. Yeni sayfa eklerken `site.mjs`'e ekleyin ve `SiteController.content` yol listesine yolu yazın. e2e testleri tarayıcı dilini `tr-TR`'ye sabitler.
+
 ## Dağıtım
 
 Tek servis, veritabanı yok. Küçük bir VPS veya Docker çalıştıran herhangi bir PaaS yeterli:

@@ -1,6 +1,8 @@
 // Özel deste kuralları (sunucudaki Deck.custom ile aynı): en fazla 20 kart,
 // kart başına en fazla 8 karakter, tekrar yok (büyük/küçük harf duyarsız).
 
+import { currentLocale } from './language';
+
 export const CUSTOM_MAX_CARDS = 20;
 export const CARD_MAX_CHARS = 8;
 
@@ -24,10 +26,10 @@ export function parseCustomDeck(text: string): { cards: string[]; error?: DeckEr
 /** "?" ve "☕" sayılır ama hesaba katılmaz; final tahmin olamaz. */
 export const isSpecialCard = (card: string) => card === '?' || card === '☕';
 
-/** Ortalama gibi sayıları Türkçe biçimde gösterir: 5.25 → "5,25". */
+/** Ortalama gibi sayıları dile göre biçimler: Türkçe 5.25 → "5,25", İngilizce "5.25". */
 export function formatNumber(n: number | undefined): string {
   if (n === undefined || n === null) return '–';
-  return n.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+  return n.toLocaleString(currentLocale(), { maximumFractionDigits: 2 });
 }
 
 /**

@@ -39,7 +39,7 @@
     "namePlaceholder": "ör. Sprint 42 planlama",
     "deck": "Başlangıç destesi",
     "password": "Şifre",
-    "passwordHint": "Boş bırakırsan link olan herkes girebilir.",
+    "passwordHint": "Boş bırakırsan link olan herkes girebilir. Ticket başlıkların gizliyse şifre koy.",
     "submit": "Odayı oluştur",
     "ticketsHint": "Kapalıyken masada serbest tur oynanır; krupiye istediği an ayarlardan açabilir.",
     "advanced": "Gelişmiş",
@@ -143,6 +143,12 @@
     "system": "Sistem",
     "light": "Açık",
     "dark": "Koyu"
+  },
+  "language": {
+    "label": "Dil",
+    "switchTo": "Dili {{name}} yap",
+    "tr": "Türkçe",
+    "en": "English"
   },
   "errors": {
     "ROOM_NOT_FOUND": "Oda bulunamadı.",
@@ -465,5 +471,14 @@
     "passwordHint": "Boş bırakırsan değişmez.",
     "passwordSet": "Şifre var; yeni yazarsan değişir.",
     "closeHint": "Oda herkes için kapanır ve silinir."
+  },
+  "footer": {
+    "guide": "Planning poker nedir?",
+    "storyPoints": "Story point rehberi",
+    "privacy": "Gizlilik",
+    "source": "Kaynak kod"
+  },
+  "meta": {
+    "title": "SprintMasası · Ücretsiz online planning poker"
   }
 }

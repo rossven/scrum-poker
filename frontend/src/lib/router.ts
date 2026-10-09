@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-// Üç sayfalık uygulama için küçük bir yönlendirici: /, /yeni, /r/KOD
+// Üç sayfalık uygulama için küçük bir yönlendirici: / (ve /en), /yeni, /r/KOD
 
 export type Route = { name: 'home' } | { name: 'create' } | { name: 'room'; code: string };
 
@@ -8,6 +8,8 @@ function parse(path: string): Route {
   const room = /^\/r\/([A-Za-z0-9]{4,16})\/?$/.exec(path);
   if (room) return { name: 'room', code: room[1].toUpperCase() };
   if (path === '/yeni') return { name: 'create' };
+  // /en: İngilizce ana sayfa (dil seçimi i18n/detect.ts'te).
+  if (path === '/en' || path === '/en/') return { name: 'home' };
   return { name: 'home' };
 }
 

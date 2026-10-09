@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import type { AssignmentRecord } from '../../api/types';
 import styles from './AssignmentHistory.module.css';
 import { Icon } from '../Icon';
+import { currentLocale } from '../../lib/language';
 
 /** Oturumdaki atama sonuçları, en yenisi üstte. Geri alınanlar üstü çizili kalır. */
 export function AssignmentHistory({ records, hiddenId }: { records: AssignmentRecord[]; hiddenId?: string | null }) {
@@ -22,7 +23,7 @@ export function AssignmentHistory({ records, hiddenId }: { records: AssignmentRe
             <p className={styles.meta}>
               {t(`assign.games.${r.game}`)}
               {' · '}
-              <time dateTime={r.at}>{new Date(r.at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</time>
+              <time dateTime={r.at}>{new Date(r.at).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' })}</time>
               {r.weighted && <> · <Icon name="scale" size={13} /></>}
               {r.candidates.length > 1 && <> · {t('assign.amongN', { count: r.candidates.length })}</>}
               {r.undone && <> · {t('assign.undone')}</>}

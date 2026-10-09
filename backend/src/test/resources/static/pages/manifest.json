@@ -1,0 +1,10 @@
+{
+  "pages": [
+    {"path": "/gizlilik", "file": "gizlilik.html", "lang": "tr", "id": "privacy", "alternate": "/en/privacy"},
+    {"path": "/en/privacy", "file": "en__privacy.html", "lang": "en", "id": "privacy", "alternate": "/gizlilik"}
+  ],
+  "home": {
+    "tr": {"path": "/", "title": "Başlık TR", "description": "Açıklama TR", "ogDescription": "OG TR", "locale": "tr_TR", "boot": "<main class=\"boot\"><h1>Merhaba</h1></main>"},
+    "en": {"path": "/en", "title": "Title EN", "description": "Desc EN", "ogDescription": "OG EN", "locale": "en_US", "boot": "<main class=\"boot\"><h1>Hello</h1></main>"}
+  }
+}

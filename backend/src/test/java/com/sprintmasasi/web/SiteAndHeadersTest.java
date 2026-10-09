@@ -47,7 +47,37 @@ class SiteAndHeadersTest {
     void robotsAndSitemapPointAtThisSite() {
         assertThat(http.getForObject("/robots.txt", String.class))
                 .contains("Disallow: /api/").contains("Sitemap: " + base() + "/sitemap.xml");
-        assertThat(http.getForObject("/sitemap.xml", String.class)).contains("<loc>" + base() + "/</loc>");
+        assertThat(http.getForObject("/sitemap.xml", String.class))
+                .contains("<loc>" + base() + "/</loc>")
+                .contains("<loc>" + base() + "/en</loc>")
+                .contains("<loc>" + base() + "/gizlilik</loc>")
+                .contains("hreflang=\"en\" href=\"" + base() + "/en/privacy\"");
+    }
+
+    @Test
+    void englishHomeHasOwnMetaCanonicalAndBootContent() {
+        var res = http.getForEntity("/en", String.class);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res.getBody()).contains("<html lang=\"en\">").contains("<title>Title EN</title>")
+                .contains("href=\"" + base() + "/en\"").contains("en_US").contains("<h1>Hello</h1>")
+                .doesNotContain("__").doesNotContain("noindex");
+        assertThat(http.getForEntity("/en/", String.class).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(http.getForObject("/", String.class)).contains("<html lang=\"tr\">").contains("<h1>Merhaba</h1>");
+    }
+
+    @Test
+    void contentPagesAreServedWithAbsoluteUrls() {
+        var res = http.getForEntity("/en/privacy", String.class);
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res.getBody()).contains(base() + "/en/privacy").doesNotContain("__SITE_URL__");
+        assertThat(http.getForEntity("/gizlilik", String.class).getBody()).contains("gizlilik");
+        assertThat(http.getForEntity("/story-point-nedir", String.class).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void newRoomPageIsNoindex() {
+        var res = http.getForEntity("/yeni", String.class);
+        assertThat(res.getHeaders().getFirst("X-Robots-Tag")).isEqualTo("noindex, nofollow");
     }
 
     @Test
