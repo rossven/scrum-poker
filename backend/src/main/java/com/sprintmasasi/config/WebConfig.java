@@ -2,7 +2,6 @@ package com.sprintmasasi.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -22,10 +21,5 @@ public class WebConfig implements WebMvcConfigurer {
         }
     }
 
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        // SPA: oda linkleri (/r/KOD) ve oda oluşturma sayfası (/yeni) index.html'e yönlenir.
-        registry.addViewController("/r/{code}").setViewName("forward:/index.html");
-        registry.addViewController("/yeni").setViewName("forward:/index.html");
-    }
+    // SPA sayfaları (/, /yeni, /r/KOD) web.SiteController'dan sunulur.
 }

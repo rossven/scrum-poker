@@ -30,6 +30,13 @@ public class UsageStats {
     /** Ticket listesini en az bir kez açan odalar (yalnızca oda kodu; ticket içeriği yazılmaz). */
     private final Set<String> ticketsEnabledRooms = ConcurrentHashMap.newKeySet();
 
+    // Silinen odalar oda koduyla tutulmaz; yalnızca toplamlara eklenir (bellek ve gizlilik).
+    private final AtomicLong closedRoomsWithActivity = new AtomicLong();
+    private final AtomicLong closedPeakSum = new AtomicLong();
+    private final AtomicLong closedSessions = new AtomicLong();
+    private final AtomicLong closedSessionSecondsSum = new AtomicLong();
+    private final AtomicLong closedTicketsEnabledRooms = new AtomicLong();
+
     public void roomCreated() {
         roomsCreated.incrementAndGet();
     }
@@ -64,21 +71,46 @@ public class UsageStats {
         assignmentGamesByType.computeIfAbsent(type, k -> new AtomicLong()).incrementAndGet();
     }
 
+    /** Oda kapandı ya da süresi doldu: oda koduna bağlı kayıtlar silinir, sayıları toplamlara eklenir. */
+    public void roomRemoved(String roomCode) {
+        Integer peak = peakOnlineByRoom.remove(roomCode);
+        if (peak != null) {
+            closedRoomsWithActivity.incrementAndGet();
+            closedPeakSum.addAndGet(peak);
+        }
+        Session session = sessionsByRoom.remove(roomCode);
+        if (session != null) {
+            closedSessions.incrementAndGet();
+            closedSessionSecondsSum.addAndGet(Duration.between(session.first(), session.last()).toSeconds());
+        }
+        if (ticketsEnabledRooms.remove(roomCode)) {
+            closedTicketsEnabledRooms.incrementAndGet();
+        }
+    }
+
+    /** Oda koduyla tutulan kayıt sayısı (testler: silinen odalar birikmemeli). */
+    public int trackedRooms() {
+        return peakOnlineByRoom.size() + sessionsByRoom.size() + ticketsEnabledRooms.size();
+    }
+
     public Map<String, Object> snapshot() {
         var out = new LinkedHashMap<String, Object>();
         out.put("roomsCreated", roomsCreated.get());
-        out.put("roomsWithActivity", peakOnlineByRoom.size());
+        long roomsWithActivity = peakOnlineByRoom.size() + closedRoomsWithActivity.get();
+        long peakSum = peakOnlineByRoom.values().stream().mapToLong(i -> i).sum() + closedPeakSum.get();
+        out.put("roomsWithActivity", roomsWithActivity);
         out.put("peakConcurrentParticipantsInARoom", peakOnlineEver.get());
-        out.put("averagePeakParticipants", peakOnlineByRoom.values().stream().mapToInt(i -> i).average().orElse(0));
+        out.put("averagePeakParticipants", roomsWithActivity == 0 ? 0.0 : (double) peakSum / roomsWithActivity);
         out.put("pokerRoundsRevealed", pokerRoundsRevealed.get());
         out.put("ticketsFinalized", ticketsFinalized.get());
-        out.put("ticketsEnabledRooms", ticketsEnabledRooms.size());
+        out.put("ticketsEnabledRooms", ticketsEnabledRooms.size() + closedTicketsEnabledRooms.get());
         var games = new LinkedHashMap<String, Long>();
         assignmentGamesByType.forEach((k, v) -> games.put(k, v.get()));
         out.put("assignmentGamesStarted", games);
-        out.put("averageSessionMinutes", sessionsByRoom.values().stream()
-                .mapToLong(s -> Duration.between(s.first(), s.last()).toSeconds())
-                .average().orElse(0) / 60.0);
+        long sessions = sessionsByRoom.size() + closedSessions.get();
+        long sessionSeconds = sessionsByRoom.values().stream()
+                .mapToLong(s -> Duration.between(s.first(), s.last()).toSeconds()).sum() + closedSessionSecondsSum.get();
+        out.put("averageSessionMinutes", sessions == 0 ? 0.0 : sessionSeconds / 60.0 / sessions);
         return out;
     }
 }

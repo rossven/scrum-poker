@@ -63,6 +63,11 @@ cd e2e && npm install && npx playwright install chromium && npm test
 | `SM_CREATE_ROOMS_PER_MINUTE` | `10` | IP başına oda oluşturma sınırı |
 | `SM_MESSAGES_PER_SECOND` | `20` | Katılımcı başına WebSocket mesaj sınırı |
 | `SM_ADMIN_TOKEN` | boş | Tanımlıysa `GET /admin/stats` bu token ile açılır (`Authorization: Bearer ...`) |
+| `SM_MAX_ROOMS` | `2000` | Sunucudaki toplam oda tavanı; dolunca yeni oda açılamaz (`SERVER_BUSY`) |
+| `SM_JOINS_PER_MINUTE` | `60` | IP başına dakikada yeni koltukla katılma sınırı (token'la geri dönüş sayılmaz) |
+| `SM_SOCKET_CONNECTS_PER_MINUTE` | `120` | IP başına dakikada WebSocket bağlantı açma sınırı |
+| `SM_PUBLIC_URL` | boş | Sitenin tam adresi (ör. `https://sprintmasasi.com`); boşsa istekten bulunur. canonical, og:url, sitemap bunu kullanır |
+| `SM_GOOGLE_SITE_VERIFICATION` | boş | Search Console doğrulama etiketinin `content` değeri |
 
 Ters vekil (nginx, Caddy, PaaS) arkasında çalışırken gerçek istemci IP'si için
 `SERVER_FORWARD_HEADERS_STRATEGY=native` ekle; vekilin WebSocket yükseltmesini (`Upgrade` başlığı) geçirdiğinden emin ol.

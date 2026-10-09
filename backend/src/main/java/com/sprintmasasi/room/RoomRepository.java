@@ -21,4 +21,7 @@ public interface RoomRepository {
 
     /** Son etkinliği verilen süreden eski odaları siler, silinen kodları döner. */
     List<String> expireIdle(Duration maxIdle);
+
+    /** Şu an saklanan oda sayısı (toplam oda tavanı için). */
+    int count();
 }

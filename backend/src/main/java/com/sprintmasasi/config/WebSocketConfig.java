@@ -1,5 +1,6 @@
 package com.sprintmasasi.config;
 
+import com.sprintmasasi.ws.HandshakeRateLimit;
 import com.sprintmasasi.ws.SessionRegistry;
 import com.sprintmasasi.ws.StompAuthInterceptor;
 import org.springframework.web.socket.CloseStatus;
@@ -20,11 +21,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final AppProperties props;
     private final StompAuthInterceptor authInterceptor;
     private final SessionRegistry sessions;
+    private final HandshakeRateLimit handshakeRateLimit;
 
-    public WebSocketConfig(AppProperties props, StompAuthInterceptor authInterceptor, SessionRegistry sessions) {
+    public WebSocketConfig(AppProperties props, StompAuthInterceptor authInterceptor, SessionRegistry sessions,
+                           HandshakeRateLimit handshakeRateLimit) {
         this.props = props;
         this.authInterceptor = authInterceptor;
         this.sessions = sessions;
+        this.handshakeRateLimit = handshakeRateLimit;
     }
 
     /** Açık oturumları kaydet: masadan atılan kişinin bağlantısı sunucudan kapatılabilsin (M3). */
@@ -49,7 +53,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Bir istemciden gelen çerçeveler sırayla işlensin (SUBSCRIBE, SEND'den önce).
         registry.setPreserveReceiveOrder(true);
-        var endpoint = registry.addEndpoint("/ws");
+        var endpoint = registry.addEndpoint("/ws").addInterceptors(handshakeRateLimit);
         var origins = props.allowedOriginList();
         if (!origins.isEmpty()) {
             endpoint.setAllowedOrigins(origins.toArray(String[]::new));

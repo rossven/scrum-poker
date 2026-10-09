@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -51,6 +52,12 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             default -> { }
         }
         return message;
+    }
+
+    /** Süresi dolmuş mesaj sayaçlarını temizler (her katılımcı için bir kayıt birikmesin). */
+    @Scheduled(fixedDelayString = "PT5M", initialDelayString = "PT5M")
+    void purgeLimiter() {
+        messageLimiter.purge();
     }
 
     private void authenticate(StompHeaderAccessor accessor) {

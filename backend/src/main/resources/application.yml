@@ -26,3 +26,9 @@ sprintmasasi:
   create-rooms-per-minute: ${SM_CREATE_ROOMS_PER_MINUTE:10}
   # WebSocket mesaj hız sınırı (katılımcı başına, saniyede)
   messages-per-second: ${SM_MESSAGES_PER_SECOND:20}
+  # Sunucudaki toplam oda tavanı (bellek koruması; dolunca yeni oda açılamaz)
+  max-rooms: ${SM_MAX_ROOMS:2000}
+  # Yeni koltukla katılma sınırı (IP başına, dakikada; token'la geri dönüş sayılmaz)
+  joins-per-minute: ${SM_JOINS_PER_MINUTE:60}
+  # WebSocket bağlantı açma sınırı (IP başına, dakikada)
+  socket-connects-per-minute: ${SM_SOCKET_CONNECTS_PER_MINUTE:120}

@@ -156,7 +156,7 @@ class FreeRoundTest {
                 .isEqualTo(ErrorCode.FORBIDDEN);
         poker.setTicketsEnabled(code, mod.participantId(), true);
         assertThat(state().ticketsEnabled()).isTrue();
-        assertThat(stats.snapshot()).containsEntry("ticketsEnabledRooms", 1);
+        assertThat(stats.snapshot()).containsEntry("ticketsEnabledRooms", 1L);
 
         poker.addTickets(code, mod.participantId(), List.of(new NewTicket("A", null, null), new NewTicket("B", null, null)));
         String a = state().currentTicketId();
@@ -184,7 +184,7 @@ class FreeRoundTest {
         // Masa boştu: sıradaki tahmin edilmemiş ticket geri geldi
         assertThat(state().currentTicketId()).isEqualTo(a);
         // Sayaç oda başına bir kez
-        assertThat(stats.snapshot()).containsEntry("ticketsEnabledRooms", 1);
+        assertThat(stats.snapshot()).containsEntry("ticketsEnabledRooms", 1L);
     }
 
     @Test
@@ -194,7 +194,7 @@ class FreeRoundTest {
         poker.addTickets(room.code(), creator.participantId(), List.of(new NewTicket("A", null, null)));
         assertThat(state().ticketsEnabled()).isTrue();
         assertThat(state().tickets()).hasSize(1);
-        assertThat(stats.snapshot()).containsEntry("ticketsEnabledRooms", 1);
+        assertThat(stats.snapshot()).containsEntry("ticketsEnabledRooms", 1L);
     }
 
     // ---------------------------------------------------------------- dürtme ve emoji

@@ -19,7 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"sprintmasasi.create-rooms-per-minute=1000", "sprintmasasi.messages-per-second=1000"})
+        properties = {"sprintmasasi.create-rooms-per-minute=1000", "sprintmasasi.messages-per-second=1000",
+                "sprintmasasi.joins-per-minute=1000", "sprintmasasi.socket-connects-per-minute=1000"})
 class RoomWebSocketIntegrationTest {
 
     @LocalServerPort

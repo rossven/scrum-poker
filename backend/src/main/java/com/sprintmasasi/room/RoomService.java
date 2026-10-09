@@ -49,6 +49,7 @@ public class RoomService {
     private final UsageStats stats;
     private final RateLimiter passwordFailures;
     private final RateLimiter roomCreation;
+    private final RateLimiter joins;
 
     public RoomService(RoomRepository repository, RoomEvents events, SecureIds ids, PasswordEncoder passwordEncoder,
                        AppProperties props, Clock clock, TaskScheduler scheduler, UsageStats stats) {
@@ -63,6 +64,7 @@ public class RoomService {
         this.passwordFailures = new RateLimiter(clock, props.passwordMaxAttempts(),
                 Duration.ofSeconds(props.passwordWindowSeconds()));
         this.roomCreation = new RateLimiter(clock, props.createRoomsPerMinute(), Duration.ofMinutes(1));
+        this.joins = new RateLimiter(clock, props.joinsPerMinute(), Duration.ofMinutes(1));
     }
 
     // ---------------------------------------------------------------- REST tarafı
@@ -86,6 +88,11 @@ public class RoomService {
                                    boolean ticketsEnabled, boolean autoReveal, String clientIp) {
         if (!roomCreation.tryAcquire(clientIp)) {
             throw new RoomException(ErrorCode.RATE_LIMITED);
+        }
+        // Bellek koruması: çok sayıda IP'den oda açılarak sunucu doldurulamasın.
+        if (repository.count() >= props.maxRooms()) {
+            log.warn("event=room.limit_reached rooms={}", repository.count());
+            throw new RoomException(ErrorCode.SERVER_BUSY);
         }
         String name = Validation.roomName(rawName);
         Deck deck = Validation.deck(rawDeck, customCards);
@@ -136,6 +143,10 @@ public class RoomService {
             return new JoinResult(room.code(), p.id(), existingToken, p.nickname(), true);
         }
 
+        // Token'la geri dönüş sınırsız; yeni koltuk açma denemeleri IP başına sınırlı.
+        if (!joins.tryAcquire(clientIp)) {
+            throw new RoomException(ErrorCode.RATE_LIMITED);
+        }
         String nickname = Validation.nickname(rawNickname);
         String avatar = Validation.avatar(rawAvatar);
         checkPassword(room, password, clientIp);
@@ -361,6 +372,7 @@ public class RoomService {
             room.markClosed();
         });
         repository.delete(room.code());
+        stats.roomRemoved(room.code());
         log.info("event=room.closed room={}", room.code());
         events.closed(room.code(), "closed_by_moderator");
     }
@@ -370,10 +382,12 @@ public class RoomService {
         List<String> removed = repository.expireIdle(Duration.ofDays(props.idleExpiryDays()));
         removed.forEach(code -> {
             log.info("event=room.expired room={}", code);
+            stats.roomRemoved(code);
             events.closed(code, "expired");
         });
         passwordFailures.purge();
         roomCreation.purge();
+        joins.purge();
         return removed;
     }
 

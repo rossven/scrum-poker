@@ -54,7 +54,12 @@ public class InMemoryRoomRepository implements RoomRepository {
         return removed;
     }
 
-    public int size() {
+    @Override
+    public int count() {
         return rooms.size();
+    }
+
+    public int size() {
+        return count();
     }
 }

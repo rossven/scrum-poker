@@ -157,6 +157,7 @@
     "ROOM_FULL": "Oda dolu.",
     "TOO_MANY_ATTEMPTS": "Çok fazla yanlış deneme. Biraz bekleyip tekrar dene.",
     "RATE_LIMITED": "Biraz yavaş, masa nefes alsın.",
+    "SERVER_BUSY": "Sunucu şu an çok yoğun, yeni oda açılamıyor. Biraz sonra tekrar dene.",
     "NETWORK": "Sunucuya ulaşılamadı.",
     "UNKNOWN": "Bir şeyler ters gitti.",
     "INVALID_DECK": "Deste geçersiz: en fazla 20 kart, kart başına en fazla 8 karakter, tekrar olmamalı.",

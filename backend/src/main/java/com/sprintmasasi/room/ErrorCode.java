@@ -28,7 +28,9 @@ public enum ErrorCode {
     /** Krupiye bu kişiyi masadan attı; eski token'la bağlanılamaz (M3). */
     KICKED(403),
     TOO_MANY_ATTEMPTS(429),
-    RATE_LIMITED(429);
+    RATE_LIMITED(429),
+    /** Sunucudaki toplam oda tavanı doldu; yeni oda açılamaz. */
+    SERVER_BUSY(503);
 
     private final int httpStatus;
 
