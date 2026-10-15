@@ -89,12 +89,16 @@ public final class RoomViews {
     /**
      * Süren "Kim alacak?" akışı. phase: VOLUNTEERING | CANDIDATES | RESULT.
      * volunteerRemainingMs yalnızca süre sınırlı gönüllü turunda; result ve game yalnızca RESULT'ta.
-     * passes: gönüllü turunda "pas" diyenler.
+     * passes: gönüllü turunda "pas" diyenler. loads: bu oturumda iş almış kişilerin iş yükü (iş sayısı,
+     * sayılabilir puan toplamı, "İş yükünü dengele" açıkken kullanılan seçilme ağırlığı; almamışlar listede yok, ağırlıkları 1).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record AssignmentView(String id, String phase, String ticketId, String title, int volunteerSeconds,
                                  Long volunteerRemainingMs, List<String> volunteers, List<String> candidates,
-                                 AssignmentRecordView result, GameView game, List<String> passes) {}
+                                 AssignmentRecordView result, GameView game, List<String> passes,
+                                 List<LoadView> loads) {}
+
+    public record LoadView(String participantId, int jobs, double points, double weight) {}
 
     /** remainingMs gönderim anındaki kalan süre; istemci kendi saatiyle geri sayar (saat farkından etkilenmez). */
     public record TimerView(int durationSeconds, long remainingMs) {}

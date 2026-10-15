@@ -120,3 +120,32 @@ test('aynı isimle başka tarayıcıdan dönen kişi çevrimdışı koltuğunu d
   await expect(a.getByText('Mehmet 2')).toHaveCount(0);
   await expect(a.getByRole('button', { name: /Kartları aç/ })).toContainText('1 / 2');
 });
+
+test('"hareketi azalt" açıkken de at yarışı izlenir; iş yükünü dengele oda kurarken seçilir', async ({ browser }) => {
+  const a = await (await browser.newContext({ reducedMotion: 'reduce' })).newPage();
+  const b = await (await browser.newContext({ reducedMotion: 'reduce' })).newPage();
+  await a.goto('/yeni');
+  await a.getByRole('button', { name: /Gelişmiş/ }).click();
+  await a.getByRole('switch', { name: /İş yükünü dengele/ }).click();
+  await a.getByRole('button', { name: 'Odayı oluştur' }).click();
+  await joinAs(a, 'Ayşe');
+  await b.goto(a.url());
+  await joinAs(b, 'Mehmet');
+
+  // Herkes aynı kartı seçti: Royal Flush yazısı bu ayarda da ekrana gelir.
+  await a.getByRole('button', { name: 'Kart 5', exact: true }).click();
+  await b.getByRole('button', { name: 'Kart 5', exact: true }).click();
+  await a.getByRole('button', { name: /Kartları aç/ }).click();
+  await expect(b.locator('[class*=banner]')).toBeVisible();
+
+  await a.getByRole('button', { name: /Kim alacak\?/ }).click();
+  await expect(a.getByText('İş yükü dengesi açık', { exact: false })).toBeVisible();
+  await a.getByRole('button', { name: 'Süreyi bitir' }).click();
+  await a.getByRole('button', { name: /Yarışı başlat/ }).click();
+  await expect(a.getByRole('img', { name: 'At yarışı' })).toBeVisible();
+  // Yarış süresince (en az 6 sn) oyun adımı görünür, sonuca hemen atlanmaz.
+  await a.waitForTimeout(3000);
+  await expect(b.getByRole('img', { name: 'At yarışı' })).toBeVisible();
+  await expect(b.getByRole('status').filter({ hasText: 'alıyor!' })).toHaveCount(0);
+  await expect(b.getByRole('status').filter({ hasText: 'alıyor!' })).toBeVisible({ timeout: 15_000 });
+});

@@ -25,9 +25,9 @@ interface Props {
 
 const VOLUNTEER_CHOICES = [10, 20, 30, 60, 0];
 
-/** Oyun sürerken (ve sonuçta) kazanana göre dönüşümlü adalet ağırlığı: her kazanım ağırlığı yarıya indirir. */
-function winsOf(room: RoomState, id: string) {
-  return room.assignmentHistory.filter((r) => !r.undone && r.winner.participantId === id).length;
+/** Kişinin bu oturumdaki iş yükü (sunucu hesaplar); iş almamışsa yok. */
+function loadOf(assignment: AssignmentView, id: string) {
+  return assignment.loads?.find((l) => l.participantId === id);
 }
 
 /**
@@ -39,10 +39,11 @@ export function AssignmentPanel({ room, assignment, youId, isModerator, timing, 
   const closeAssignment = useRoomStore((s) => s.closeAssignment);
   const [skipped, setSkipped] = useState<string | null>(null);
   const resultId = assignment.result?.id ?? null;
-  const reduceMotion = useReducedMotion();
 
+  // Oyun, işletim sisteminde "hareketi azalt" açık olsa da oynar: at yarışı ve çark sonucun kendisi, süs değil
+  // (eskiden bu ayarda oyun hiç gösterilmeden sonuca atlanıyordu). İzlemek istemeyen "Atla"ya basar.
   const gameRunning = assignment.phase === 'RESULT' && !!assignment.game && timing.stage !== 'done' && timing.stage !== 'none'
-    && !(reduceMotion && timing.stage === 'running') && skipped !== resultId;
+    && skipped !== resultId;
   const step = assignment.phase === 'VOLUNTEERING' ? 1 : assignment.phase === 'CANDIDATES' ? 2 : gameRunning ? 3 : 4;
   const steps = ['volunteer', 'candidates', 'game', 'result'];
   const { key, text } = splitTicketTitle(assignment.title ?? '');
@@ -192,7 +193,7 @@ function Candidates({ room, assignment, isModerator, eyebrow }: { room: RoomStat
   const candidates = room.participants.filter((p) => assignment.candidates.includes(p.id));
   const others = room.participants.filter((p) => !p.observer && !assignment.candidates.includes(p.id));
   const count = candidates.length;
-  const weightOf = (id: string) => (room.fairRotation ? Math.pow(0.5, winsOf(room, id)) : 1);
+  const weightOf = (id: string) => (room.fairRotation ? (loadOf(assignment, id)?.weight ?? 1) : 1);
   const totalWeight = candidates.reduce((s, p) => s + weightOf(p.id), 0) || 1;
   const names = candidates.map((p) => p.nickname);
   const title = count === 1 ? t('assign.singleCandidate', { name: names[0] })
@@ -208,14 +209,19 @@ function Candidates({ room, assignment, isModerator, eyebrow }: { room: RoomStat
           <span className={styles.lbl}>{t('assign.candidates', { count })}</span>
           {candidates.map((p) => {
             const pct = Math.round((weightOf(p.id) / totalWeight) * 100);
-            const wins = winsOf(room, p.id);
+            const load = loadOf(assignment, p.id);
+            const wins = load?.jobs ?? 0;
+            const points = Math.round((load?.points ?? 0) * 10) / 10;
             return (
               <div key={p.id} className={styles.cand}>
                 <div className={styles.candTop}>
                   <Avatar seed={p.avatar} size={54} online={p.online} alt="" />
                   <div className={styles.candName}>
                     <b>{p.nickname}</b>
-                    <span>{wins === 0 ? t('assign.winsNone') : t('assign.winsN', { count: wins })}</span>
+                    <span>
+                      {wins === 0 ? t('assign.winsNone') : t('assign.winsN', { count: wins })}
+                      {points > 0 && <> · {t('assign.pointsN', { count: points })}</>}
+                    </span>
                   </div>
                   <b className={styles.pct}>%{pct}</b>
                   {isModerator && (

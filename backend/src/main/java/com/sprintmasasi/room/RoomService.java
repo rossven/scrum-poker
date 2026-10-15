@@ -8,6 +8,7 @@ import com.sprintmasasi.room.RoomViews.JoinResult;
 import com.sprintmasasi.room.RoomViews.AssignmentRecordView;
 import com.sprintmasasi.room.RoomViews.AssignmentView;
 import com.sprintmasasi.room.RoomViews.GameView;
+import com.sprintmasasi.room.RoomViews.LoadView;
 import com.sprintmasasi.room.RoomViews.ParticipantView;
 import com.sprintmasasi.room.RoomViews.RoomInfo;
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
@@ -80,12 +81,15 @@ public class RoomService {
 
     public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
                                    boolean ticketsEnabled, String clientIp) {
-        return create(rawName, rawDeck, customCards, rawPassword, ticketsEnabled, false, clientIp);
+        return create(rawName, rawDeck, customCards, rawPassword, ticketsEnabled, false, false, clientIp);
     }
 
-    /** autoReveal: oda kurarken "Otomatik aç" anahtarı. */
+    /**
+     * autoReveal: oda kurarken "Otomatik aç" anahtarı; fairRotation: "İş yükünü dengele" (Kim alacak?
+     * çekilişinde çok puan alanın şansı düşer).
+     */
     public CreateRoomResult create(String rawName, String rawDeck, List<String> customCards, String rawPassword,
-                                   boolean ticketsEnabled, boolean autoReveal, String clientIp) {
+                                   boolean ticketsEnabled, boolean autoReveal, boolean fairRotation, String clientIp) {
         if (!roomCreation.tryAcquire(clientIp)) {
             throw new RoomException(ErrorCode.RATE_LIMITED);
         }
@@ -103,6 +107,7 @@ public class RoomService {
         for (int attempt = 0; attempt < 10; attempt++) {
             Room room = new Room(ids.roomCode(), name, deck, hash, claim, ticketsEnabled, clock.instant());
             room.setAutoReveal(autoReveal);
+            room.setFairRotation(fairRotation);
             if (repository.saveIfAbsent(room)) {
                 stats.roomCreated();
                 if (ticketsEnabled) {
@@ -464,7 +469,10 @@ public class RoomService {
         GameView game = a.game() == null ? null : new GameView(a.game().type(),
                 Duration.between(now, a.game().startsAt()).toMillis(), a.game().durationMs(), a.game().animation());
         return new AssignmentView(a.id(), a.phase().name(), a.ticketId(), a.title(), a.volunteerSeconds(), remaining,
-                List.copyOf(a.volunteers()), List.copyOf(a.candidates()), result, game, List.copyOf(a.passes()));
+                List.copyOf(a.volunteers()), List.copyOf(a.candidates()), result, game, List.copyOf(a.passes()),
+                AssignmentService.loads(room).entrySet().stream()
+                        .map(e -> new LoadView(e.getKey(), e.getValue().jobs(), e.getValue().points(), e.getValue().weight()))
+                        .toList());
     }
 
     /**

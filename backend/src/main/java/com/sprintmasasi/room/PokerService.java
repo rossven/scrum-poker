@@ -174,6 +174,10 @@ public class PokerService {
             }
             round.finalizeWith(value);
             room.currentTicket().ifPresent(ticket -> ticket.estimate(value));
+            // Tahminden önce yapılmış "Kim alacak?" atamaları bu puanı taşır (iş yükü dengesi buna bakar).
+            room.assignmentHistory().stream()
+                    .filter(r -> r.ticketId() != null ? r.ticketId().equals(round.ticketId()) : r.roundId() == round.id())
+                    .forEach(r -> r.setEstimate(value));
             archiveIfRevealed(room);
             room.touch(clock.instant());
         });
