@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { RoomSocket, type SocketStatus } from '../api/socket';
-import type { DeckId, PlayableGame, RoomState, ServerEvent, YourVote } from '../api/types';
+import type { DeckId, PlayableGame, RetroColumn, RoomState, ServerEvent, YourRetro, YourVote } from '../api/types';
 import { sessions, type StoredSession } from '../lib/session';
 import { play } from '../lib/sound';
 
@@ -25,6 +25,8 @@ interface RoomStore {
   room: RoomState | null;
   /** Kendi oyum; yalnızca bana gelir. roundId güncel turla eşleşmiyorsa geçersizdir. */
   yourVote: YourVote | null;
+  /** Kendi retro kartlarım ve beğenilerim; yalnızca bana gelir. retroId güncel retroyla eşleşmiyorsa geçersizdir. */
+  yourRetro: YourRetro | null;
   status: SocketStatus;
   gone: GoneReason | null;
   /** Token geçersiz: kullanıcı katılma formuna döner. */
@@ -60,7 +62,20 @@ interface RoomStore {
   nudge: (participantId: string) => void;
   throwEmoji: (emoji: string) => void;
   kick: (participantId: string) => void;
-  startAssignment: (seconds?: number) => void;
+  startAssignment: (seconds?: number, retroCardId?: string) => void;
+  startRetro: (anonymous: boolean, seconds: number) => void;
+  addRetroCard: (column: RetroColumn, text: string, sourceId?: string) => void;
+  editRetroCard: (cardId: string, text: string) => void;
+  deleteRetroCard: (cardId: string) => void;
+  likeRetroCard: (cardId: string, liked: boolean) => void;
+  retroStartDiscussion: () => void;
+  retroBackToWriting: () => void;
+  retroStep: (delta: 1 | -1) => void;
+  retroFocus: (cardId: string) => void;
+  retroSetAction: (cardId: string, ownerId: string | null, due: string) => void;
+  retroFinish: () => void;
+  retroReopen: () => void;
+  retroClose: () => void;
   setVolunteer: (volunteer: boolean, pass?: boolean) => void;
   setVolunteerSeconds: (seconds: number) => void;
   setAutoReveal: (enabled: boolean) => void;
@@ -100,10 +115,14 @@ export const useRoomStore = create<RoomStore>((set, get) => {
         break;
       }
       case 'room.state_snapshot':
-        set({ room: event.data.room, youId: event.data.youId, yourVote: event.data.yourVote ?? null });
+        set({ room: event.data.room, youId: event.data.youId, yourVote: event.data.yourVote ?? null,
+          yourRetro: event.data.yourRetro ?? null });
         break;
       case 'poker.your_vote':
         set({ yourVote: event.data });
+        break;
+      case 'retro.your_cards':
+        set({ yourRetro: event.data });
         break;
       case 'poker.deck_changed':
         get().toast('poker.deckChangedToast', { deck: event.data.deck });
@@ -156,6 +175,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     youId: null,
     room: null,
     yourVote: null,
+    yourRetro: null,
     status: 'connecting',
     gone: null,
     needsJoin: false,
@@ -165,7 +185,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
 
     connect(code, session) {
       socket?.disconnect();
-      set({ code, youId: session.participantId, room: null, yourVote: null, status: 'connecting', gone: null,
+      set({ code, youId: session.participantId, room: null, yourVote: null, yourRetro: null, status: 'connecting', gone: null,
         needsJoin: false, flyingEmojis: [], nudges: {} });
       socket = new RoomSocket(code, session.token, {
         onEvent: handleEvent,
@@ -221,7 +241,29 @@ export const useRoomStore = create<RoomStore>((set, get) => {
     nudge: (participantId) => socket?.send('poker.nudge', { participantId }),
     throwEmoji: (emoji) => socket?.send('table.emoji', { emoji }),
     kick: (participantId) => socket?.send('room.kick', { participantId }),
-    startAssignment: (seconds) => socket?.send('assign.start', { seconds }),
+    startAssignment: (seconds, retroCardId) => socket?.send('assign.start', { seconds, retroCardId }),
+    startRetro: (anonymous, seconds) => socket?.send('retro.start', { anonymous, seconds }),
+    addRetroCard: (column, text, sourceId) => socket?.send('retro.add_card', { column, text, sourceId }),
+    editRetroCard: (cardId, text) => socket?.send('retro.edit_card', { cardId, text }),
+    deleteRetroCard: (cardId) => socket?.send('retro.delete_card', { cardId }),
+    likeRetroCard(cardId, liked) {
+      // İyimser güncelleme: kalp anında dolar; sunucu onayı (retro.your_cards) aynısını getirir.
+      const mine = get().yourRetro;
+      const retroId = get().room?.retro?.id;
+      if (mine && retroId && mine.retroId === retroId) {
+        const rest = mine.likedIds.filter((id) => id !== cardId);
+        set({ yourRetro: { ...mine, likedIds: liked ? [...rest, cardId] : rest } });
+      }
+      socket?.send('retro.like', { cardId, liked });
+    },
+    retroStartDiscussion: () => socket?.send('retro.start_discussion'),
+    retroBackToWriting: () => socket?.send('retro.back_to_writing'),
+    retroStep: (delta) => socket?.send('retro.step', { delta }),
+    retroFocus: (cardId) => socket?.send('retro.focus', { cardId }),
+    retroSetAction: (cardId, ownerId, due) => socket?.send('retro.set_action', { cardId, ownerId, due }),
+    retroFinish: () => socket?.send('retro.finish'),
+    retroReopen: () => socket?.send('retro.reopen'),
+    retroClose: () => socket?.send('retro.close'),
     setVolunteer: (volunteer, pass = false) => socket?.send('assign.volunteer', { volunteer, pass }),
     setVolunteerSeconds: (seconds) => socket?.send('assign.set_volunteer_seconds', { seconds }),
     setAutoReveal: (enabled) => socket?.send('room.set_auto_reveal', { enabled }),
@@ -240,7 +282,7 @@ export const useRoomStore = create<RoomStore>((set, get) => {
       socket = null;
       setTimeout(() => s?.disconnect(), 200);
       if (code) sessions.clear(code);
-      set({ code: null, room: null, youId: null, yourVote: null });
+      set({ code: null, room: null, youId: null, yourVote: null, yourRetro: null });
     },
 
     toast(key, params) {

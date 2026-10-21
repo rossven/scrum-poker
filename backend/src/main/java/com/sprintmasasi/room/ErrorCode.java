@@ -21,6 +21,8 @@ public enum ErrorCode {
     /** Hiç oy yokken kartlar açılamaz. */
     NO_VOTES(409),
     TICKET_LIMIT(409),
+    /** Retro panosunda kart sınırı doldu (toplam ya da kişi başı). */
+    RETRO_LIMIT(409),
     /** Özellik bu odada kapalı (ör. ticket listesi kapalıyken ticket.* niyetleri). */
     FEATURE_DISABLED(409),
     /** Aynı isimde çevrimdışı bir koltuk var: istemci "Devral / Yeni koltuk aç" diye sorar (M3). */

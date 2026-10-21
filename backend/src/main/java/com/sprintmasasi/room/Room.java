@@ -61,6 +61,8 @@ public class Room {
     private Assignment assignment;
     private final List<AssignmentRecord> assignmentHistory = new ArrayList<>();
     private final Set<String> kickedTokens = new LinkedHashSet<>();
+    /** Süren (ya da özeti açık) retrospektif; yoksa null. */
+    private Retro retro;
 
     public Room(String code, String name, Deck deck, String passwordHash, String creatorClaimToken, Instant now) {
         this(code, name, deck, passwordHash, creatorClaimToken, false, now);
@@ -243,6 +245,8 @@ public class Room {
     Assignment assignment() { return assignment; }
     void setAssignment(Assignment assignment) { this.assignment = assignment; }
     List<AssignmentRecord> assignmentHistory() { return assignmentHistory; }
+    Retro retro() { return retro; }
+    void setRetro(Retro retro) { this.retro = retro; }
 
     void addAssignmentRecord(AssignmentRecord record) {
         assignmentHistory.add(record);

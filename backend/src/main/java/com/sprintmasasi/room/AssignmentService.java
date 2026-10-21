@@ -58,6 +58,14 @@ public class AssignmentService {
      * Süren bir akış varsa yerine geçer.
      */
     public void start(String code, String actorId, Integer rawSeconds) {
+        start(code, actorId, rawSeconds, null);
+    }
+
+    /**
+     * retroCardId verilirse akış o retro aksiyonu için başlar (başlık = aksiyon metni); kazanan aksiyonun
+     * sahibi olur. Aksiyon kartı yoksa INVALID_INPUT.
+     */
+    public void start(String code, String actorId, Integer rawSeconds, String retroCardId) {
         if (rawSeconds != null) {
             validSeconds(rawSeconds);
         }
@@ -67,7 +75,18 @@ public class AssignmentService {
             int seconds = rawSeconds == null ? room.volunteerSeconds() : rawSeconds;
             String ticketId = room.round().ticketId();
             String title = room.currentTicket().map(Ticket::title).orElse(room.round().topic());
-            var a = new Assignment(ids.ticketId(), ticketId, title, seconds, clock.instant());
+            String cardId = null;
+            if (retroCardId != null && !retroCardId.isBlank()) {
+                Retro retro = room.retro();
+                Retro.Card card = retro == null ? null : retro.card(retroCardId).filter(Retro.Card::isAction).orElse(null);
+                if (card == null) {
+                    throw new RoomException(ErrorCode.INVALID_INPUT);
+                }
+                ticketId = null;
+                title = card.text();
+                cardId = card.id();
+            }
+            var a = new Assignment(ids.ticketId(), ticketId, cardId, title, seconds, clock.instant());
             room.setAssignment(a);
             room.touch(clock.instant());
             return a.id();
@@ -287,6 +306,9 @@ public class AssignmentService {
                                 && t.assignee().participantId().equals(record.winner().participantId()))
                         .ifPresent(t -> t.assign(null));
             }
+            retroAction(room, a)
+                    .filter(c -> c.owner() != null && c.owner().participantId().equals(record.winner().participantId()))
+                    .ifPresent(c -> c.setOwner(null));
             List<String> previous = present(room, record.candidates().stream().map(PersonView::participantId).toList());
             if (previous.size() <= 1) {
                 List<String> pool = new ArrayList<>(previous);
@@ -323,7 +345,16 @@ public class AssignmentService {
         if (a.ticketId() != null) {
             room.ticket(a.ticketId()).ifPresent(t -> t.assign(record.winner()));
         }
+        retroAction(room, a).ifPresent(c -> c.setOwner(record.winner()));
         a.toResult(record, game);
+    }
+
+    /** Akış bir retro aksiyonu içinse (hâlâ panodaysa) o kart. */
+    private static java.util.Optional<Retro.Card> retroAction(Room room, Assignment a) {
+        if (a.retroCardId() == null || room.retro() == null) {
+            return java.util.Optional.empty();
+        }
+        return room.retro().card(a.retroCardId());
     }
 
     /** Dönüşümlü adalet: bu oturumda (geri alınmamış) her kazanım ağırlığı yarıya indirir. */

@@ -2,6 +2,7 @@ package com.sprintmasasi.room;
 
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
 import com.sprintmasasi.room.RoomViews.RoomState;
+import com.sprintmasasi.room.RoomViews.YourRetro;
 import com.sprintmasasi.room.RoomViews.YourVote;
 
 /** Oda olaylarını istemcilere ileten taraf (WebSocket uygulaması: StompRoomEvents). */
@@ -13,6 +14,9 @@ public interface RoomEvents {
 
     /** Kişinin kendi oyu: yalnızca ona (tüm sekmelerine) gider, asla odanın konusuna değil. */
     void yourVote(String code, String participantId, YourVote vote);
+
+    /** Kişinin kendi retro kartları ve beğenileri: yalnızca ona gider (anonim panoda yazar bilgisi odaya çıkmaz). */
+    void yourRetro(String code, String participantId, YourRetro mine);
 
     /** Deste değişti, mevcut turun oyları sıfırlandı (bilgilendirme için). */
     void deckChanged(String code, String deckId);

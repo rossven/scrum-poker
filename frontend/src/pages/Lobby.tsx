@@ -15,6 +15,8 @@ import { isRoyalFlush, RoyalFlushCelebration } from '../components/poker/FunFx';
 import { TopicField } from '../components/poker/TopicField';
 import { Timer } from '../components/poker/Timer';
 import { EmptyCardSlot, PlayingCard } from '../components/poker/PlayingCard';
+import { RetroBoard } from '../components/retro/RetroBoard';
+import { RetroStartDialog } from '../components/retro/RetroStartDialog';
 import { ResultsPanel } from '../components/poker/ResultsPanel';
 import { RoundControls } from '../components/poker/RoundControls';
 import { TableCenter } from '../components/poker/TableCenter';
@@ -28,17 +30,19 @@ import styles from './Lobby.module.css';
 /** Oda ekranı: masa, kart eli, sonuçlar; ticket listesi açıksa yanda kuyruk. */
 export function Lobby({ room, youId }: { room: RoomState; youId: string | null }) {
   const { t } = useTranslation();
-  const { promote, leave, vote, setObserver, nudge, kick, reveal, newRound, yourVote, flyingEmojis, nudges } = useRoomStore();
+  const { promote, leave, vote, setObserver, nudge, kick, reveal, newRound, retroClose, yourVote, flyingEmojis, nudges } = useRoomStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [celebrate, setCelebrate] = useState(0);
+  const [retroDialog, setRetroDialog] = useState(false);
 
   const me = room.participants.find((p) => p.id === youId);
   const isModerator = me?.moderator ?? false;
   const seated = room.participants.filter((p) => !p.observer);
   const observers = room.participants.filter((p) => p.observer);
   const round = room.round;
+  const retro = room.retro ?? null;
   const voting = round.state === 'VOTING';
   const voted = new Set(round.votedIds);
   const votesById = new Map((round.votes ?? []).map((v) => [v.participantId, v]));
@@ -122,7 +126,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
       if (e.key.toLowerCase() !== 'r' || e.ctrlKey || e.metaKey || e.altKey) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
-      if (settingsOpen || assignment) return;
+      if (settingsOpen || assignment || retro || retroDialog) return;
       if (voting) {
         if (round.votedIds.length > 0) reveal();
       } else {
@@ -131,7 +135,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [isModerator, voting, round.votedIds.length, settingsOpen, assignment, reveal, newRound]);
+  }, [isModerator, voting, round.votedIds.length, settingsOpen, assignment, retro, retroDialog, reveal, newRound]);
 
   // Ekran okuyucu: oylama ve açılış duyuruları.
   useEffect(() => {
@@ -175,7 +179,7 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
   const sidebar = (
     <Sidebar room={room} isModerator={isModerator} hiddenResultId={hiddenResultId} observers={observerList || null} />
   );
-  const hasSidebar = true;
+  const hasSidebar = !retro;
   const parts = ticket ? splitTicketTitle(ticket.title) : null;
   const queueLabel = room.ticketsEnabled
     ? t('tickets.progress', { done: room.tickets.filter((tk) => tk.status === 'ESTIMATED').length, total: room.tickets.length })
@@ -193,10 +197,15 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
         onSettings={() => setSettingsOpen(true)}
         onSidebar={() => setSheetOpen(true)}
         onLeave={onLeave}
+        retroActive={!!retro}
+        onRetro={() => (retro ? (window.confirm(t('retro.closeConfirm')) && retroClose()) : setRetroDialog(true))}
         onObserver={(o) => setObserver(null, o)}
         observerLocked={voting && iVoted}
       />
 
+      {retro ? (
+        <RetroBoard room={room} retro={retro} youId={youId} isModerator={isModerator} />
+      ) : (
       <div className={styles.body}>
         <main className={styles.stage}>
           <div className={styles.heading}>
@@ -250,8 +259,10 @@ export function Lobby({ room, youId }: { room: RoomState; youId: string | null }
 
         <aside className={styles.side} aria-label={t('sidebar.label')}>{sidebar}</aside>
       </div>
+      )}
 
-      {sheetOpen && (
+      {retroDialog && isModerator && !retro && <RetroStartDialog onClose={() => setRetroDialog(false)} />}
+      {sheetOpen && !retro && (
         <Dialog title={room.ticketsEnabled ? t('tickets.title') : t('sidebar.history')} onClose={() => setSheetOpen(false)}>
           <div className={styles.sheet}>{sidebar}</div>
         </Dialog>

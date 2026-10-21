@@ -38,10 +38,10 @@ public final class RoomViews {
                             boolean ticketsEnabled, List<TicketView> tickets, String currentTicketId, RoundView round,
                             TimerView timer, List<SessionRoundView> sessionHistory, boolean fairRotation,
                             AssignmentView assignment, List<AssignmentRecordView> assignmentHistory,
-                            boolean autoReveal, int volunteerSeconds) {}
+                            boolean autoReveal, int volunteerSeconds, RetroView retro) {}
 
     /** Kişiye özel tam durum: yeniden bağlanınca gönderilir. yourVote yalnızca bu kişinin oyu. */
-    public record RoomSnapshot(String youId, RoomState room, YourVote yourVote) {}
+    public record RoomSnapshot(String youId, RoomState room, YourVote yourVote, YourRetro yourRetro) {}
 
     /** Kişinin kendi oyu (yalnızca kendisine gider). card null ise oy geri çekildi. */
     public record YourVote(long roundId, String card) {}
@@ -95,6 +95,25 @@ public final class RoomViews {
     public record AssignmentView(String id, String phase, String ticketId, String title, int volunteerSeconds,
                                  Long volunteerRemainingMs, List<String> volunteers, List<String> candidates,
                                  AssignmentRecordView result, GameView game, List<String> passes) {}
+
+    /**
+     * Retrospektif panosu. phase: WRITING | DISCUSSING | DONE. order (konuşma sırası) ve focusId yalnızca
+     * WRITING dışında; focusElapsedMs yalnızca DISCUSSING'de. anonymous iken kartlarda author yoktur.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record RetroView(String id, String phase, boolean anonymous, int writeSeconds, TimerView timer,
+                            List<RetroCardView> cards, List<String> order, String focusId, Long focusElapsedMs) {}
+
+    /**
+     * Pano kartı. column: 0 başarılı, 1 geliştirilebilir, 2 aksiyon. likes yalnızca sayı (kimin beğendiği gizli).
+     * owner ve due yalnızca aksiyonlarda; sourceId/sourceText aksiyonun çıktığı kart.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record RetroCardView(String id, int column, String text, int likes, PersonView author, String sourceId,
+                                String sourceText, PersonView owner, String due) {}
+
+    /** Kişinin kendi kartları ve beğenileri (yalnızca kendisine gider; anonim panoda "benim kartım" buradan bilinir). */
+    public record YourRetro(String retroId, List<String> cardIds, List<String> likedIds) {}
 
     /** remainingMs gönderim anındaki kalan süre; istemci kendi saatiyle geri sayar (saat farkından etkilenmez). */
     public record TimerView(int durationSeconds, long remainingMs) {}

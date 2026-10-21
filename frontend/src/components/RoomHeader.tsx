@@ -24,6 +24,8 @@ interface Props {
   onSettings: () => void;
   onSidebar: () => void;
   onLeave: () => void;
+  retroActive: boolean;
+  onRetro: () => void;
   onObserver: (observer: boolean) => void;
   observerLocked: boolean;
 }
@@ -32,7 +34,7 @@ interface Props {
  * Oda başlığı. Masaüstü: marka, oda adı, tek davet hapı, avatar yığını, ses ve tema simgeleri, "⋯" menüsü.
  * Telefon: geri, oda adı ve durum, paylaş, "⋯" (ses ve tema da menüde).
  */
-export function RoomHeader({ room, me, isModerator, waiting, voting, hasSidebar, onSettings, onSidebar, onLeave, onObserver, observerLocked }: Props) {
+export function RoomHeader({ room, me, isModerator, waiting, voting, hasSidebar, onSettings, onSidebar, onLeave, retroActive, onRetro, onObserver, observerLocked }: Props) {
   const { t } = useTranslation();
   const soundOn = useSoundEnabled();
   const [theme, setTheme] = useTheme();
@@ -57,7 +59,7 @@ export function RoomHeader({ room, me, isModerator, waiting, voting, hasSidebar,
       <div className={styles.title}>
         <h1>{title}</h1>
         <span>
-          <span className={styles.deck}>{t(`decks.${room.deck}`)} · </span>{subtitle}
+          {!retroActive && <span className={styles.deck}>{t(`decks.${room.deck}`)} · </span>}{subtitle}
           {room.passwordProtected && <> · <Icon name="lock" size={12} /> <span className="visually-hidden">{t('room.passwordProtected')}</span></>}
         </span>
       </div>
@@ -89,7 +91,8 @@ export function RoomHeader({ room, me, isModerator, waiting, voting, hasSidebar,
       <Menu label={t('room.menu')} triggerClassName="ib">
         {hasSidebar && <span className={styles.phoneOnly}><MenuItem icon="ticket" onClick={onSidebar}>{t('room.ticketsAndHistory')}</MenuItem></span>}
         {isModerator && <MenuItem icon="gear" onClick={onSettings}>{t('room.settings')}</MenuItem>}
-        {me && (me.observer ? (
+        {isModerator && <MenuItem icon="spark" onClick={onRetro}>{retroActive ? t('retro.close') : t('retro.start')}</MenuItem>}
+        {me && !retroActive && (me.observer ? (
           <MenuItem icon="cards" onClick={() => onObserver(false)}>{t('room.becomeParticipant')}</MenuItem>
         ) : (
           <MenuItem icon="eye" disabled={observerLocked} onClick={() => onObserver(true)}>{t('room.becomeObserver')}</MenuItem>
