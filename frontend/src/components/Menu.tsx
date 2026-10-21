@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon, type IconName } from './Icon';
 import styles from './Menu.module.css';
 
@@ -13,33 +14,57 @@ interface MenuProps {
   align?: 'start' | 'end';
   /** Menü düğmenin üstüne açılır (alt panelde). */
   up?: boolean;
+  /** Panel gövdeye çizilir: kaydırılan ya da kırpan bir kabın içindeki düğmelerde kırpılmaz. */
+  portal?: boolean;
   triggerClassName?: string;
   children: ReactNode;
 }
 
 /** Açılır menü: dışarı tıklayınca ya da Esc ile kapanır; bir öğeye basınca da kapanır. */
-export function Menu({ label, trigger, icon, align = 'end', up, triggerClassName = 'btn btn-small', children }: MenuProps) {
+export function Menu({ label, trigger, icon, align = 'end', up, portal, triggerClassName = 'btn btn-small', children }: MenuProps) {
   const [open, setOpen] = useState(false);
+  const [fixed, setFixed] = useState<CSSProperties | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const id = useId();
+
+  // Portal'da panel düğmenin hizasına sabitlenir; altı sığmıyorsa üste açılır, kaydırma/yeniden boyutlandırmada kapanır.
+  useLayoutEffect(() => {
+    if (!open || !portal || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const h = panelRef.current?.offsetHeight ?? 120;
+    const above = !up && r.bottom + 6 + h > window.innerHeight && r.top - 6 - h > 0;
+    const style: CSSProperties = { position: 'fixed', zIndex: 60 };
+    if (up || above) { style.top = 'auto'; style.bottom = window.innerHeight - r.top + 6; }
+    else style.top = r.bottom + 6;
+    if (align === 'end') style.right = Math.max(8, window.innerWidth - r.right);
+    else style.left = Math.max(8, Math.min(r.left, window.innerWidth - 228));
+    setFixed(style);
+  }, [open, portal, up, align]);
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent | TouchEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (ref.current && !ref.current.contains(t) && !panelRef.current?.contains(t)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('touchstart', onDown);
+    const onMove = () => portal && setOpen(false);
     document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onMove, true);
+    window.addEventListener('resize', onMove);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('touchstart', onDown);
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onMove, true);
+      window.removeEventListener('resize', onMove);
     };
-  }, [open]);
+  }, [open, portal]);
 
   return (
     <div className={styles.wrap} ref={ref}>
@@ -47,13 +72,17 @@ export function Menu({ label, trigger, icon, align = 'end', up, triggerClassName
         aria-label={trigger ? undefined : label} title={trigger ? undefined : label} onClick={() => setOpen((v) => !v)}>
         {trigger ?? <Icon name={icon ?? 'more'} size={18} />}
       </button>
-      {open && (
-        <CloseContext.Provider value={() => setOpen(false)}>
-          <div id={id} role="menu" aria-label={label} className={`${styles.panel} ${align === 'end' ? styles.end : styles.start} ${up ? styles.up : ''}`}>
-            {children}
-          </div>
-        </CloseContext.Provider>
-      )}
+      {open && (() => {
+        const panel = (
+          <CloseContext.Provider value={() => setOpen(false)}>
+            <div id={id} ref={panelRef} role="menu" aria-label={label} style={portal ? fixed ?? { position: 'fixed', visibility: 'hidden' } : undefined}
+              className={`${styles.panel} ${portal ? '' : align === 'end' ? styles.end : styles.start} ${!portal && up ? styles.up : ''}`}>
+              {children}
+            </div>
+          </CloseContext.Provider>
+        );
+        return portal ? createPortal(panel, document.body) : panel;
+      })()}
     </div>
   );
 }

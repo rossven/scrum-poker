@@ -57,6 +57,8 @@ test('retro: yaz, beğen, konuş, aksiyon çıkar, bitir ve dışa aktar', async
   // Kendi kartını silebilir; başkasınınkinde menü yok
   await expect(a.locator('[data-card-id]', { hasText: 'Toplantılar uzun sürdü' }).getByRole('button', { name: 'Kart işlemleri' })).toHaveCount(0);
   await b.locator('[data-card-id]', { hasText: 'Ekip içi iletişim güzeldi' }).getByRole('button', { name: 'Kart işlemleri' }).click();
+  // Menü kartın kaydırılan kabının içinde değil, gövdede açılır; böylece kırpılıp kaydırma çıkarmaz
+  await expect(b.locator('body > [role="menu"]')).toBeVisible();
   await b.getByRole('menuitem', { name: 'Sil' }).click();
   await expect(a.getByText('Ekip içi iletişim güzeldi')).toHaveCount(0);
 
