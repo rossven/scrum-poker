@@ -59,44 +59,54 @@ export interface ExportLabels {
   date: string;
 }
 
-export function toMarkdown(retro: RetroView, labels: ExportLabels): string {
+/** Bir kartın dışa aktarmadaki hücre metni: aksiyonda sahip ve bitiş, diğerlerinde beğeni ve (anonim değilse) yazan. */
+function cellText(c: RetroCardView, labels: ExportLabels): string {
+  const text = c.text.replace(/\s*\n+\s*/g, ' ');
+  if (c.column === 2) {
+    const owner = c.owner ? c.owner.nickname : labels.noOwner;
+    const src = c.sourceText ? ` (${labels.from}: ${c.sourceText.replace(/\s*\n+\s*/g, ' ')})` : '';
+    return `${text} (${[owner, c.due].filter(Boolean).join(', ')})${src}`;
+  }
+  return `${text} (${labels.likes(c.likes)}${c.author ? `, ${c.author.nickname}` : ''})`;
+}
+
+/** Pano görünümü: her pano sütunu bir tablo sütunu, her kart bir satır (sütun içinde konuşma sırasıyla). */
+function boardRows(retro: RetroView, labels: ExportLabels): string[][] {
   const cards = orderedCards(retro);
-  const lines = [`# ${labels.title}`, '', labels.date, ''];
-  for (const col of RETRO_COLUMNS) {
-    lines.push(`## ${labels.columns[col.id]}`, '');
-    const inCol = cards.filter((c) => c.column === col.id);
-    if (inCol.length === 0) lines.push('-', '');
-    for (const c of inCol) {
-      const text = c.text.replace(/\n+/g, ' ');
-      if (col.id === 2) {
-        const owner = c.owner ? c.owner.nickname : labels.noOwner;
-        const due = c.due ? `, ${c.due}` : '';
-        const src = c.sourceText ? ` (${labels.from}: ${c.sourceText.replace(/\n+/g, ' ')})` : '';
-        lines.push(`- [ ] ${text} (${owner}${due})${src}`);
-      } else {
-        const by = c.author ? ` (${c.author.nickname})` : '';
-        lines.push(`- ${text} (${labels.likes(c.likes)})${by}`);
-      }
-    }
-    lines.push('');
-  }
-  return lines.join('\n');
+  const cols = RETRO_COLUMNS.map((col) => cards.filter((c) => c.column === col.id).map((c) => cellText(c, labels)));
+  const height = Math.max(1, ...cols.map((c) => c.length));
+  return Array.from({ length: height }, (_, i) => cols.map((c) => c[i] ?? ''));
 }
 
-function csvCell(v: string | number | undefined) {
-  const s = v === undefined ? '' : String(v);
+export function toMarkdown(retro: RetroView, labels: ExportLabels): string {
+  const cell = (v: string) => v.replace(/\|/g, '\\|');
+  const line = (cells: string[]) => `| ${cells.map(cell).join(' | ')} |`;
+  return [
+    `# ${labels.title}`,
+    '',
+    labels.date,
+    '',
+    line([...labels.columns]),
+    line(labels.columns.map(() => '---')),
+    ...boardRows(retro, labels).map(line),
+    '',
+  ].join('\n');
+}
+
+function csvCell(v: string) {
   // Tablo programlarında formül olarak çalışmasın.
-  const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
-  return /[",\n\r;]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+  const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+  return /["\n\r;,]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 
-export function toCsv(retro: RetroView, labels: ExportLabels & { header: string[] }): string {
-  const rows = [labels.header.map(csvCell).join(',')];
-  for (const c of orderedCards(retro)) {
-    rows.push([labels.columns[c.column], c.text, c.likes, c.author?.nickname, c.owner?.nickname, c.due, c.sourceText].map(csvCell).join(','));
-  }
+/**
+ * Pano görünümünde CSV: her pano sütunu bir sütun. Ayırıcı Türkçe Excel'in beklediği `;` (virgül verilirse her şey
+ * tek sütuna düşer); diğer dillerde `,`.
+ */
+export function toCsv(retro: RetroView, labels: ExportLabels, delimiter: ',' | ';'): string {
+  const rows = [[...labels.columns], ...boardRows(retro, labels)];
   // UTF-8 BOM: Excel Türkçe karakterleri doğru açsın.
-  return `﻿${rows.join('\r\n')}\r\n`;
+  return `\uFEFF${rows.map((r) => r.map(csvCell).join(delimiter)).join('\r\n')}\r\n`;
 }
 
 export function downloadText(filename: string, mime: string, content: string) {

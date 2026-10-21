@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 
 async function joinAs(page: Page, nickname: string) {
@@ -81,7 +82,16 @@ test('retro: yaz, beğen, konuş, aksiyon çıkar, bitir ve dışa aktar', async
   await expect(a.getByRole('dialog').getByText('Deploy rehberini yaz')).toBeVisible();
   const download = a.waitForEvent('download');
   await a.getByRole('button', { name: 'Markdown indir' }).click();
-  expect((await download).suggestedFilename()).toMatch(/\.md$/);
+  const md = await download;
+  expect(md.suggestedFilename()).toMatch(/\.md$/);
+  const mdText = readFileSync((await md.path())!, 'utf8');
+  expect(mdText).toContain('| Başarılı gidenler | Geliştirilebilir | Aksiyonlar |');
+  expect(mdText).toMatch(/\| Deploy sorunsuz geçti \(1 beğeni\) \| Toplantılar uzun sürdü \(0 beğeni\) \| Deploy rehberini yaz/);
+  const csvDownload = a.waitForEvent('download');
+  await a.getByRole('button', { name: 'CSV indir' }).click();
+  const csvText = readFileSync((await (await csvDownload).path())!, 'utf8');
+  // Türkçe Excel noktalı virgülle ayırır; her pano sütunu ayrı sütun
+  expect(csvText.split('\r\n')[0]).toBe('\uFEFFBaşarılı gidenler;Geliştirilebilir;Aksiyonlar');
 
   // Masaya dön
   await a.getByRole('button', { name: 'Masaya dön' }).click();
