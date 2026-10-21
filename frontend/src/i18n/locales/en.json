@@ -43,7 +43,7 @@
     "submit": "Create room",
     "ticketsHint": "While off, the table plays free rounds; the dealer can turn it on any time in settings.",
     "advanced": "Advanced",
-    "advancedHint": "Auto reveal, ticket list, password"
+    "advancedHint": "Auto reveal, workload balance, ticket list, password"
   },
   "decks": {
     "modified-fibonacci": "Modified Fibonacci",
@@ -468,9 +468,9 @@
       "volunteer": "Volunteer",
       "direct": "Single candidate"
     },
-    "fairRotation": "Fair rotation",
-    "fairRotationHint": "Anyone who already took work in this session has their chance halved each time.",
-    "weightedOn": "Weighted mode is on",
+    "fairRotation": "Balance the workload",
+    "fairRotationHint": "Whoever took more points this session gets a lower chance; whoever took fewer gets a higher one.",
+    "weightedOn": "Workload balance is on",
     "start": "Start the game",
     "assignDirect": "{{name}} takes it",
     "waitingDealer": "The dealer is choosing candidates and the game…",
@@ -497,7 +497,7 @@
     "remaining": "left",
     "pass": "Pass",
     "unpass": "Take back my pass",
-    "fairNote": "Fair rotation is on: anyone who took work earlier has their chance halved.",
+    "fairNote": "Workload balance is on: whoever took more points this session has a lower chance.",
     "atTable": "At the table ({{count}})",
     "tagVolunteer": "I'll take it",
     "tagPass": "Pass",
@@ -511,11 +511,11 @@
     "candidatesNobody_other": "No volunteers, {{count}} candidates",
     "namesMore": "{{names}} and {{count}} more",
     "areCandidates": "are candidates.",
-    "fairSub": "Those who took work earlier have a lower chance.",
+    "fairSub": "Whoever took more points this session has a lower chance.",
     "equalSub": "Everyone has an equal chance.",
-    "winsNone": "has not taken any in this session",
-    "winsN_one": "took {{count}} in this session",
-    "winsN_other": "took {{count}} in this session",
+    "winsNone": "has not taken any work this session",
+    "winsN_one": "took {{count}} item this session",
+    "winsN_other": "took {{count}} items this session",
     "addCandidate": "Add candidate",
     "removeCandidate": "Remove {{name}} from candidates",
     "serverDecides": "The server picks the winner; nobody can influence the game.",
@@ -537,10 +537,12 @@
     "skip": "Skip",
     "leading": "{{name}} is ahead",
     "lane": "Lane {{n}}: {{name}}",
-    "nextHalf": "Next time their chance is halved.",
+    "nextHalf": "Their chance drops next time, by the points they took.",
     "again": "Undo and play again",
     "assignAndNext": "Assign and go to the next",
-    "dealerContinues": "The dealer will continue…"
+    "dealerContinues": "The dealer will continue…",
+    "pointsN_one": "{{count}} point",
+    "pointsN_other": "{{count}} points"
   },
   "a11y": {
     "votes": "{{voted}} / {{total}} people voted",
@@ -560,7 +562,7 @@
   "settings": {
     "autoReveal": "Auto reveal",
     "autoRevealHint": "Cards flip on their own once everyone has voted.",
-    "fairHint": "Anyone who already took work has their chance halved each time.",
+    "fairHint": "In Who takes it?, whoever took more points this session gets a lower chance. Someone with 4 items × 1 point is likelier than someone with 1 item × 13 points.",
     "volunteerHint": "How long (in seconds) to wait for volunteers when “Who takes it?” opens.",
     "ticketsOffHint": "When on, a ticket queue appears next to the table.",
     "password": "Room password",

@@ -285,6 +285,56 @@ class AssignmentServiceTest {
         expectError(ErrorCode.FORBIDDEN, () -> assign.setFairRotation(code, ali.participantId(), false));
     }
 
+    /** Serbest tur: oy → aç → kişi gönüllü olur ve alır → puan sonradan (ya da önceden) onaylanır → yeni tur. */
+    private void take(JoinResult who, String points, boolean estimateFirst) {
+        poker.vote(code, mod.participantId(), points);
+        poker.reveal(code, mod.participantId());
+        if (estimateFirst) {
+            poker.finalizeEstimate(code, mod.participantId(), points);
+        }
+        assign.start(code, mod.participantId(), 20);
+        assign.volunteer(code, who.participantId(), true);
+        assign.closeVolunteering(code, mod.participantId());
+        assign.close(code, mod.participantId());
+        if (!estimateFirst) {
+            poker.finalizeEstimate(code, mod.participantId(), points);
+        }
+        poker.newRound(code, mod.participantId());
+    }
+
+    @Test
+    void workloadBalanceWeighsByPointsNotJobCount() {
+        Room room = rooms.require(code);
+        for (int i = 0; i < 4; i++) {
+            take(ali, "1", i % 2 == 0);
+        }
+        take(bora, "13", false);
+        double wAli = room.withLock(() -> AssignmentService.weight(room, ali.participantId()));
+        double wBora = room.withLock(() -> AssignmentService.weight(room, bora.participantId()));
+        double wCem = room.withLock(() -> AssignmentService.weight(room, cem.participantId()));
+        // Ortalama iş 17/5 = 3,4 puan: Ali 4 puan → 0,5^(4/3,4); Bora 13 puan → 0,5^(13/3,4).
+        assertThat(wAli).isCloseTo(Math.pow(0.5, 4 / 3.4), org.assertj.core.data.Offset.offset(1e-9));
+        assertThat(wBora).isCloseTo(Math.pow(0.5, 13 / 3.4), org.assertj.core.data.Offset.offset(1e-9));
+        assertThat(wAli).isGreaterThan(wBora * 5);
+        assertThat(wCem).isEqualTo(1.0);
+
+        var load = room.withLock(() -> AssignmentService.loads(room).get(ali.participantId()));
+        assertThat(load.jobs()).isEqualTo(4);
+        assertThat(load.points()).isEqualTo(4.0);
+
+        // Görünüm her adaya iş yükünü taşır.
+        assign.start(code, mod.participantId(), 20);
+        assertThat(flow().loads()).extracting(RoomViews.LoadView::participantId)
+                .containsExactly(ali.participantId(), bora.participantId());
+    }
+
+    @Test
+    void workloadBalanceCanBeChosenWhenCreatingTheRoom() {
+        var created = rooms.create("Dengeli", null, null, null, false, false, true, "10.0.0.8");
+        Room room = rooms.require(created.code());
+        assertThat(room.withLock(room::fairRotation)).isTrue();
+    }
+
     @Test
     void leavingOrKickedPeopleDropOutOfTheFlowButHistoryStays() {
         assign.start(code, mod.participantId(), 20);

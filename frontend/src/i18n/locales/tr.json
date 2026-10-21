@@ -43,7 +43,7 @@
     "submit": "Odayı oluştur",
     "ticketsHint": "Kapalıyken masada serbest tur oynanır; krupiye istediği an ayarlardan açabilir.",
     "advanced": "Gelişmiş",
-    "advancedHint": "Otomatik aç, ticket listesi, şifre"
+    "advancedHint": "Otomatik aç, iş yükü dengesi, ticket listesi, şifre"
   },
   "decks": {
     "modified-fibonacci": "Modifiye Fibonacci",
@@ -468,9 +468,9 @@
       "volunteer": "Gönüllü",
       "direct": "Tek aday"
     },
-    "fairRotation": "Dönüşümlü adalet",
-    "fairRotationHint": "Bu oturumda daha önce iş alanların şansı her seferinde yarıya iner.",
-    "weightedOn": "Ağırlıklı mod açık",
+    "fairRotation": "İş yükünü dengele",
+    "fairRotationHint": "Bu oturumda çok puan alanın şansı düşer, az alanın şansı artar.",
+    "weightedOn": "İş yükü dengesi açık",
     "start": "Oyunu başlat",
     "assignDirect": "{{name}} alsın",
     "waitingDealer": "Krupiye adayları ve oyunu seçiyor…",
@@ -497,7 +497,7 @@
     "remaining": "kaldı",
     "pass": "Pas",
     "unpass": "Pasımı geri al",
-    "fairNote": "Dönüşümlü adalet açık: daha önce alanın şansı yarıya iner.",
+    "fairNote": "İş yükü dengesi açık: bu oturumda çok puan alanın şansı düşük.",
     "atTable": "Masada ({{count}})",
     "tagVolunteer": "Ben alırım",
     "tagPass": "Pas",
@@ -511,11 +511,11 @@
     "candidatesNobody_other": "Gönüllü yok, {{count}} aday",
     "namesMore": "{{names}} ve {{count}} kişi daha",
     "areCandidates": "aday.",
-    "fairSub": "Daha önce iş alanların şansı düşük.",
+    "fairSub": "Bu oturumda çok puan alanın şansı düşük.",
     "equalSub": "Herkesin şansı eşit.",
-    "winsNone": "bu oturumda hiç almadı",
-    "winsN_one": "bu oturumda {{count}} kez aldı",
-    "winsN_other": "bu oturumda {{count}} kez aldı",
+    "winsNone": "bu oturumda iş almadı",
+    "winsN_one": "bu oturumda {{count}} iş aldı",
+    "winsN_other": "bu oturumda {{count}} iş aldı",
     "addCandidate": "Aday ekle",
     "removeCandidate": "{{name}} adaylıktan çıkar",
     "serverDecides": "Kazananı sunucu belirler; kimse oyunu etkileyemez.",
@@ -537,10 +537,12 @@
     "skip": "Geç",
     "leading": "{{name}} önde",
     "lane": "{{n}}. kulvar: {{name}}",
-    "nextHalf": "Bir sonraki sefer şansı yarıya iner.",
+    "nextHalf": "Aldığı puan kadar bir sonraki seferde şansı azalır.",
     "again": "Geri al, yeniden oyna",
     "assignAndNext": "Ata ve sıradakine geç",
-    "dealerContinues": "Krupiye devam edecek…"
+    "dealerContinues": "Krupiye devam edecek…",
+    "pointsN_one": "{{count}} puan",
+    "pointsN_other": "{{count}} puan"
   },
   "a11y": {
     "votes": "{{voted}} / {{total}} kişi oy verdi",
@@ -560,7 +562,7 @@
   "settings": {
     "autoReveal": "Otomatik aç",
     "autoRevealHint": "Herkes oy verince kartlar kendiliğinden açılır.",
-    "fairHint": "Daha önce iş alanların şansı her seferinde yarıya iner.",
+    "fairHint": "Kim alacak? çekilişinde bu oturumda çok puan alanın şansı düşer. 4 iş × 1 puan alan, 1 iş × 13 puan alandan daha olası seçilir.",
     "volunteerHint": "Kim alacak? açıldığında gönüllülerin bekleneceği süre (saniye).",
     "ticketsOffHint": "Açınca masanın yanında ticket kuyruğu çıkar.",
     "password": "Oda şifresi",

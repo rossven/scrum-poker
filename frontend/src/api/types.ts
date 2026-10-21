@@ -143,6 +143,17 @@ export interface AssignmentView {
   candidates: string[];
   result?: AssignmentRecord;
   game?: GameView;
+  /** Bu oturumda iş almış kişilerin iş yükü; listede olmayanın ağırlığı 1. */
+  loads?: LoadView[];
+}
+
+export interface LoadView {
+  participantId: string;
+  jobs: number;
+  /** Sayılabilir puanların toplamı (T-shirt gibi destelerde 0). */
+  points: number;
+  /** "İş yükünü dengele" açıkken seçilme ağırlığı (sunucu hesaplar). */
+  weight: number;
 }
 
 export interface TimerView {

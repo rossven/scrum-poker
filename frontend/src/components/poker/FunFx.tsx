@@ -20,7 +20,7 @@ const COLORS = ['#2f6fe0', '#7b5cd6', '#12775a', '#3fcf96', '#d93a3a', '#f0b94a'
 
 /**
  * Royal Flush kutlaması: ekranın üstünden düşen konfeti ve ortada büyük yazı.
- * "Hareketi azalt" açıkken hiç çizilmez (sonuç panelindeki yazı yine görünür).
+ * "Hareketi azalt" açıkken konfeti düşmez, yazı yalnızca belirip kaybolur (MotionConfig büyütme/dönmeyi kapatır).
  */
 export function RoyalFlushCelebration() {
   const { t } = useTranslation();
@@ -39,10 +39,9 @@ export function RoyalFlushCelebration() {
       })),
     [],
   );
-  if (reduceMotion) return null;
   return (
     <div className={styles.overlay} aria-hidden>
-      {pieces.map((p, i) => (
+      {!reduceMotion && pieces.map((p, i) => (
         <motion.span
           key={i}
           className={styles.piece}

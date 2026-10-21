@@ -19,7 +19,7 @@ export function SwitchRow({ title, hint, on, onChange }: { title: string; hint: 
 }
 
 /**
- * Oda ayarları (krupiye): Otomatik aç, Dönüşümlü adalet, Gönüllü süresi, Ticket listesi, Deste, Şifre.
+ * Oda ayarları (krupiye): Otomatik aç, İş yükünü dengele, Gönüllü süresi, Ticket listesi, Deste, Şifre.
  * Değişiklikler "Kaydet" ile birlikte uygulanır; "Vazgeç" hiçbirini uygulamaz.
  */
 export function RoomSettings({ room, onClose }: { room: RoomState; onClose: () => void }) {

@@ -15,6 +15,7 @@ export function CreateRoomPage() {
   const [password, setPassword] = useState('');
   const [ticketsEnabled, setTicketsEnabled] = useState(false);
   const [autoReveal, setAutoReveal] = useState(false);
+  const [fairRotation, setFairRotation] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -32,6 +33,7 @@ export function CreateRoomPage() {
         password: password || undefined,
         ticketsEnabled,
         autoReveal,
+        fairRotation,
       });
       sessions.setClaim(room.code, room.claimToken);
       navigate(roomPath(room.code));
@@ -67,6 +69,7 @@ export function CreateRoomPage() {
           <>
             <div className={styles.switches}>
               <SwitchRow title={t('settings.autoReveal')} hint={t('settings.autoRevealHint')} on={autoReveal} onChange={setAutoReveal} />
+              <SwitchRow title={t('assign.fairRotation')} hint={t('settings.fairHint')} on={fairRotation} onChange={setFairRotation} />
               <SwitchRow title={t('tickets.enable')} hint={t('create.ticketsHint')} on={ticketsEnabled} onChange={setTicketsEnabled} />
             </div>
             <div className="field">

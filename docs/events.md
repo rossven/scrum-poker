@@ -18,7 +18,7 @@ Arayüzde moderatör **"Krupiye"** olarak geçer (M2.5); kodda ve olay adlarınd
 
 | Yöntem | Yol | Gövde | Yanıt |
 |---|---|---|---|
-| `POST` | `/api/rooms` | `{ name?, deck?, customDeck?, password?, ticketsEnabled?, autoReveal? }` | `201 { code, claimToken }` |
+| `POST` | `/api/rooms` | `{ name?, deck?, customDeck?, password?, ticketsEnabled?, autoReveal?, fairRotation? }` | `201 { code, claimToken }` |
 | `GET` | `/api/rooms/{code}` | | `{ code, name?, passwordProtected }` |
 | `POST` | `/api/rooms/{code}/join` | `{ nickname, avatar, observer, password?, token?, claimToken?, takeover? }` | `{ code, participantId, token, nickname, rejoined, takenOver }` |
 | `GET` | `/admin/stats` | `Authorization: Bearer <SM_ADMIN_TOKEN>` | sayaçlar (JSON) |
@@ -27,6 +27,7 @@ Arayüzde moderatör **"Krupiye"** olarak geçer (M2.5); kodda ve olay adlarınd
 - `customDeck`: `deck = custom` ise kart listesi. En fazla 20 kart, kart başına en fazla 8 karakter, tekrar yok (büyük/küçük harf duyarsız), virgül ve kontrol karakteri yok. Kurala uymazsa `INVALID_DECK`.
 - `ticketsEnabled`: ticket listesi açık mı başlasın (varsayılan `false`, M2.5). Krupiye odada sonradan açıp kapatabilir.
 - `autoReveal`: "Otomatik aç" oda ayarı açık mı başlasın (varsayılan `false`). Krupiye odada sonradan değiştirebilir.
+- `fairRotation`: "İş yükünü dengele" açık mı başlasın (varsayılan `false`); bkz. `assign.set_fair_rotation`.
 - `claimToken`: oda oluşturunca dönen tek kullanımlık anahtar. Katılırken gönderen kişi moderatör olur.
 - `token`: daha önce alınmış oturum token'ı. Geçerliyse aynı koltuğa dönülür, şifre sorulmaz (`rejoined: true`).
 - `takeover` (M3): odada aynı isimde (büyük/küçük harf duyarsız) **çevrimdışı** bir koltuk varsa ve alan yoksa sunucu `409 SEAT_TAKEOVER` döner; istemci "Bu koltuk senin mi?" diye sorar. `true`: koltuk devralınır (isim, avatar, bu turdaki oy, gönüllülük korunur; yeni token verilir, eski token geçersiz olur; **krupiyelik geçmez**, başka krupiye kalmazsa M1 devretme kuralı işler), yanıtta `takenOver: true`. `false`: yeni koltuk ("Ayşe 2"). Çevrimiçi koltuk devralınamaz, soru da sorulmaz. Şifreli odada şifre yine gerekir.
@@ -93,7 +94,7 @@ Başka bir odanın konusuna abone olma isteği reddedilir.
 | `room.set_auto_reveal` | `{ enabled }` | moderatör | "Otomatik aç": bağlı (çevrimiçi) herkes oy verince kartlar kendiliğinden açılır |
 | `assign.close_volunteering` | `{}` | moderatör | Gönüllü turunu erken kapatır (süre dolunca sunucu kendisi kapatır). Tek gönüllü → doğrudan atanır (`game: "volunteer"`); birden çok → adaylar gönüllüler; hiç yok → adaylar bu turda oy verenler (kimse oy vermediyse tüm katılımcılar) |
 | `assign.set_candidate` | `{ participantId, candidate }` | moderatör | Aday ayarında kişiyi çıkar/ekle (gözlemci eklenemez) |
-| `assign.set_fair_rotation` | `{ enabled }` | moderatör | Dönüşümlü adalet: bu oturumda daha önce (geri alınmamış) kazananın seçilme ağırlığı her kazanımda yarıya iner. Görsel olarak dilimler/atlar eşit kalır |
+| `assign.set_fair_rotation` | `{ enabled }` | moderatör | İş yükünü dengele: seçilme ağırlığı = 0,5^(bu oturumda geri alınmamış işlerin toplam puanı / oturumdaki ortalama iş puanı). Puanı olmayan iş ortalama sayılır; T-shirt gibi destelerde kartın sırası kullanılır. Görsel olarak dilimler/atlar eşit kalır |
 | `assign.play` | `{ game: "horse" \| "wheel" }` | moderatör | Kazanan ve tam sıralama sunucuda `SecureRandom` ile çekilir. Tek aday kaldıysa oyun oynanmadan atanır (`game: "direct"`) |
 | `assign.undo` | `{}` | moderatör | Sonuç geri alınır: geçmişte `undone: true` kalır, ticket ataması kalkar, aday ayarına dönülür (tek gönüllüye yapılan atama geri alınırsa adaylar tüm havuza genişler) |
 | `assign.close` | `{}` | moderatör | Akışı kapatır; sonuçlar ve geçmiş kalır |
@@ -202,10 +203,12 @@ Ticket'sız turda `ticketId` yoktur, krupiye yazdıysa `topic` vardır:
   "volunteerSeconds": 20, "volunteerRemainingMs": 14200,
   "volunteers": ["..."], "passes": ["..."], "candidates": ["..."],
   "result": <AssignmentRecord>,
-  "game": { "type": "horse", "startsInMs": 1500, "durationMs": 8200, "animation": { ... } }
+  "game": { "type": "horse", "startsInMs": 1500, "durationMs": 8200, "animation": { ... } },
+  "loads": [ { "participantId": "...", "jobs": 4, "points": 4.0, "weight": 0.44 } ]
 }
 ```
 
+- `loads`: bu oturumda iş almış (geri alınmamış) kişilerin iş yükü; listede olmayanın ağırlığı 1. `points` yalnızca sayı olan tahminlerin toplamı. `weight` yalnızca "İş yükünü dengele" açıkken çekilişte kullanılır.
 - `volunteerRemainingMs` yalnızca süre sınırlı gönüllü turunda; `result` ve `game` yalnızca `RESULT`'ta (`game`, `volunteer`/`direct` sonuçlarında yok).
 - `startsInMs`: gönderim anından oyunun başlamasına kalan süre (negatifse başlayalı geçen). İstemci kendi saatiyle sayar; herkes aynı anda başlatır (sunucu sonucu 1,5 sn sonrasına zamanlar).
 - `animation` (at yarışı): `{ "tracks": { "<participantId>": [0.08, 0.17, ... 1.0] } }`. Her at için eşit aralıklı 10 ara nokta (0..1 ilerleme); son nokta bitiş konumu. Atlar sunucunun sıralamasıyla çizgiye varır.

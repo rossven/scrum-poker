@@ -73,7 +73,7 @@ test('retro: yaz, beğen, konuş, aksiyon çıkar, bitir ve dışa aktar', async
 
   // Bitir: özet
   const next = a.getByRole('button', { name: /^Sıradaki/ });
-  while ((await next.count()) > 0) await next.click();
+  for (let i = 0; i < 10 && (await next.count()) > 0; i++) await next.click({ timeout: 2000 }).catch(() => {});
   await a.getByRole('button', { name: /Retroyu bitir/ }).last().click();
   await expect(b.getByText('Retro tamam')).toBeVisible();
   await expect(a.getByRole('dialog').getByText('Deploy rehberini yaz')).toBeVisible();

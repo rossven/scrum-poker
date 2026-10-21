@@ -415,7 +415,7 @@ class PokerServiceTest {
         assertThat(state().autoReveal()).isFalse();
         assertThat(state().round().state()).isEqualTo("VOTING");
 
-        var other = rooms.create("Oto", null, null, null, false, true, "10.0.0.9");
+        var other = rooms.create("Oto", null, null, null, false, true, false, "10.0.0.9");
         var me = rooms.join(other.code(), "Can", "s", false, null, null, other.claimToken(), "10.0.0.9");
         rooms.connected(other.code(), me.participantId());
         poker.vote(other.code(), me.participantId(), "3");

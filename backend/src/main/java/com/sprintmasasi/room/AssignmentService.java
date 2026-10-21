@@ -2,6 +2,7 @@ package com.sprintmasasi.room;
 
 import com.sprintmasasi.games.TieBreakerGame;
 import com.sprintmasasi.games.TieBreakerGame.Candidate;
+import com.sprintmasasi.poker.Deck;
 import com.sprintmasasi.room.RoomViews.PersonView;
 import com.sprintmasasi.stats.UsageStats;
 import java.time.Clock;
@@ -239,7 +240,7 @@ public class AssignmentService {
         rooms.broadcast(room);
     }
 
-    /** Dönüşümlü adalet modunu aç/kapat (oda boyunca geçerli). */
+    /** "İş yükünü dengele" modunu aç/kapat (oda boyunca geçerli). */
     public void setFairRotation(String code, String actorId, boolean enabled) {
         Room room = rooms.require(code);
         room.withLock(() -> {
@@ -271,9 +272,9 @@ public class AssignmentService {
                 decide(room, a, candidates, "direct", null);
                 return false;
             }
-            boolean weighted = room.fairRotation();
+            Map<String, Load> loads = room.fairRotation() ? loads(room) : Map.of();
             List<Candidate> input = candidates.stream()
-                    .map(id -> new Candidate(id, weighted ? weight(room, id) : 1.0))
+                    .map(id -> new Candidate(id, loads.containsKey(id) ? loads.get(id).weight() : 1.0))
                     .toList();
             TieBreakerGame.Outcome outcome = game.play(input, random);
             Instant startsAt = clock.instant().plusMillis(GAME_LEAD_MS);
@@ -339,8 +340,12 @@ public class AssignmentService {
     private void decide(Room room, Assignment a, List<String> ranking, String gameId, Assignment.Game game) {
         List<PersonView> rankingPeople = ranking.stream().map(id -> person(room, id)).toList();
         List<PersonView> candidatePeople = present(room, a.candidates()).stream().map(id -> person(room, id)).toList();
-        var record = new AssignmentRecord(ids.ticketId(), a.ticketId(), a.title(), gameId, rankingPeople,
-                candidatePeople, game != null && room.fairRotation(), clock.instant());
+        PokerRound round = room.round();
+        String estimate = a.ticketId() != null
+                ? room.ticket(a.ticketId()).map(Ticket::finalEstimate).orElse(null)
+                : round.ticketId() == null ? round.finalEstimate() : null;
+        var record = new AssignmentRecord(ids.ticketId(), a.ticketId(), round.id(), a.title(), gameId, rankingPeople,
+                candidatePeople, game != null && room.fairRotation(), estimate, clock.instant());
         room.addAssignmentRecord(record);
         if (a.ticketId() != null) {
             room.ticket(a.ticketId()).ifPresent(t -> t.assign(record.winner()));
@@ -357,12 +362,52 @@ public class AssignmentService {
         return room.retro().card(a.retroCardId());
     }
 
-    /** Dönüşümlü adalet: bu oturumda (geri alınmamış) her kazanım ağırlığı yarıya indirir. */
+    /** Kişinin bu oturumdaki iş yükü: aldığı iş sayısı, sayılabilir puanların toplamı ve seçilme ağırlığı. */
+    record Load(int jobs, double points, double weight) {}
+
+    /**
+     * İş yükünü dengele: ağırlık, kişinin bu oturumda (geri alınmamış) aldığı işlerin toplam puanına göre düşer.
+     * Ölçü "ortalama bir iş"tir: ortalama büyüklükte her iş şansı yarıya indirir (0,5^(yük / ortalama)).
+     * Böylece 4 × 1 puan alan, 1 × 13 puan alandan daha olası seçilir. Puanı olmayan (henüz tahmin edilmemiş,
+     * "?" ya da serbest metin) işler ortalama bir iş sayılır; hiç puan yoksa her iş şansı yarıya indirir.
+     * T-shirt gibi sayı olmayan destelerde kartın destedeki sırası (XS=1, S=2...) büyüklük olarak kullanılır.
+     */
+    static Map<String, Load> loads(Room room) {
+        List<AssignmentRecord> taken = room.assignmentHistory().stream().filter(r -> !r.undone()).toList();
+        List<String> cards = room.deck().cards().stream().filter(c -> !Deck.isSpecial(c)).toList();
+        java.util.function.Function<String, Double> size = card -> {
+            Double n = Deck.numericValue(card);
+            if (n != null) {
+                return n;
+            }
+            int i = card == null ? -1 : cards.indexOf(card);
+            return i < 0 ? null : (double) (i + 1);
+        };
+        double unit = taken.stream().map(r -> size.apply(r.estimate())).filter(java.util.Objects::nonNull)
+                .mapToDouble(Double::doubleValue).average().orElse(1);
+        if (unit <= 0) {
+            unit = 1;
+        }
+        Map<String, double[]> acc = new LinkedHashMap<>(); // [iş, puan, yük]
+        for (AssignmentRecord r : taken) {
+            double[] x = acc.computeIfAbsent(r.winner().participantId(), k -> new double[3]);
+            Double s = size.apply(r.estimate());
+            Double n = Deck.numericValue(r.estimate());
+            x[0]++;
+            x[1] += n == null ? 0 : n;
+            x[2] += s == null ? unit : s;
+        }
+        Map<String, Load> out = new LinkedHashMap<>();
+        for (var e : acc.entrySet()) {
+            double[] x = e.getValue();
+            out.put(e.getKey(), new Load((int) x[0], x[1], Math.pow(0.5, x[2] / unit)));
+        }
+        return out;
+    }
+
     static double weight(Room room, String participantId) {
-        long wins = room.assignmentHistory().stream()
-                .filter(r -> !r.undone() && r.winner().participantId().equals(participantId))
-                .count();
-        return Math.pow(0.5, wins);
+        Load load = loads(room).get(participantId);
+        return load == null ? 1.0 : load.weight();
     }
 
     /** Hiç gönüllü yokken adaylar: bu turda oy veren katılımcılar; kimse oy vermediyse tüm katılımcılar. */
