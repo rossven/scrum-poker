@@ -47,7 +47,7 @@
   margin-left: auto; min-width: 30px; height: 30px; padding: 0 9px; border-radius: 99px; display: grid; place-items: center;
   font: 800 13px/1 var(--font-display); background: color-mix(in srgb, var(--t) 16%, var(--surface)); color: color-mix(in srgb, var(--t) 70%, var(--text));
 }
-.colBody { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; padding: 4px 4px 10px; margin: 0 -4px; }
+.colBody { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; overflow-y: auto; min-height: 0; padding: 8px 10px 12px; margin: -4px -10px 0; }
 .empty { color: var(--text-soft); font-size: 14px; text-align: center; padding: 18px 8px; }
 
 .composer {
@@ -116,7 +116,7 @@ button.owner:hover { background: rgba(0, 0, 0, 0.06); }
 @media (prefers-color-scheme: dark) { :global(:root:not([data-theme='light'])) .edit textarea { background: rgba(0, 0, 0, 0.3); } }
 .editRow { display: flex; justify-content: flex-end; gap: 8px; }
 
-.focus { box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--t), 0 20px 36px color-mix(in srgb, var(--t) 36%, transparent); transform: scale(1.02); z-index: 1; margin: 4px 0; }
+.focus { box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--t), 0 20px 36px color-mix(in srgb, var(--t) 36%, transparent); z-index: 1; margin: 4px 0; }
 .focusTag { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.07em; color: color-mix(in srgb, var(--t) 60%, var(--ink)); margin-bottom: 5px; }
 .done { opacity: 0.58; padding: 9px 12px; font-size: 13.5px; display: flex; align-items: center; gap: 8px; box-shadow: none; background: color-mix(in srgb, var(--t) 10%, var(--surface)); cursor: default; border: 0; text-align: left; width: 100%; font-family: inherit; }
 button.done { cursor: pointer; }

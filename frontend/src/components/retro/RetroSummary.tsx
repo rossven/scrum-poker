@@ -66,7 +66,7 @@ export function RetroSummary({ room, retro, isModerator }: { room: RoomState; re
           <button type="button" className="btn" onClick={() => downloadText(`${slug}-retro.md`, 'text/markdown', toMarkdown(retro, labels))}>
             <Icon name="download" size={16} />{t('retro.exportMarkdown')}
           </button>
-          <button type="button" className="btn" onClick={() => downloadText(`${slug}-retro.csv`, 'text/csv', toCsv(retro, { ...labels, header: [t('retro.csvColumn'), t('retro.csvText'), t('retro.csvLikes'), t('retro.csvAuthor'), t('retro.csvOwner'), t('retro.csvDue'), t('retro.csvSource')] }))}>
+          <button type="button" className="btn" onClick={() => downloadText(`${slug}-retro.csv`, 'text/csv', toCsv(retro, labels, i18n.language.startsWith('tr') ? ';' : ','))}>
             <Icon name="download" size={16} />{t('retro.exportCsv')}
           </button>
           <button type="button" className="btn" onClick={copy} aria-live="polite">

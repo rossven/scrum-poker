@@ -122,7 +122,7 @@ export function RetroSticky({ card, retro, room, mine, liked, state, isModerator
       {isAction && (
         <div className={styles.actionRow} onClick={(e) => e.stopPropagation()}>
           {editableActionMeta ? (
-            <Menu label={t('retro.pickOwner')} trigger={ownerChip} triggerClassName={styles.owner} align="start">
+            <Menu label={t('retro.pickOwner')} trigger={ownerChip} triggerClassName={styles.owner} align="start" portal>
               {room.participants.map((p) => (
                 <MenuItem key={p.id} onClick={() => retroSetAction(card.id, p.id, card.due ?? '')}>{p.nickname}</MenuItem>
               ))}
@@ -159,7 +159,7 @@ export function RetroSticky({ card, retro, room, mine, liked, state, isModerator
         ) : <span style={{ marginLeft: 'auto' }} />}
         {mine && retro.phase !== 'DONE' && (
           <span onClick={(e) => e.stopPropagation()}>
-            <Menu label={t('retro.cardMenu')} triggerClassName={styles.mn}>
+            <Menu label={t('retro.cardMenu')} portal triggerClassName={styles.mn}>
               <MenuItem icon="pencil" onClick={() => { setDraft(card.text); setEditing(true); }}>{t('retro.edit')}</MenuItem>
               <MenuItem icon="trash" danger onClick={remove}>{t('retro.delete')}</MenuItem>
             </Menu>
