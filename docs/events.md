@@ -248,6 +248,23 @@ Yeniden bağlanınca tam durumu almak için. `yourVote` yalnızca kişinin kendi
 #### `error` (kişisel)
 `{ "code": "FORBIDDEN" }`. Kodlar REST tablosundakilerle aynı.
 
+## Retro olayları
+
+Retro, odada poker turunun yerine geçer (`room.state.retro`; yoksa `null`). Aşamalar: `WRITING` → `DISCUSSING` → `DONE`. Sütunlar: 0 başarılı gidenler, 1 geliştirilebilir, 2 aksiyonlar. Anonimken kartlarda `author` hiç gönderilmez; kişinin kendi kartları ve beğenileri yalnızca ona `retro.your_cards` (`{ retroId, cardIds, likedIds }`) ile gelir, snapshot'ta `yourRetro` olarak da bulunur.
+
+| Hedef (`/app/...`) | Veri | Kim | Açıklama |
+|---|---|---|---|
+| `retro.start` | `{ anonymous?, seconds? }` | moderatör | Retroyu açar. `seconds`: yazma süresi, 0 = süresiz, yoksa 30-3600 (varsayılan 480) |
+| `retro.add_card` | `{ column, text, sourceId? }` | herkes (yazarken); moderatör (konuşurken, yalnızca sütun 2) | Kart ekler (≤200 karakter). `sourceId`: aksiyonun çıktığı kart |
+| `retro.edit_card` / `retro.delete_card` | `{ cardId, text? }` | yalnızca kartın yazarı | Başkasının kartı, moderatör dahil, değiştirilemez |
+| `retro.like` | `{ cardId, liked }` | herkes | Yalnızca `WRITING`; kişi başına kart başına tek beğeni, yayında sadece sayı |
+| `retro.start_discussion` / `retro.back_to_writing` | `{}` | moderatör | Konuşma sırası: sütunlar soldan sağa, her sütun beğeniye (eşitlikte yazma sırasına) göre |
+| `retro.step` / `retro.focus` | `{ delta }` / `{ cardId }` | moderatör | Konuşulan kartı değiştirir |
+| `retro.set_action` | `{ cardId, ownerId?, due? }` | moderatör | Aksiyon kartının sahibi ve serbest metin bitiş tarihi. "Kim alacak?" (`assign.start` + `retroCardId`) kazananı sahip yapar |
+| `retro.finish` / `retro.reopen` / `retro.close` | `{}` | moderatör | Özete geç / geri dön / retroyu kapat (kartlar silinir, masaya dönülür) |
+
+Sınırlar: odada 300, kişi başına 40 kart (`RETRO_LIMIT`); 10 sn'de 8 kart ve 40 beğeni (`RATE_LIMITED`).
+
 ## Oylama kuralları
 
 - Tur durumları: `VOTING` → `REVEALED` → (`VOTING` yeni tur | `FINALIZED`).

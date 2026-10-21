@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class AssignmentSocketController {
 
-    public record StartPayload(Integer seconds) {}
+    public record StartPayload(Integer seconds, String retroCardId) {}
 
     /** pass: "Pas" (volunteer=false ile); verilmezse vazgeçme anlamına gelir. */
     public record VolunteerPayload(boolean volunteer, boolean pass) {}
@@ -32,7 +32,7 @@ public class AssignmentSocketController {
     @MessageMapping("assign.start")
     public void start(@Payload StartPayload body, Principal principal) {
         var p = (RoomPrincipal) principal;
-        assignments.start(p.roomCode(), p.participantId(), body.seconds());
+        assignments.start(p.roomCode(), p.participantId(), body.seconds(), body.retroCardId());
     }
 
     @MessageMapping("assign.volunteer")

@@ -185,6 +185,46 @@ export interface RoomState {
   autoReveal: boolean;
   /** "Kim alacak?" gönüllü süresi oda ayarı (sn; 0 = süresiz). */
   volunteerSeconds: number;
+  /** Süren ya da özeti açık retrospektif; yoksa gelmez. */
+  retro?: RetroView;
+}
+
+export type RetroPhase = 'WRITING' | 'DISCUSSING' | 'DONE';
+
+/** 0: başarılı gidenler, 1: geliştirilebilir, 2: aksiyonlar. */
+export type RetroColumn = 0 | 1 | 2;
+
+/** Pano kartı. Anonim panoda author gelmez; likes yalnızca sayıdır. owner ve due yalnızca aksiyonlarda. */
+export interface RetroCardView {
+  id: string;
+  column: RetroColumn;
+  text: string;
+  likes: number;
+  author?: PersonView;
+  sourceId?: string;
+  sourceText?: string;
+  owner?: PersonView;
+  due?: string;
+}
+
+/** order (konuşma sırası) ve focusId yalnızca WRITING dışında; focusElapsedMs yalnızca DISCUSSING'de. */
+export interface RetroView {
+  id: string;
+  phase: RetroPhase;
+  anonymous: boolean;
+  writeSeconds: number;
+  timer?: TimerView;
+  cards: RetroCardView[];
+  order?: string[];
+  focusId?: string;
+  focusElapsedMs?: number;
+}
+
+/** Kişinin kendi retro kartları ve beğenileri; yalnızca ona gelir (anonim panoda "benim kartım" buradan bilinir). */
+export interface YourRetro {
+  retroId: string;
+  cardIds: string[];
+  likedIds: string[];
 }
 
 /** Kişinin kendi oyu; yalnızca ona gelir. card yoksa oy geri çekildi. */
@@ -197,6 +237,7 @@ export interface RoomSnapshot {
   youId: string;
   room: RoomState;
   yourVote?: YourVote;
+  yourRetro?: YourRetro;
 }
 
 export interface RoomInfo {
@@ -226,6 +267,7 @@ export type ServerEvent =
   | { type: 'room.participant_joined'; v: number; data: { participantId: string } }
   | { type: 'room.participant_left'; v: number; data: { participantId: string } }
   | { type: 'poker.your_vote'; v: number; data: YourVote }
+  | { type: 'retro.your_cards'; v: number; data: YourRetro }
   | { type: 'poker.deck_changed'; v: number; data: { deck: DeckId } }
   | { type: 'poker.nudged'; v: number; data: { participantId: string } }
   | { type: 'table.emoji'; v: number; data: { participantId: string; emoji: string } }

@@ -296,7 +296,9 @@ public class RoomService {
             PokerRound round = room.round();
             PokerRound.Vote mine = round.votes().get(participantId);
             YourVote yourVote = mine == null ? null : new YourVote(round.id(), mine.card());
-            return new RoomSnapshot(participantId, toState(room), yourVote);
+            Retro retro = room.retro();
+            return new RoomSnapshot(participantId, toState(room), yourVote,
+                    retro == null ? null : retro.yourRetro(participantId));
         });
         events.snapshot(room.code(), participantId, snapshot);
     }
@@ -453,7 +455,7 @@ public class RoomService {
                 room.ticketsEnabled(), tickets, room.currentTicketId(), roundView(room), timerView(room),
                 List.copyOf(room.sessionHistory()), room.fairRotation(), assignmentView(room),
                 room.assignmentHistory().stream().map(AssignmentRecord::view).toList(), room.autoReveal(),
-                room.volunteerSeconds());
+                room.volunteerSeconds(), room.retro() == null ? null : room.retro().view(clock.instant()));
     }
 
     /** Süren "Kim alacak?" akışı; zamanlar gönderim anına göre göreli (istemci kendi saatiyle sayar). */

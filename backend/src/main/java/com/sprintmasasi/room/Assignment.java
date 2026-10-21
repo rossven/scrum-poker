@@ -19,6 +19,8 @@ class Assignment {
 
     private final String id;
     private final String ticketId;
+    /** Retro aksiyonu için başlatıldıysa o kartın kimliği (kazanan aksiyonun sahibi olur). */
+    private final String retroCardId;
     /** Başlatıldığı andaki ticket başlığı ya da serbest turun konusu (boş olabilir). */
     private final String title;
     private final Instant startedAt;
@@ -33,8 +35,13 @@ class Assignment {
     private Game game;
 
     Assignment(String id, String ticketId, String title, int volunteerSeconds, Instant now) {
+        this(id, ticketId, null, title, volunteerSeconds, now);
+    }
+
+    Assignment(String id, String ticketId, String retroCardId, String title, int volunteerSeconds, Instant now) {
         this.id = id;
         this.ticketId = ticketId;
+        this.retroCardId = retroCardId;
         this.title = title;
         this.startedAt = now;
         this.volunteerSeconds = volunteerSeconds;
@@ -43,6 +50,7 @@ class Assignment {
 
     String id() { return id; }
     String ticketId() { return ticketId; }
+    String retroCardId() { return retroCardId; }
     String title() { return title; }
     int volunteerSeconds() { return volunteerSeconds; }
     Set<String> volunteers() { return volunteers; }

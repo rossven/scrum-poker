@@ -1,7 +1,7 @@
 # SprintMasası
 
 Ekibin sprint planlamada kullandığı, hesapsız ve ücretsiz bir planning poker aracı.
-Linkle girilen oda, avatarlı poker masası, planning poker ve işi kimin alacağını belirleyen "Kim alacak?" akışı.
+Linkle girilen oda, avatarlı poker masası, planning poker ve işi kimin alacağını belirleyen "Kim alacak?" akışı. Retro (başarılı gidenler, geliştirilebilir, aksiyonlar; yaz ve beğen, konuş, Markdown/CSV dışa aktarma) aynı odada krupiyenin menüsünden başlar.
 
 Durum: **M1 (iskelet ve oda)**, **M2 (planning poker masası)**, **M2.5 (poker masası teması, isteğe bağlı ticket)** ve **M3 ("Kim alacak?": gönüllü + at yarışı / şans çarkı, masadan atma, koltuk devralma)** tamam. Ardından **tasarım yenilemesi ("Modern Masa")**: düz yeşil çuha ve yeni kartlar, mavi→kırmızı renk skalası, oda ayarlarında "Otomatik aç", "Kim alacak?" için pas ve oda başına gönüllü süresi, düşük uzlaşıda tartışma ipucu, telefon düzeni.
 

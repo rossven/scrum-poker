@@ -17,6 +17,8 @@ public final class Validation {
     public static final int TICKET_LINK_MAX = 500;
 
     public static final int TOPIC_MAX = 120;
+    public static final int RETRO_TEXT_MAX = 200;
+    public static final int RETRO_DUE_MAX = 30;
 
     /**
      * Avatar: taban tohumu + isteğe bağlı aksesuar kodları ("tohum.HGBK").
@@ -113,6 +115,27 @@ public final class Validation {
             return null;
         }
         if (v.codePointCount(0, v.length()) > TOPIC_MAX || CONTROL.matcher(v).find()) {
+            throw new RoomException(ErrorCode.INVALID_INPUT);
+        }
+        return v;
+    }
+
+    /** Retro kartı: boş olamaz, en fazla 200 karakter; satır sonu serbest, kontrol karakterleri yasak. */
+    public static String retroText(String raw) {
+        String v = raw == null ? "" : raw.strip();
+        if (v.isEmpty() || v.codePointCount(0, v.length()) > RETRO_TEXT_MAX || CONTROL_EXCEPT_NEWLINE.matcher(v).find()) {
+            throw new RoomException(ErrorCode.INVALID_INPUT);
+        }
+        return v;
+    }
+
+    /** Aksiyonun serbest metin tarihi ("12 Kasım", "Sonraki sprint"); boş = tarih yok. */
+    public static String retroDue(String raw) {
+        String v = raw == null ? "" : raw.strip();
+        if (v.isEmpty()) {
+            return null;
+        }
+        if (v.codePointCount(0, v.length()) > RETRO_DUE_MAX || CONTROL.matcher(v).find()) {
             throw new RoomException(ErrorCode.INVALID_INPUT);
         }
         return v;

@@ -2,6 +2,7 @@ package com.sprintmasasi.room;
 
 import com.sprintmasasi.room.RoomViews.RoomSnapshot;
 import com.sprintmasasi.room.RoomViews.RoomState;
+import com.sprintmasasi.room.RoomViews.YourRetro;
 import com.sprintmasasi.room.RoomViews.YourVote;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,11 @@ class RecordingEvents implements RoomEvents {
     @Override
     public synchronized void yourVote(String code, String participantId, YourVote vote) {
         events.add(new Event("poker.your_vote", code, participantId, vote));
+    }
+
+    @Override
+    public synchronized void yourRetro(String code, String participantId, YourRetro mine) {
+        events.add(new Event("retro.your_cards", code, participantId, mine));
     }
 
     @Override
